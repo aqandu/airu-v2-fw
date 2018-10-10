@@ -1,0 +1,53 @@
+menu "Example Configuration"
+
+config WIFI_STA_SSID
+    string "WiFi STA SSID"
+    default "myssid"
+    help
+        SSID (network name) for the ESP32 to connect to.
+
+config WIFI_STA_PASSWORD
+    string "WiFi STA Password"
+    default "mypassword"
+    help
+        WiFi password (WPA or WPA2 Personal).
+        
+config WIFI_AP_SSID
+    string "WiFi AP SSID"
+    default "myssid"
+    help
+        SSID (network name) that the ESP32 will broadcast.
+
+config WIFI_AP_PASSWORD
+    string "WiFi AP Password"
+    default "mypassword"
+    help
+        WiFi password. If no password is provided, this ESP32 will create an open network.
+        
+config WIFI_MODE_AP
+	string "WiFi Mode (AP/STA)"
+	default 1
+	help
+		WiFi Mode (AP: 1, STA: 0). 
+
+config MQTT_HOST
+	string "MQTT Host"
+	default "example.host.com"
+	help
+		Host server running the MQTT broker. 
+        
+config MQTT_USERNAME
+	string "MQTT Username"
+	default "username"
+	help
+		MQTT Username for the desired broker.
+		
+config MQTT_PASSWORD
+	string "MQTT Password"
+	default "password"
+	help
+		MQTT password for the desired broker. 
+		
+
+
+endmenu

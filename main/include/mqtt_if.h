@@ -8,6 +8,9 @@
 #ifndef MAIN_INCLUDE_MQTT_IF_H_
 #define MAIN_INCLUDE_MQTT_IF_H_
 
+#define MQTT_DBG_TPC "v2/dbg"
+#define MQTT_DAT_TPC "airu/offline"
+
 /*
 * @brief
 *

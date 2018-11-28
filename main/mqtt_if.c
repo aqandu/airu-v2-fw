@@ -5,24 +5,19 @@
  *      Author: tombo
  */
 
-#include "mqtt_if.h"
-
 #include <string.h>
 #include "esp_err.h"
 #include "esp_system.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#include "app_utils.h"
-
-#define MQTT_DBG_TOPIC "/v2/dbg"
-#define MQTT_DAT_TOPIC "/v2/dat"
+#include "mqtt_if.h"
 
 static const char* TAG = "MQTT";
-
-esp_mqtt_client_handle_t client;
+static uint8_t DEVICE_MAC[6];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 
+esp_mqtt_client_handle_t client;
 
 /*
 * @brief
@@ -40,11 +35,11 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	switch (event->event_id) {
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-
-		   msg_id = esp_mqtt_client_subscribe(this_client, "/v2/all", 1);
+		   printf("*** Hi I'm in mqtt\n\r");
+		   msg_id = esp_mqtt_client_subscribe(this_client, "v2/all", 1);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf((char *) tmp, "/v2/%s", DEVICE_MAC);
+		   sprintf((char *) tmp, "v2/%s", DEVICE_MAC);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 1);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 		   break;
@@ -115,6 +110,7 @@ void mqtt_initialize(void)
    };
 
    ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
+   esp_efuse_mac_get_default(DEVICE_MAC);
    client = esp_mqtt_client_init(&mqtt_cfg);
    esp_mqtt_client_start(client);
 }
@@ -129,7 +125,7 @@ void mqtt_initialize(void)
 */
 void mqtt_publish(const char* topic, const char* msg)
 {
-	int msg_id = esp_mqtt_client_publish(client, MQTT_DBG_TOPIC, msg, 0, 0, 0);
+	int msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
 	ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 }
 

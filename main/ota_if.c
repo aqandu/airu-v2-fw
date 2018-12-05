@@ -29,6 +29,7 @@
 
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "app_utils.h"
 
 #define BUFFSIZE 1024
 
@@ -48,6 +49,8 @@ static void _http_cleanup(esp_http_client_handle_t client)
 
 void ota_task(void *pvParameter)
 {
+    
+
     esp_err_t err;
     /* update handle : set by esp_ota_begin(), must be freed via esp_ota_end() */
     esp_ota_handle_t update_handle = 0 ;
@@ -66,12 +69,29 @@ void ota_task(void *pvParameter)
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
              running->type, running->subtype, running->address);
 
+    while(1)
+    {
+        printf("No OTA request...\n");
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    }
+
     /*
      * Wait for the callback to set the WIFI_CONNECTED_BIT
      * in the event group.
     */
     xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_BIT,
                         false, true, portMAX_DELAY);
+
+    /*
+     * Wait for the callback to set the OTA_REQUEST_BIT
+     * in the event group. OTA_REQUEST_BIT will be set by the MQTT task.
+    */
+    //while(1)
+    //{
+        //printf("No OTA request...");
+        //vTaskDelay(5000 / portTICK_PERIOD_MS);
+    //}
+
     ESP_LOGI(TAG, "Connected to Wifi! Start to connect to server....");
 
     esp_http_client_config_t config = {

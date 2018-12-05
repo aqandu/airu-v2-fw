@@ -1,0 +1,942 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"outpu",
+				"output_file"
+			],
+			[
+				"f",
+				"field"
+			],
+			[
+				"imm",
+				"immediate"
+			],
+			[
+				"op",
+				"opcode"
+			],
+			[
+				"tran",
+				"translate_reg"
+			],
+			[
+				"uint",
+				"uint8_t"
+			],
+			[
+				"print",
+				"print_HDC_config_reg"
+			],
+			[
+				"HD",
+				"HDC1080_CONFIG_REG"
+			],
+			[
+				"HDC",
+				"HDC1080_CONFIG_REG"
+			],
+			[
+				"prin",
+				"print_HDC_device_id"
+			],
+			[
+				"data",
+				"data_wr"
+			],
+			[
+				"I2C",
+				"I2C_NUM_0"
+			],
+			[
+				"dat",
+				"data_wr"
+			],
+			[
+				"hdc",
+				"HDC1080_CONFIG_REG"
+			],
+			[
+				"ACK",
+				"ACK_CHECK_EN"
+			],
+			[
+				"se",
+				"second_byte"
+			],
+			[
+				"fir",
+				"first_byte"
+			],
+			[
+				"W",
+				"WRITE_BIT"
+			],
+			[
+				"eps",
+				"esp_err_t"
+			],
+			[
+				"0x",
+				"0x02"
+			],
+			[
+				"A",
+				"ACK_CHECK_EN"
+			],
+			[
+				"ESP",
+				"ESP_FAIL"
+			],
+			[
+				"esp",
+				"esp_err_t"
+			],
+			[
+				"buf",
+				"BUF_SIZE"
+			],
+			[
+				"PM",
+				"PMTK_GPS_INFO"
+			],
+			[
+				"PMTK_SET",
+				"PMTK_SET_NMEA_OUTPUT_RMCONLY"
+			],
+			[
+				"GPS",
+				"GPS_UART_CH"
+			],
+			[
+				"parse",
+				"parse_packet"
+			],
+			[
+				"rx",
+				"RX_BUF_SIZE"
+			],
+			[
+				"gps",
+				"gps_buf"
+			],
+			[
+				"star",
+				"startY"
+			],
+			[
+				"st",
+				"startX"
+			],
+			[
+				"s",
+				"startY"
+			],
+			[
+				"stra",
+				"startX"
+			],
+			[
+				"str",
+				"startX"
+			],
+			[
+				"start",
+				"startX"
+			],
+			[
+				"mat",
+				"mat"
+			],
+			[
+				"nu",
+				"num_col"
+			],
+			[
+				"MA",
+				"MAX_THREADS"
+			],
+			[
+				"pthre",
+				"pthread_exit"
+			],
+			[
+				"pthread",
+				"pthread_mutex_lock"
+			],
+			[
+				"che",
+				"checksum_compute"
+			],
+			[
+				"_mtr",
+				"_mtr_get_job"
+			],
+			[
+				"dir",
+				"dir_name"
+			],
+			[
+				"strc",
+				"strcpy"
+			],
+			[
+				"job_",
+				"job_board"
+			],
+			[
+				"Name",
+				"NAME_LEN"
+			],
+			[
+				"N",
+				"NAME_LEN"
+			],
+			[
+				"ne",
+				"nextfile"
+			],
+			[
+				"job",
+				"job_count"
+			],
+			[
+				"pdir",
+				"pdirent"
+			],
+			[
+				"thre",
+				"num_threads"
+			],
+			[
+				"_",
+				"_mtr_post_job"
+			],
+			[
+				"M",
+				"MAX_JOBS"
+			],
+			[
+				"pthrea",
+				"pthread_mutex_lock"
+			],
+			[
+				"full",
+				"full_cv"
+			],
+			[
+				"pro",
+				"problem_2"
+			],
+			[
+				"fil",
+				"file_name"
+			],
+			[
+				"Bu",
+				"BUF_SIZE"
+			],
+			[
+				"B",
+				"BUF_SIZE"
+			],
+			[
+				"chek",
+				"checksum"
+			],
+			[
+				"u",
+				"uint32_t"
+			],
+			[
+				"pdi",
+				"pdirent"
+			],
+			[
+				"pd",
+				"pdirent"
+			],
+			[
+				"total",
+				"total_play_count"
+			],
+			[
+				"an",
+				"animals"
+			],
+			[
+				"ani",
+				"animals"
+			],
+			[
+				"num",
+				"num_cats"
+			],
+			[
+				"pr",
+				"problem_1"
+			],
+			[
+				"cats",
+				"cats_play"
+			],
+			[
+				"BIR",
+				"BIRD"
+			],
+			[
+				"animla",
+				"animal_type"
+			],
+			[
+				"ii",
+				"ii"
+			],
+			[
+				"do",
+				"dogs"
+			],
+			[
+				"ca",
+				"cat_cv"
+			],
+			[
+				"tw",
+				"twist_rate"
+			],
+			[
+				"l",
+				"length"
+			],
+			[
+				"ft",
+				"ftlbs_in_j"
+			],
+			[
+				"mu",
+				"muzzle_energy"
+			],
+			[
+				"gra",
+				"grains"
+			],
+			[
+				"En",
+				"energy"
+			],
+			[
+				"fps",
+				"fps_to_mps"
+			],
+			[
+				"R",
+				"RANGE"
+			],
+			[
+				"RA",
+				"RADUIS"
+			],
+			[
+				"point",
+				"points_in_circle"
+			],
+			[
+				"to",
+				"total_points"
+			],
+			[
+				"S",
+				"SQUARE"
+			],
+			[
+				"atomic",
+				"atomic_xadd"
+			],
+			[
+				"atom",
+				"atomic_xadd"
+			],
+			[
+				"cur",
+				"cur_ticket"
+			],
+			[
+				"ato",
+				"atomic_xadd"
+			],
+			[
+				"motor",
+				"motor_speed"
+			],
+			[
+				"tar",
+				"target_rpm"
+			],
+			[
+				"spin",
+				"spin_lock_t"
+			],
+			[
+				"yi",
+				"sched_yield"
+			],
+			[
+				"func",
+				"func_cs"
+			],
+			[
+				"thread",
+				"thread_data_t"
+			],
+			[
+				"fun",
+				"func_cs"
+			],
+			[
+				"is",
+				"isdigit"
+			],
+			[
+				"run",
+				"runtime_sec"
+			],
+			[
+				"mark",
+				"marks_uid"
+			],
+			[
+				"KERN_",
+				"KERN_INFO"
+			],
+			[
+				"system",
+				"system_call_table_address"
+			],
+			[
+				"syse",
+				"system_call_table_address"
+			],
+			[
+				"rem",
+				"remaining_seconds"
+			],
+			[
+				"sle",
+				"sleepDuration"
+			],
+			[
+				"rever",
+				"reverse"
+			],
+			[
+				"re",
+				"reverse"
+			],
+			[
+				"int",
+				"int"
+			],
+			[
+				"usin",
+				"unsigned"
+			],
+			[
+				"by",
+				"bytes"
+			],
+			[
+				"n",
+				"nibbles"
+			],
+			[
+				"el",
+				"elavator"
+			],
+			[
+				"clib",
+				"climb_sequence"
+			],
+			[
+				"seq",
+				"sequence"
+			],
+			[
+				"m",
+				"medium"
+			],
+			[
+				"pre",
+				"prevIndex"
+			],
+			[
+				"prev",
+				"prevIndex"
+			],
+			[
+				"h",
+				"H"
+			],
+			[
+				"equation",
+				"equation_select"
+			],
+			[
+				"easy",
+				"easyfile"
+			],
+			[
+				"in",
+				"inExp"
+			],
+			[
+				"post",
+				"postExp"
+			],
+			[
+				"infi",
+				"infix_to_postfix"
+			],
+			[
+				"min",
+				"minPenalty"
+			],
+			[
+				"out",
+				"output"
+			],
+			[
+				"pen",
+				"penalty"
+			],
+			[
+				"adj",
+				"adjList"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "main/main.c",
+			"settings":
+			{
+				"buffer_size": 5804,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "main/wifi_if.c",
+			"settings":
+			{
+				"buffer_size": 3450,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "main/wifi_manager.c",
+			"settings":
+			{
+				"buffer_size": 26102,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "Package Control: ",
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Remove Package"
+			]
+		],
+		"width": 412.0
+	},
+	"console":
+	{
+		"height": 130.0,
+		"history":
+		[
+			"compare.sh converter.cpp video.cpp",
+			"subl --command 'sbs_compare_files {\"A\":\"converter.cpp\", \"B\":\"video.cpp\"}'",
+			"subl --command 'sbs_compare_files {\"A\":\"./converter.cpp\", \"B\":\"./video.cpp\"}'",
+			"subl --command sbs_compare_files {\"A\":\"./converter.cpp\", \"B\":\"./video.cpp\"}",
+			"subl --command 'sbs_compare_files {\"A\":\"./converter.cpp\", \"B\":\"./video.cpp\"}",
+			"subl --command 'sbs_compare_files {\"A\":\"./converter.cpp\", \"B\":\"./video.cpp\"}'",
+			"subl --command 'sbs_compare_files {\"A\":\"converter.cpp\", \"B\":\"video.cpp\"}'",
+			"file_diff_menu",
+			"\"cmd\": [\"opendiff\", \"$file1\", \"$file2\"]",
+			"opendiff (FileMerge)",
+			"import urllib.request,os,hashlib; h = '6f4c264a24d933ce70df5dedcf1dcaee' + 'ebe013ee18cced0ef93d5f746d80ef60'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)",
+			"ls"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/trentontaylor/Documents/AirU/AirU_v2/airu-v2-fw",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2/airu-v2-fw/main"
+	],
+	"file_history":
+	[
+		"/Users/trentontaylor/Documents/AirU/AirU_v2/airu-v2-fw/main/wifi_manager.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2/airu-v2-fw/main/main.c",
+		"/Users/trentontaylor/Downloads/gatt_server/main/gatts_demo.c",
+		"/Users/trentontaylor/Downloads/gatt_server_service_table/main/gatts_table_creat_demo.c",
+		"/Users/trentontaylor/Downloads/gatt_server_demo.c",
+		"/Users/trentontaylor/Downloads/ble_scan/Makefile",
+		"/Users/trentontaylor/Downloads/ble_scan/main/component.mk",
+		"/Users/trentontaylor/Downloads/str_lit",
+		"/Users/trentontaylor/Downloads/hw11_sol.rkt",
+		"/Users/trentontaylor/Downloads/hw10_sol.rkt",
+		"/Users/trentontaylor/Downloads/design_notes_airu_v2.0.txt",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2_trash/general_notes",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/pm_if.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/pm_if.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/mqtt_ssl_example_test.py",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/wifi_if.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/time_if.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/ota_if.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/mqtt_if.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/include/app_utils.h",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/wifi_if.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/time_if.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/ota_if.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/mqtt_if.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/app_utils.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/app_main.c",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/notes",
+		"/Users/trentontaylor/Documents/Coursework/GEOG3350/notes_geog3350",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/assembler/assem.py",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/HW10_types.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/HW4_stores.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/CS3710_repo/3710ALU/assembler.py",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/assembler/asm.txt",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/assembler/cr16_parse.py",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/assembler/cr16_parse_copy.py",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/asm.txt",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/cr16_parse.py",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/solutions/hw7_sol.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/solutions/hw2_sol.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/solutions/hw9_sol.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/HW6_lazy.rkt",
+		"/Users/trentontaylor/Downloads/serverforsenior",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/hw8_sol.rkt",
+		"/Users/trentontaylor/Downloads/test_mods/i2c_scanner/main/main.c",
+		"/Users/trentontaylor/Downloads/inherit-parse.rkt",
+		"/Users/trentontaylor/Downloads/inherit.rkt",
+		"/Users/trentontaylor/Downloads/class.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/HW9_classes.rkt",
+		"/Users/trentontaylor/Downloads/tb_pc_basic.v",
+		"/Users/trentontaylor/Downloads/3710ALU/tb_read_write_ports_basic.v",
+		"/Users/trentontaylor/Downloads/3710ALU/tb_read_simult_port_access.v",
+		"/Users/trentontaylor/Downloads/3710ALU/tb_data_flow_shifting.v",
+		"/Users/trentontaylor/Documents/Coursework/CS3505_SoftwarePractice2/HW1_EcoSim/EcoSim.cpp",
+		"/Users/trentontaylor/Downloads/test_mods/17_i2c_scanner/main/main.c",
+		"/Users/trentontaylor/Downloads/i2c_Example.c",
+		"/Users/trentontaylor/Downloads/test_mods/i2c_scan/main/main.c",
+		"/Users/trentontaylor/Downloads/test_mods/i2c/i2c_self_test/main/i2c_example_main.c",
+		"/Users/trentontaylor/Downloads/pm_demo/main/uart_events_example_main.c",
+		"/Users/trentontaylor/Downloads/gps_demo/main/main.c",
+		"/Users/trentontaylor/Downloads/gps_demo/Makefile",
+		"/Users/trentontaylor/Downloads/gps_demo/main/component.mk",
+		"/Users/trentontaylor/Downloads/board_demo/main/main.c",
+		"/Users/trentontaylor/Downloads/hw7_sol.rkt",
+		"/Users/trentontaylor/Downloads/hw6_sol.rkt",
+		"/Users/trentontaylor/Downloads/my_uart_demo/main/main.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/main/main.c",
+		"/Users/trentontaylor/Downloads/try/servlab-handout/tinychat.c",
+		"/Users/trentontaylor/Downloads/cr16_parse.py",
+		"/Users/trentontaylor/Downloads/hw8_gc.rkt",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/modules/gps_demo/main/uart_events_example_main.c",
+		"/Users/trentontaylor/Downloads/gps_web_demo",
+		"/Users/trentontaylor/Downloads/gps/main/main.c",
+		"/Users/trentontaylor/Downloads/airu_v2.0_firmware/airu_v2.0_firmware.sublime-project",
+		"/Users/trentontaylor/Downloads/GeneralNotes_KallaMeeting",
+		"/Users/trentontaylor/Documents/Coursework/CS4000_SeniorProjectDesign/use_cases",
+		"/Users/trentontaylor/Downloads/General Notes",
+		"/Users/trentontaylor/Downloads/__General Notes Meeting with Jim Oct 24__",
+		"/Users/trentontaylor/Downloads/pathfinder_robot",
+		"/Users/trentontaylor/Downloads/use_cases",
+		"/Users/trentontaylor/Documents/Coursework/CS3710_ComputerDesign/rover_computer_control",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/hw7_letcc.rkt",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/.DS_Store",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/HW5_letrec.rkt",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/Makefile",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/sdkconfig",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/main/Kconfig.projbuild",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/main/component.mk",
+		"/Users/trentontaylor/Downloads/hw5_sol.rkt",
+		"/Users/trentontaylor/Downloads/HW6_lazy.rkt",
+		"/Users/trentontaylor/Documents/Coursework/CS5460_OperatingSystems/asg4/repo_sync/problem_2.c",
+		"/Users/trentontaylor/Downloads/cs4000hw",
+		"/Users/trentontaylor/Downloads/i2c/main/i2c_example_main.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v1.1_firmware/airu_esp32_firmware_v1.0.sublime-project",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/airu_v2.0_firmware.sublime-project",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/modules/uart_events_demo/main/component.mk",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/components/pm_if/include/pm_if.h",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/components/pm_if/pm_if.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/modules/uart_events_demo/main/uart_events_example_main.c",
+		"/Users/trentontaylor/Downloads/geog_paper_reqs",
+		"/Users/trentontaylor/Documents/Coursework/CS3520_ProgrammingLanguages/notes_cs3520",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_software/components/wifi/include/internet_if.h",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_software/components/wifi/internet_if.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_software/main/main.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/components/component.mk",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/airu_v2.0_firmware/main/main.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_firmware/src/internet_if.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_firmware/include/internet_if.h",
+		"/Users/trentontaylor/Downloads/toms_words_of_wisdom",
+		"/Users/trentontaylor/Downloads/design_notes.txt",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_firmware/include/internet_if.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_firmware/AirU_v2.0_firmware.sublime-project",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_firmware/main/main.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/notes/getting_started_airu_firmware",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_Firmware_1.0/airu_esp32_firmware_v1.0.sublime-project",
+		"/Users/trentontaylor/Downloads/airu_esp32_firmware_v1.0.sublime-project",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_Firmware_1.0/src/device_status.c",
+		"/Users/trentontaylor/Downloads/airu_firmwar_v1.0",
+		"/Users/trentontaylor/Documents/AirU/AirU_v2.0/AirU_v2.0_Firmware_1.0/include/ADS1015.h",
+		"/Users/trentontaylor/Downloads/airu_firmware_notes",
+		"/Users/trentontaylor/.bash_profile",
+		"/Users/trentontaylor/Downloads/dad_MS_download",
+		"/Users/trentontaylor/Downloads/etx/main/app_main.c",
+		"/Users/trentontaylor/Documents/AirU/AirU_v1.1/airu-firmware-1.0.5.3/src/gps_if.c",
+		"/Users/trentontaylor/Downloads/addons_airu",
+		"/Users/trentontaylor/Documents/AirU/AirU_v1.1/airu-firmware-1.0.5.3/src/gpio_if.c",
+		"/Users/trentontaylor/Downloads/quantum_research_monday",
+		"/Users/trentontaylor/Downloads/rci_count",
+		"/Users/trentontaylor/Downloads/quantum_research"
+	],
+	"find":
+	{
+		"height": 39.0
+	},
+	"find_in_files":
+	{
+		"height": 101.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "main/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5804,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "main/wifi_if.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3450,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1722,
+								1722
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 811.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "main/wifi_manager.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 26102,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 24.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "airu-v2-fw.sublime-project",
+	"replace":
+	{
+		"height": 44.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"j",
+				"j"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 231.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

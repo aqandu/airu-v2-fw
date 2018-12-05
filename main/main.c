@@ -63,6 +63,7 @@ Notes:
 #include "mqtt_if.h"
 #include "hdc1080_if.h"
 #include "mics4514_if.h"
+#include "ota_if.h"
 
 /* GPIO */
 #define STAT1_LED 21
@@ -98,7 +99,7 @@ static void data_task(void *pvParameter)
 	uint32_t ox_val, red_val;
 	double temp, hum;
 
-	vTaskDelay(30000 / portTICK_PERIOD_MS);
+	vTaskDelay(20000 / portTICK_PERIOD_MS);
 	for(;;)
 	{
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
@@ -144,7 +145,7 @@ void app_main()
 {
 	/* disable the default wifi logging */
 	esp_log_level_set("wifi", ESP_LOG_INFO);
-//	esp_log_level_set(TAG, ESP_LOG_NONE);
+	//esp_log_level_set(TAG, ESP_LOG_NONE);
 
 	/* initialize flash memory */
 	nvs_flash_init();
@@ -166,7 +167,7 @@ void app_main()
 	MICS4514_Initialize();
 
 	/* Mics test */
-//	xTaskCreate(&mics_task, "mics_task", 2048, NULL, 5, NULL);
+	//xTaskCreate(&mics_task, "mics_task", 2048, NULL, 5, NULL);
 
 	/* start the HTTP Server task */
 	xTaskCreate(&http_server, "http_server", 2048, NULL, 5, &task_http_server);
@@ -174,11 +175,15 @@ void app_main()
 	/* start the wifi manager task */
 	xTaskCreate(&wifi_manager, "wifi_manager", 4096, NULL, 4, &task_wifi_manager);
 
+	/* start the OTA task */
+	vTaskDelay(5000 / portTICK_PERIOD_MS);
+	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
+
 	/* start the data task */
 	xTaskCreate(data_task, "data_task", 2048, NULL, 6, NULL);
 
 	/* Blinky test task */
-//	xTaskCreate(blinky_task, "blinky_task", 2048, NULL, 3, NULL);
+	//xTaskCreate(blinky_task, "blinky_task", 2048, NULL, 3, NULL);
 
 	/* your code should go here. In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

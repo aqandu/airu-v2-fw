@@ -54,6 +54,8 @@ Contains the freeRTOS task and all necessary support
 #include "mqtt_if.h"
 #include "time_if.h"
 
+static const char* TAG = "WMG";
+static const char* HDL = "WIFI-HANDLER";
 
 SemaphoreHandle_t wifi_manager_json_mutex = NULL;
 uint16_t ap_num = MAX_AP_NUM;
@@ -339,6 +341,7 @@ char* wifi_manager_get_ap_list_json(){
 
 esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 {
+	ESP_LOGI(HDL, "Event Handler Event ID: %d", event->event_id);
     switch(event->event_id) {
 
     case SYSTEM_EVENT_AP_START:
@@ -598,6 +601,7 @@ void wifi_manager( void * pvParameters ){
 
 		/* actions that can trigger: request a connection, a scan, or a disconnection */
 		uxBits = xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT | WIFI_MANAGER_REQUEST_WIFI_SCAN | WIFI_MANAGER_REQUEST_WIFI_DISCONNECT, pdFALSE, pdFALSE, portMAX_DELAY );
+
 		if(uxBits & WIFI_MANAGER_REQUEST_WIFI_DISCONNECT){
 			/* user requested a disconnect, this will in effect disconnect the wifi but also erase NVS memory*/
 
@@ -608,6 +612,9 @@ void wifi_manager( void * pvParameters ){
 
 				/* wait until wifi disconnects. From experiments, it seems to take about 150ms to disconnect */
 				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+			}
+			else{
+				ESP_LOGI(TAG, "WiFi was not connected to begin with!");
 			}
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 
@@ -677,12 +684,11 @@ void wifi_manager( void * pvParameters ){
 						/* save wifi config in NVS */
 						printf("AirU obtained an IP address from AP\n\r");
 						wifi_manager_save_sta_config();
+
 						printf("SNTP Initialize\n\r");
 						sntp_initialize();
-						printf("SNTP Initialize finished\n\r");
 						printf("MQTT Initialize\n\r");
-						mqtt_initialize();
-						printf("MQTT Initialize finished\n\r");
+						MQTT_Initialize();
 					}
 					else{
 
@@ -710,22 +716,29 @@ void wifi_manager( void * pvParameters ){
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 		}
 		else if(uxBits & WIFI_MANAGER_REQUEST_WIFI_SCAN){
-                        ap_num = MAX_AP_NUM;
+			ap_num = MAX_AP_NUM;
 
-			ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-			ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
+			if(!(uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT)){
+				ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
+				ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
 
-			/* make sure the http server isn't trying to access the list while it gets refreshed */
-			if(wifi_manager_lock_json_buffer( ( TickType_t ) 20 )){
-				/* Will remove the duplicate SSIDs from the list and update ap_num */
-				wifi_manager_filter_unique(accessp_records, &ap_num);
-				wifi_manager_generate_acess_points_json();
-				wifi_manager_unlock_json_buffer();
-			}
-			else{
+				/* make sure the http server isn't trying to access the list while it gets refreshed */
+				if(wifi_manager_lock_json_buffer( ( TickType_t ) 20 )){
+					/* Will remove the duplicate SSIDs from the list and update ap_num */
+					wifi_manager_filter_unique(accessp_records, &ap_num);
+					wifi_manager_generate_acess_points_json();
+					wifi_manager_unlock_json_buffer();
+				}
+				else{
 #if WIFI_MANAGER_DEBUG
-				printf("wifi_manager: could not get access to json mutex in wifi_scan\n");
+					printf("wifi_manager: could not get access to json mutex in wifi_scan\n");
 #endif
+				}
+			}
+			/* STA is actively trying to connect to an AP that isn't present. Terminate this.
+			 * Web interface will request another scan in a few seconds. */
+			else{
+				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 			}
 
 			/* finally: release the scan request bit */

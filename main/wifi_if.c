@@ -42,7 +42,7 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
      xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
 
      sntp_initialize();
-     mqtt_initialize();
+     MQTT_Initialize();
 
      break;
 

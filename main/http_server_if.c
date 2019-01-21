@@ -160,6 +160,7 @@ void http_server_netconn_serve(struct netconn *conn) {
 
 		if(line) {
 
+			printf("%s", buf);
 			// default page
 			if(strstr(line, "GET / ")) {
 				netconn_write(conn, http_html_hdr, sizeof(http_html_hdr) - 1, NETCONN_NOCOPY);
@@ -251,6 +252,34 @@ void http_server_netconn_serve(struct netconn *conn) {
 					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
 				}
 
+			}
+			else if(strstr(line, "POST /register.json ")) {
+#if WIFI_MANAGER_DEBUG
+				printf("http_server_netconn_serve: POST /register.json\n");
+#endif
+				int lenN = 0, lenE = 0;
+				char *name = NULL, *email = NULL;
+				char reg_name[64] = {'\0'};
+				char reg_email[64] = {'\0'};
+
+				name = http_server_get_header(save_ptr, "X-Custom-name: ", &lenN);
+				email = http_server_get_header(save_ptr, "X-Custom-email: ", &lenE);
+
+				if(name && email){
+					netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); //200OK
+
+					memcpy(reg_name, name, lenN);
+					memcpy(reg_email, email, lenE);
+
+
+
+				}
+				else{
+					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
+#if WIFI_MANAGER_DEBUG
+					printf("Couldn't extract name and email");
+#endif
+				}
 			}
 			else{
 				netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);

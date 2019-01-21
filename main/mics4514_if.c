@@ -83,7 +83,7 @@ void MICS4514_Initialize(void)
 /*
  *
  */
-void MICS4514_Poll(uint32_t *ox_val, uint32_t *red_val)
+void MICS4514_Poll(uint16_t *ox_val, uint16_t *red_val)
 {
 	*ox_val = 0;
 	*red_val = 0;

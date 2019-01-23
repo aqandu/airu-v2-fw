@@ -18,7 +18,7 @@ random.o: /Users/tombo/esp/esp-idf/components/newlib/random.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
@@ -109,7 +109,7 @@ random.o: /Users/tombo/esp/esp-idf/components/newlib/random.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 

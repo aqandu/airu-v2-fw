@@ -26,7 +26,7 @@ esp_ota_ops.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
@@ -98,7 +98,12 @@ esp_ota_ops.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_dport_access.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_reg.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
- /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h
+ /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/param.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 
@@ -152,7 +157,7 @@ esp_ota_ops.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -297,4 +302,14 @@ esp_ota_ops.o: \
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/param.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 /Users/tombo/esp/esp-idf/components/app_update/./esp_ota_ops.c:

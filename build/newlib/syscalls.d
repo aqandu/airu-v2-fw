@@ -27,11 +27,11 @@ syscalls.o: /Users/tombo/esp/esp-idf/components/newlib/syscalls.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -140,6 +140,8 @@ syscalls.o: /Users/tombo/esp/esp-idf/components/newlib/syscalls.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
@@ -147,8 +149,6 @@ syscalls.o: /Users/tombo/esp/esp-idf/components/newlib/syscalls.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 

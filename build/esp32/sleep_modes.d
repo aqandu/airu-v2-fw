@@ -11,6 +11,7 @@ sleep_modes.o: /Users/tombo/esp/esp-idf/components/esp32/sleep_modes.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
@@ -27,7 +28,6 @@ sleep_modes.o: /Users/tombo/esp/esp-idf/components/esp32/sleep_modes.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -141,6 +141,8 @@ sleep_modes.o: /Users/tombo/esp/esp-idf/components/esp32/sleep_modes.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
@@ -172,8 +174,6 @@ sleep_modes.o: /Users/tombo/esp/esp-idf/components/esp32/sleep_modes.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 

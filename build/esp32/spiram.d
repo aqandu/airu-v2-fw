@@ -20,7 +20,7 @@ spiram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
@@ -92,7 +92,8 @@ spiram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_dport_access.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_reg.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/cache.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_access.h
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_access.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_himem.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 
@@ -136,7 +137,7 @@ spiram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
@@ -281,4 +282,6 @@ spiram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/cache.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_access.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_himem.h:
 /Users/tombo/esp/esp-idf/components/esp32/./spiram.c:

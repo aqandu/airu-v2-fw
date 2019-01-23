@@ -21,10 +21,12 @@ select.o: /Users/tombo/esp/esp-idf/components/newlib/select.c \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -137,13 +139,17 @@ select.o: /Users/tombo/esp/esp-idf/components/newlib/select.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 

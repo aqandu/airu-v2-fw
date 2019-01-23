@@ -62,7 +62,9 @@ uint16_t ap_num = MAX_AP_NUM;
 wifi_ap_record_t *accessp_records; //[MAX_AP_NUM];
 char *accessp_json = NULL;
 char *ip_info_json = NULL;
+char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
+
 
 /**
  * The actual WiFi settings in use
@@ -76,6 +78,16 @@ struct wifi_settings_t wifi_settings = {
 	.sta_only = DEFAULT_STA_ONLY,
 	.sta_power_save = DEFAULT_STA_POWER_SAVE,
 	.sta_static_ip = 0,
+};
+
+/**
+ * The user's registration info
+ */
+struct registration_info_t reg_info = {
+		.name = "No Name",
+		.email = "noemail@email.com",
+		.vis = 0,
+		.mac = "000000000000"
 };
 
 const char wifi_manager_nvs_namespace[] = "espwifimgr";
@@ -112,6 +124,38 @@ void wifi_manager_disconnect_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 }
 
+esp_err_t wifi_manager_save_reg_config(char* name, size_t szn, char* email, size_t sze){
+	nvs_handle handle;
+	esp_err_t esp_err;
+#if WIFI_MANAGER_DEBUG
+	ESP_LOGI(TAG, "About to save registration config to flash\n");
+	ESP_LOGI(TAG, "Name: %s", reg_info.name);
+	ESP_LOGI(TAG, "Email: %s", reg_info.email);
+#endif
+
+	esp_err = nvs_open(wifi_manager_nvs_namespace, NVS_READWRITE, &handle);
+	if(esp_err != ESP_OK) return esp_err;
+
+	ESP_LOGI(TAG, "NVS set name");
+	esp_err = nvs_set_blob(handle, "name", reg_info.name, JSON_REG_NAME_SIZE);
+	if(esp_err != ESP_OK) return esp_err;
+
+	ESP_LOGI(TAG, "NVS set email");
+	esp_err = nvs_set_blob(handle, "email", reg_info.email, JSON_REG_EMAIL_SIZE);
+	if(esp_err != ESP_OK) return esp_err;
+
+	ESP_LOGI(TAG, "NVS commit");
+	esp_err = nvs_commit(handle);
+	if(esp_err != ESP_OK) return esp_err;
+
+	nvs_close(handle);
+
+#if WIFI_MANAGER_DEBUG
+		printf("wifi_manager: Just saved [%s], [%s] to flash\n", reg_info.name, reg_info.email);
+#endif
+
+	return ESP_OK;
+}
 
 esp_err_t wifi_manager_save_sta_config(){
 
@@ -155,6 +199,50 @@ esp_err_t wifi_manager_save_sta_config(){
 	}
 
 	return ESP_OK;
+}
+
+bool wifi_manager_fetch_reg_config(){
+	nvs_handle handle;
+	esp_err_t esp_err;
+
+	strcpy(reg_info.name, "");
+	strcpy(reg_info.email, "");
+
+	if(nvs_open(wifi_manager_nvs_namespace, NVS_READONLY, &handle) == ESP_OK){
+		printf("nvs opened\n");
+		size_t sz = JSON_REG_EMAIL_SIZE;
+		uint8_t *buff = (uint8_t*)malloc(sizeof(uint8_t) * sz);
+
+		esp_err = nvs_get_blob(handle, "name", buff, &sz);
+		if(esp_err != ESP_OK) {
+			ESP_LOGW(TAG, "nvs_get_blob error on name: [0x%08X]", esp_err);
+			free(buff);
+			return false;
+		}
+		buff[sz] = '\0';
+		ESP_LOGI(TAG, "NVS got name (%d): %s\n", sz, buff);
+		memcpy(reg_info.name, buff, sz);
+
+		sz = JSON_REG_EMAIL_SIZE;
+
+		esp_err = nvs_get_blob(handle, "email", buff, &sz);
+		if(esp_err != ESP_OK) {
+			ESP_LOGW(TAG, "nvs_get_blob error on email: [0x%08X]", esp_err);
+			free(buff);
+			return false;
+		}
+		buff[sz] = '\0';
+		ESP_LOGI(TAG, "NVS got email (%d): %s\n", sz, buff);
+		memcpy(reg_info.email, buff, sz);
+
+		free(buff);
+		nvs_close(handle);
+
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool wifi_manager_fetch_wifi_sta_config(){
@@ -229,12 +317,38 @@ bool wifi_manager_fetch_wifi_sta_config(){
 
 }
 
+void wifi_manager_clear_reg_info_json(){
+	strcpy(reg_info_json, "{}\n");
+}
+void wifi_manager_generate_reg_info_json(){
+
+	ESP_LOGI(TAG, "inside [wifi_manager_generate_reg_info_json]: Saved name: %s, Saved email: %s", reg_info.name, reg_info.email);
+
+	memset(reg_info_json, 0x00, JSON_REG_INFO_SIZE);
+
+    /* ssid needs to be json escaped. To save on heap memory it's directly printed at the correct address */
+
+	// Name (First and Last)
+    strcat(reg_info_json, "{\"name\":");
+    json_print_string( (unsigned char*)reg_info.name,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
+
+    // Email
+    strcat(reg_info_json, ",\"email\":");
+    json_print_string( (unsigned char*)reg_info.email,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
+
+    // Visibility
+    char tmp[25] = {0};
+    sprintf(tmp, ",\"mapVisibility\":%d", reg_info.vis);
+    strcat(reg_info_json, tmp);
+
+    // MAC Address
+	sprintf(tmp, ",\"macAddress\":%s", reg_info.mac);
+	strcat(reg_info_json, tmp);
+}
 
 void wifi_manager_clear_ip_info_json(){
 	strcpy(ip_info_json, "{}\n");
 }
-
-
 void wifi_manager_generate_ip_info_json(update_reason_code_t update_reason_code){
 
 	wifi_config_t *config = wifi_manager_get_wifi_sta_config();
@@ -401,6 +515,10 @@ char* wifi_manager_get_ip_info_json(){
 	return ip_info_json;
 }
 
+char* wifi_manager_get_reg_info_json(){
+	return reg_info_json;
+}
+
 
 void wifi_manager_destroy(){
 
@@ -411,6 +529,8 @@ void wifi_manager_destroy(){
 	accessp_json = NULL;
 	free(ip_info_json);
 	ip_info_json = NULL;
+	free(reg_info_json);
+	reg_info_json = NULL;
 	if(wifi_manager_config_sta){
 		free(wifi_manager_config_sta);
 		wifi_manager_config_sta = NULL;
@@ -484,7 +604,9 @@ void wifi_manager( void * pvParameters ){
 	accessp_json = (char*)malloc(MAX_AP_NUM * JSON_ONE_APP_SIZE + 4); /* 4 bytes for json encapsulation of "[\n" and "]\0" */
 	wifi_manager_clear_access_points_json();
 	ip_info_json = (char*)malloc(sizeof(char) * JSON_IP_INFO_SIZE);
+	reg_info_json = (char*)malloc(sizeof(char) * JSON_REG_INFO_SIZE);
 	wifi_manager_clear_ip_info_json();
+	wifi_manager_clear_reg_info_json();
 	wifi_manager_config_sta = (wifi_config_t*)malloc(sizeof(wifi_config_t));
 	memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
 	memset(&wifi_settings.sta_static_ip_config, 0x00, sizeof(tcpip_adapter_ip_info_t));

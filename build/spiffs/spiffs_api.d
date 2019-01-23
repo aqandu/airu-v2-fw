@@ -14,7 +14,7 @@ spiffs_api.o: /Users/tombo/esp/esp-idf/components/spiffs/spiffs_api.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -84,13 +84,15 @@ spiffs_api.o: /Users/tombo/esp/esp-idf/components/spiffs/spiffs_api.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/unistd.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stat.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/time.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/dirent.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/dirent.h \
@@ -133,7 +135,7 @@ spiffs_api.o: /Users/tombo/esp/esp-idf/components/spiffs/spiffs_api.c \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -273,6 +275,12 @@ spiffs_api.o: /Users/tombo/esp/esp-idf/components/spiffs/spiffs_api.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/unistd.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
@@ -284,8 +292,6 @@ spiffs_api.o: /Users/tombo/esp/esp-idf/components/spiffs/spiffs_api.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/time.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/time.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h:
 

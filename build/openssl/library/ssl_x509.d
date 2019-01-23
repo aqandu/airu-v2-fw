@@ -10,7 +10,7 @@ library/ssl_x509.o: \
  /Users/tombo/esp/esp-idf/components/openssl/include/internal/ssl_methods.h \
  /Users/tombo/esp/esp-idf/components/openssl/include/internal/ssl_dbg.h \
  /Users/tombo/esp/esp-idf/components/openssl/include/platform/ssl_opt.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/openssl/include/platform/ssl_port.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_types.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
@@ -67,7 +67,7 @@ library/ssl_x509.o: \
 
 /Users/tombo/esp/esp-idf/components/openssl/include/platform/ssl_opt.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/openssl/include/platform/ssl_port.h:
 

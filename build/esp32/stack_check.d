@@ -1,5 +1,5 @@
 stack_check.o: /Users/tombo/esp/esp-idf/components/esp32/stack_check.c \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
@@ -58,7 +58,7 @@ stack_check.o: /Users/tombo/esp/esp-idf/components/esp32/stack_check.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h:
 

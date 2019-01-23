@@ -16,7 +16,7 @@ hwcrypto/aes.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/aes.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/aes.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
@@ -90,7 +90,9 @@ hwcrypto/aes.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/aes.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h \
+ /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
@@ -126,7 +128,7 @@ hwcrypto/aes.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/aes.c \
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
 
@@ -275,4 +277,8 @@ hwcrypto/aes.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/aes.c \
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h:
+
+/Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h:
 /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/aes.c:

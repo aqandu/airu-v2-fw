@@ -16,7 +16,7 @@ flash_ops.o: /Users/tombo/esp/esp-idf/components/spi_flash/flash_ops.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
@@ -104,6 +104,8 @@ flash_ops.o: /Users/tombo/esp/esp-idf/components/spi_flash/flash_ops.c \
  /Users/tombo/esp/esp-idf/components/app_update/include/esp_ota_ops.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/cache_utils.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
@@ -140,7 +142,7 @@ flash_ops.o: /Users/tombo/esp/esp-idf/components/spi_flash/flash_ops.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -315,6 +317,10 @@ flash_ops.o: /Users/tombo/esp/esp-idf/components/spi_flash/flash_ops.c \
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h:
 
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
 
 /Users/tombo/esp/esp-idf/components/spi_flash/cache_utils.h:
 /Users/tombo/esp/esp-idf/components/spi_flash/./flash_ops.c:

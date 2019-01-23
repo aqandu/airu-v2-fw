@@ -22,6 +22,7 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/types.h \
@@ -29,19 +30,12 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_timer.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
- /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
- /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
@@ -53,6 +47,13 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
+ /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
+ /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portable.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/deprecated_definitions.h \
@@ -138,6 +139,8 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h:
@@ -152,8 +155,6 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
-
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h:
@@ -165,18 +166,6 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_timer.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
-
-/Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
-
-/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h:
-
-/Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
@@ -199,6 +188,20 @@ esp_timer.o: /Users/tombo/esp/esp-idf/components/esp32/esp_timer.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h:
+
+/Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
+
+/Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h:
 

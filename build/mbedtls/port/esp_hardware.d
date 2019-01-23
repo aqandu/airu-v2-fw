@@ -1,7 +1,7 @@
 port/esp_hardware.o: \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/esp_hardware.c \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
@@ -61,11 +61,12 @@ port/esp_hardware.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/entropy_poll.h
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
 
@@ -186,4 +187,6 @@ port/esp_hardware.o: \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
+
+/Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/entropy_poll.h:
 /Users/tombo/esp/esp-idf/components/mbedtls/port/esp_hardware.c:

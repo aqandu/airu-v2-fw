@@ -1,4 +1,4 @@
-mqtt_if.o: /Users/tombo/esp/airu-dev/main/mqtt_if.c \
+mqtt_if.o: /Users/tombo/esp/airu-v2-fw/main/mqtt_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
@@ -23,7 +23,7 @@ mqtt_if.o: /Users/tombo/esp/airu-dev/main/mqtt_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -64,7 +64,31 @@ mqtt_if.o: /Users/tombo/esp/airu-dev/main/mqtt_if.c \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/mqtt/esp-mqtt/include/mqtt_client.h \
  /Users/tombo/esp/esp-idf/components/mqtt/esp-mqtt/include/mqtt_config.h \
- /Users/tombo/esp/airu-dev/main/include/mqtt_if.h
+ /Users/tombo/esp/airu-v2-fw/main/include/ota_if.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portable.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/deprecated_definitions.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portmacro.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/specreg.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-core-state.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_crosscore_int.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_timer.h \
+ /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h \
+ /Users/tombo/esp/esp-idf/components/heap/include/multi_heap.h \
+ /Users/tombo/esp/esp-idf/components/soc/include/soc/soc_memory_layout.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portbenchmark.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/mpu_wrappers.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
@@ -114,7 +138,7 @@ mqtt_if.o: /Users/tombo/esp/airu-dev/main/mqtt_if.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -196,5 +220,53 @@ mqtt_if.o: /Users/tombo/esp/airu-dev/main/mqtt_if.c \
 
 /Users/tombo/esp/esp-idf/components/mqtt/esp-mqtt/include/mqtt_config.h:
 
-/Users/tombo/esp/airu-dev/main/include/mqtt_if.h:
-/Users/tombo/esp/airu-dev/main/./mqtt_if.c:
+/Users/tombo/esp/airu-v2-fw/main/include/ota_if.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/portable.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/deprecated_definitions.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/portmacro.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/specreg.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-core-state.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_crosscore_int.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_timer.h:
+
+/Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h:
+
+/Users/tombo/esp/esp-idf/components/heap/include/multi_heap.h:
+
+/Users/tombo/esp/esp-idf/components/soc/include/soc/soc_memory_layout.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/portbenchmark.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/mpu_wrappers.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/limits.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h:
+/Users/tombo/esp/airu-v2-fw/main/./mqtt_if.c:

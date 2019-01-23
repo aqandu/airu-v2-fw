@@ -20,6 +20,7 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
+ /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter_internal.h \
  /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
@@ -28,7 +29,7 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -50,13 +51,26 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/gpio.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_types.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_struct.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/rtc_io_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/io_mux_reg.h \
@@ -69,17 +83,7 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/touch_pad.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_intr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
@@ -91,8 +95,6 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portable.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/deprecated_definitions.h \
@@ -148,13 +150,15 @@ tcpip_adapter_lwip.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
+ /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_os_adapter.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_internal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/ethernetif.h \
  /Users/tombo/esp/esp-idf/components/lwip/include/apps/dhcpserver/dhcpserver_options.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h
 
@@ -198,6 +202,8 @@ tcpip_adapter_lwip.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
 
+/Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter_internal.h:
+
 /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
@@ -214,7 +220,7 @@ tcpip_adapter_lwip.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -258,6 +264,34 @@ tcpip_adapter_lwip.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h:
@@ -269,8 +303,6 @@ tcpip_adapter_lwip.o: \
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_reg.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_struct.h:
 
@@ -296,27 +328,7 @@ tcpip_adapter_lwip.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
 
-/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
-
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
 
@@ -339,10 +351,6 @@ tcpip_adapter_lwip.o: \
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h:
 
@@ -454,7 +462,13 @@ tcpip_adapter_lwip.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
+
+/Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_os_adapter.h:
 
@@ -465,8 +479,6 @@ tcpip_adapter_lwip.o: \
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/ethernetif.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/include/apps/dhcpserver/dhcpserver_options.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
 

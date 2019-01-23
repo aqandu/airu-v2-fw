@@ -35,7 +35,7 @@ pthread.o: /Users/tombo/esp/esp-idf/components/pthread/pthread.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -97,6 +97,7 @@ pthread.o: /Users/tombo/esp/esp-idf/components/pthread/pthread.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/pthread/pthread_internal.h \
  /Users/tombo/esp/esp-idf/components/pthread/include/esp_pthread.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h
 
@@ -172,7 +173,7 @@ pthread.o: /Users/tombo/esp/esp-idf/components/pthread/pthread.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -295,6 +296,8 @@ pthread.o: /Users/tombo/esp/esp-idf/components/pthread/pthread.c \
 /Users/tombo/esp/esp-idf/components/pthread/pthread_internal.h:
 
 /Users/tombo/esp/esp-idf/components/pthread/include/esp_pthread.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
 

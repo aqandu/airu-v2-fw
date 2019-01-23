@@ -1,6 +1,7 @@
 port/esp_mem.o: \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/esp_mem.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
@@ -21,9 +22,11 @@ port/esp_mem.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/heap/include/multi_heap.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h
+ /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
+
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h:
 
@@ -65,5 +68,5 @@ port/esp_mem.o: \
 
 /Users/tombo/esp/esp-idf/components/heap/include/multi_heap.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
 /Users/tombo/esp/esp-idf/components/mbedtls/port/esp_mem.c:

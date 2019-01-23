@@ -36,7 +36,7 @@ nghttp2/lib/nghttp2_hd.o: \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_mem.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_rcbuf.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_helper.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_debug.h
@@ -113,7 +113,7 @@ nghttp2/lib/nghttp2_hd.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 

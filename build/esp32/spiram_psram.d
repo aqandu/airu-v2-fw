@@ -1,5 +1,5 @@
 spiram_psram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram_psram.c \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
@@ -75,7 +75,7 @@ spiram_psram.o: /Users/tombo/esp/esp-idf/components/esp32/spiram_psram.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_struct.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 

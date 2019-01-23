@@ -1,7 +1,7 @@
 mbedtls/library/platform_util.o: \
  /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/library/platform_util.c \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
@@ -28,7 +28,7 @@ mbedtls/library/platform_util.o: \
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
 

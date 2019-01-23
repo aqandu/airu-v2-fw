@@ -34,7 +34,7 @@ port/esp32/freertos/sys_arch.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -108,6 +108,7 @@ port/esp32/freertos/sys_arch.o: \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/sys.h \
@@ -188,7 +189,7 @@ port/esp32/freertos/sys_arch.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -335,6 +336,8 @@ port/esp32/freertos/sys_arch.o: \
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 

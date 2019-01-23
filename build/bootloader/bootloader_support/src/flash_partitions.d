@@ -3,7 +3,7 @@ src/flash_partitions.o: \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
- /Users/tombo/esp/airu-dev/build/bootloader/../include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/bootloader/../include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
@@ -21,7 +21,7 @@ src/flash_partitions.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
 
-/Users/tombo/esp/airu-dev/build/bootloader/../include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/bootloader/../include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
 

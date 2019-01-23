@@ -16,7 +16,7 @@ dport_access.o: /Users/tombo/esp/esp-idf/components/esp32/dport_access.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/lock.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
@@ -129,7 +129,7 @@ dport_access.o: /Users/tombo/esp/esp-idf/components/esp32/dport_access.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 

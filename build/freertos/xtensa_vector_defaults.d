@@ -13,7 +13,7 @@ xtensa_vector_defaults.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
@@ -48,7 +48,7 @@ xtensa_vector_defaults.o: \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 

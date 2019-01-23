@@ -24,7 +24,7 @@ port/esp_bignum.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/malloc.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -33,14 +33,9 @@ port/esp_bignum.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
- /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/bignum.h \
- /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/bignum.h \
- /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
- /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
- /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/bigint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/rom/bigint.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/hwcrypto_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
@@ -77,6 +72,11 @@ port/esp_bignum.o: \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/bignum.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/bignum.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
+ /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_access.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_dport_access.h \
@@ -101,7 +101,9 @@ port/esp_bignum.o: \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
+ /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h:
 
@@ -151,7 +153,7 @@ port/esp_bignum.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -169,21 +171,11 @@ port/esp_bignum.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 
-/Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/bignum.h:
-
-/Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/bignum.h:
-
-/Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
-
-/Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
-
-/Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h:
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/bigint.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/rom/bigint.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/hwcrypto_reg.h:
 
@@ -257,6 +249,16 @@ port/esp_bignum.o: \
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
 
+/Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/bignum.h:
+
+/Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/bignum.h:
+
+/Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
+
+/Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
+
+/Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h:
+
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_reg.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_access.h:
@@ -306,4 +308,8 @@ port/esp_bignum.o: \
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
+
+/Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h:
 /Users/tombo/esp/esp-idf/components/mbedtls/port/esp_bignum.c:

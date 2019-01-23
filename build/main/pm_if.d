@@ -1,4 +1,4 @@
-pm_if.o: /Users/tombo/esp/airu-dev/main/pm_if.c \
+pm_if.o: /Users/tombo/esp/airu-v2-fw/main/pm_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
@@ -23,7 +23,7 @@ pm_if.o: /Users/tombo/esp/airu-dev/main/pm_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -98,7 +98,7 @@ pm_if.o: /Users/tombo/esp/airu-dev/main/pm_if.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_channel.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
- /Users/tombo/esp/airu-dev/main/include/pm_if.h
+ /Users/tombo/esp/airu-v2-fw/main/include/pm_if.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h:
 
@@ -148,7 +148,7 @@ pm_if.o: /Users/tombo/esp/airu-dev/main/pm_if.c \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -298,5 +298,5 @@ pm_if.o: /Users/tombo/esp/airu-dev/main/pm_if.c \
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
 
-/Users/tombo/esp/airu-dev/main/include/pm_if.h:
-/Users/tombo/esp/airu-dev/main/./pm_if.c:
+/Users/tombo/esp/airu-v2-fw/main/include/pm_if.h:
+/Users/tombo/esp/airu-v2-fw/main/./pm_if.c:

@@ -22,7 +22,7 @@ esp_spiffs.o: /Users/tombo/esp/esp-idf/components/spiffs/esp_spiffs.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -107,6 +107,8 @@ esp_spiffs.o: /Users/tombo/esp/esp-idf/components/spiffs/esp_spiffs.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/time.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/spi_flash.h \
@@ -159,7 +161,7 @@ esp_spiffs.o: /Users/tombo/esp/esp-idf/components/spiffs/esp_spiffs.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -328,6 +330,10 @@ esp_spiffs.o: /Users/tombo/esp/esp-idf/components/spiffs/esp_spiffs.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/time.h:
 
 /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
 

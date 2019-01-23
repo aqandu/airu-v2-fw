@@ -1,4 +1,4 @@
-wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
+wifi_manager.o: /Users/tombo/esp/airu-v2-fw/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
@@ -27,7 +27,7 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/gpio.h \
@@ -84,7 +84,12 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_loop.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_interface.h \
@@ -107,6 +112,7 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/arch.h \
@@ -115,9 +121,6 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/inttypes.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
@@ -136,7 +139,6 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
  /Users/tombo/esp/esp-idf/components/mdns/include/mdns.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/api.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/netbuf.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/pbuf.h \
@@ -146,11 +148,11 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/inet.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/sockets.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/errno.h \
- /Users/tombo/esp/airu-dev/main/include/json.h \
- /Users/tombo/esp/airu-dev/main/include/wifi_manager.h \
- /Users/tombo/esp/airu-dev/main/include/http_server_if.h \
- /Users/tombo/esp/airu-dev/main/include/mqtt_if.h \
- /Users/tombo/esp/airu-dev/main/include/time_if.h
+ /Users/tombo/esp/airu-v2-fw/main/include/json.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/wifi_manager.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/http_server_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/time_if.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h:
 
@@ -208,7 +210,7 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -322,7 +324,17 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_loop.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h:
 
@@ -368,6 +380,8 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h:
@@ -383,12 +397,6 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h:
 
@@ -426,8 +434,6 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 
 /Users/tombo/esp/esp-idf/components/mdns/include/mdns.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
-
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/api.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/netbuf.h:
@@ -446,13 +452,13 @@ wifi_manager.o: /Users/tombo/esp/airu-dev/main/wifi_manager.c \
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/errno.h:
 
-/Users/tombo/esp/airu-dev/main/include/json.h:
+/Users/tombo/esp/airu-v2-fw/main/include/json.h:
 
-/Users/tombo/esp/airu-dev/main/include/wifi_manager.h:
+/Users/tombo/esp/airu-v2-fw/main/include/wifi_manager.h:
 
-/Users/tombo/esp/airu-dev/main/include/http_server_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/http_server_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/mqtt_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/time_if.h:
-/Users/tombo/esp/airu-dev/main/./wifi_manager.c:
+/Users/tombo/esp/airu-v2-fw/main/include/time_if.h:
+/Users/tombo/esp/airu-v2-fw/main/./wifi_manager.c:

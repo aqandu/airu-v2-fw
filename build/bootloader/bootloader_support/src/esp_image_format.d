@@ -6,11 +6,16 @@ src/esp_image_format.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
- /Users/tombo/esp/airu-dev/build/bootloader/../include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/bootloader/../include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_secure_boot.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/efuse_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
@@ -20,7 +25,8 @@ src/esp_image_format.o: \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_flash.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_random.h \
- /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_util.h
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/rtc.h:
 
@@ -34,6 +40,16 @@ src/esp_image_format.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
 
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
+
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h:
@@ -42,7 +58,7 @@ src/esp_image_format.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
 
-/Users/tombo/esp/airu-dev/build/bootloader/../include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/bootloader/../include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_secure_boot.h:
 
@@ -63,4 +79,6 @@ src/esp_image_format.o: \
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_random.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_util.h:
 /Users/tombo/esp/esp-idf/components/bootloader_support/src/esp_image_format.c:

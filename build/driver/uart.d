@@ -18,12 +18,12 @@ uart.o: /Users/tombo/esp/esp-idf/components/driver/uart.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_intr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -139,6 +139,8 @@ uart.o: /Users/tombo/esp/esp-idf/components/driver/uart.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_intr.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
@@ -148,8 +150,6 @@ uart.o: /Users/tombo/esp/esp-idf/components/driver/uart.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 

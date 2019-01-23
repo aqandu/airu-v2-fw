@@ -34,9 +34,12 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/unistd.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/unistd.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -94,7 +97,6 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/dirent.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/dirent.h \
@@ -115,7 +117,9 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/esp_ringbuf/include/freertos/ringbuf.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_channel.h \
- /Users/tombo/esp/esp-idf/components/driver/include/driver/uart_select.h
+ /Users/tombo/esp/esp-idf/components/driver/include/driver/uart_select.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/uart.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
@@ -187,11 +191,17 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/unistd.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -307,8 +317,6 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
-
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/dirent.h:
@@ -350,4 +358,8 @@ vfs_uart.o: /Users/tombo/esp/esp-idf/components/vfs/vfs_uart.c \
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_channel.h:
 
 /Users/tombo/esp/esp-idf/components/driver/include/driver/uart_select.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/uart.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
 /Users/tombo/esp/esp-idf/components/vfs/./vfs_uart.c:

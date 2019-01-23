@@ -160,6 +160,7 @@ $(document).ready(function(){
 	refreshAP();
 	startCheckStatusInterval();
 	startRefreshAPInterval();
+	lastRegistered();
 
 });
 
@@ -218,14 +219,92 @@ function performRegistration(){
 	var name = $( "#reg_name" ).val();
 	var email = $( "#reg_email" ).val();
 
-	$.ajax({
-		url: '/register.json',
-		dataType: 'json',
-		method: 'POST',
-		cache: false,
-		headers: { 'X-Custom-name': name, 'X-Custom-email': email },
-		data: { 'timestamp': Date.now()}
+	name = CleanName(name);
+	if(name.length === 0) {
+		return;
+	}
+	if(validate(email)){
+		$.ajax({
+			url: '/register.json',
+			dataType: 'json',
+			method: 'POST',
+			cache: false,
+			headers: {'X-Custom-name': name, 'X-Custom-email': email },
+			data: {'timestamp': Date.now()}
+		});
+		lastRegistered();
+	}
+}
+
+function lastRegistered(){
+	$.getJSON( "/register.json", function( data ) {
+		var h = "";
+		if(data['name'].length > 0){
+			console.log("got data");
+			h += '<h3>This device was last registered to {0}</h2>\n'.format(data['name']);
+		}
+		else {
+			h += '<h3>This device is currently unregistered</h2>.\n'
+		}
+		$( "#last-reg" ).html(h);
 	});
+}
+
+function validateName(name) {
+	var res = name.split(" ");
+	// check for at least 2 names
+	if (res.length < 2) {
+		return false;
+	}
+	// check that last name is valid
+	if (res[1].length < 2) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+function CleanName() {
+  var $result = $("#name_result");
+  var name = $("#reg_name").val();
+  $result.text("");
+
+  if (!validateName(name)) {
+
+    $result.text("Please include both first and last name.");
+    $result.css("color", "red");
+
+    return "";
+  }
+  else {
+  	var res = name.split(' ');
+  	var newarr = [];
+  	for(var x = 0; x < res.length; x++) {
+  		newarr.push(res[x].charAt(0).toUpperCase() + res[x].slice(1));
+  	}
+    return newarr.join(' ');
+  }
+}
+
+function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validate() {
+  var $result = $("#email_result");
+  var email = $("#reg_email").val();
+  $result.text("");
+
+  if (!validateEmail(email)) {
+
+    $result.text(email + " is not a valid email address.");
+    $result.css("color", "red");
+  } else {
+    return true;
+  }
+  return false;
 }
 
 
@@ -255,7 +334,6 @@ function refreshAP(){
 			});
 			apList = data;
 			refreshAPHTML(apList);
-
 		}
 	});
 }
@@ -268,8 +346,8 @@ function refreshAPHTML(data){
 	});
 
 	$( "#wifi-list" ).html(h)
+	lastRegistered();
 }
-
 
 
 

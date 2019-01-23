@@ -38,7 +38,7 @@ src/httpd_main.o: \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
@@ -208,7 +208,7 @@ src/httpd_main.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h:
 

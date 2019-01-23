@@ -20,7 +20,7 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -81,6 +81,10 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/nghttp/port/include/http_parser.h \
+ /Users/tombo/esp/esp-idf/components/esp_http_server/include/esp_http_server.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
@@ -91,7 +95,11 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_interface.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
@@ -111,6 +119,7 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/arch.h \
@@ -119,11 +128,6 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/inttypes.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
@@ -142,7 +146,6 @@ esp_err_to_name.o: \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wps.h \
- /Users/tombo/esp/esp-idf/components/http_server/include/http_server.h \
  /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
@@ -185,7 +188,7 @@ esp_err_to_name.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -307,6 +310,14 @@ esp_err_to_name.o: \
 
 /Users/tombo/esp/esp-idf/components/nghttp/port/include/http_parser.h:
 
+/Users/tombo/esp/esp-idf/components/esp_http_server/include/esp_http_server.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/limits.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h:
+
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
@@ -327,7 +338,15 @@ esp_err_to_name.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h:
 
@@ -367,6 +386,8 @@ esp_err_to_name.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h:
@@ -382,16 +403,6 @@ esp_err_to_name.o: \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/limits.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h:
 
@@ -428,8 +439,6 @@ esp_err_to_name.o: \
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wps.h:
-
-/Users/tombo/esp/esp-idf/components/http_server/include/http_server.h:
 
 /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h:
 /Users/tombo/esp/esp-idf/components/esp32/./esp_err_to_name.c:

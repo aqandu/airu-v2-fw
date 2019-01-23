@@ -22,7 +22,7 @@ bt.o: /Users/tombo/esp/esp-idf/components/bt/bt.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
@@ -87,6 +87,7 @@ bt.o: /Users/tombo/esp/esp-idf/components/bt/bt.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portmacro.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/core-macros.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_phy_init.h \
  /Users/tombo/esp/esp-idf/components/bt/include/esp_bt.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
@@ -150,7 +151,7 @@ bt.o: /Users/tombo/esp/esp-idf/components/bt/bt.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_caps.h:
 
@@ -279,6 +280,8 @@ bt.o: /Users/tombo/esp/esp-idf/components/bt/bt.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/core-macros.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_phy_init.h:
 

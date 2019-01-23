@@ -28,7 +28,7 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/gpio.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
@@ -76,6 +76,10 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/gpio.h \
@@ -89,8 +93,6 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_intr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
@@ -102,7 +104,6 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/portable.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/deprecated_definitions.h \
@@ -128,13 +129,16 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
  /Users/tombo/esp/esp-idf/components/lwip/include/apps/dhcpserver/dhcpserver.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task_wdt.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/ethernet/include/esp_eth.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_pm.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp32/pm.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_spiram.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h \
  /Users/tombo/esp/esp-idf/components/ethernet/emac_common.h \
@@ -202,7 +206,7 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -298,6 +302,14 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h:
@@ -324,10 +336,6 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h:
 
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
-
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
@@ -349,8 +357,6 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/projdefs.h:
 
@@ -402,7 +408,11 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task_wdt.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h:
 
@@ -415,6 +425,8 @@ emac_main.o: /Users/tombo/esp/esp-idf/components/ethernet/emac_main.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_pm.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp32/pm.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_spiram.h:
 
 /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h:
 

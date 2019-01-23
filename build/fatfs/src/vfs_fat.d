@@ -35,9 +35,12 @@ src/vfs_fat.o: /Users/tombo/esp/esp-idf/components/fatfs/src/vfs_fat.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/time.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -92,7 +95,6 @@ src/vfs_fat.o: /Users/tombo/esp/esp-idf/components/fatfs/src/vfs_fat.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
@@ -181,11 +183,17 @@ src/vfs_fat.o: /Users/tombo/esp/esp-idf/components/fatfs/src/vfs_fat.c \
 
 /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -294,8 +302,6 @@ src/vfs_fat.o: /Users/tombo/esp/esp-idf/components/fatfs/src/vfs_fat.c \
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h:
 

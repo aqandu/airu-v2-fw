@@ -134,6 +134,15 @@ extern "C" {
  */
 #define JSON_IP_INFO_SIZE 150
 
+/**
+ * @brief Define the maximum length in bytes of a JSON representation of the user's First Name, Last Name, and Email
+ */
+#define JSON_REG_NAME_SIZE 		64
+#define JSON_REG_EMAIL_SIZE 	254
+#define JSON_MAP_VIS_SIZE		22
+#define JSON_MAC_ADR_SIZE		29
+#define JSON_REG_INFO_SIZE 		(JSON_REG_NAME_SIZE + JSON_REG_EMAIL_SIZE + JSON_MAP_VIS_SIZE + JSON_MAC_ADR_SIZE)
+
 
 
 typedef enum update_reason_code_t {
@@ -159,6 +168,13 @@ struct wifi_settings_t{
 };
 extern struct wifi_settings_t wifi_settings;
 
+struct registration_info_t{
+	char name[JSON_REG_NAME_SIZE];
+	char email[JSON_REG_EMAIL_SIZE];
+	char mac[12];
+	bool vis;
+};
+extern struct registration_info_t reg_info;
 
 /**
  * Frees up all memory allocated by the wifi_manager and kill the task.
@@ -178,6 +194,7 @@ void wifi_manager( void * pvParameters );
 
 char* wifi_manager_get_ap_list_json();
 char* wifi_manager_get_ip_info_json();
+char* wifi_manager_get_reg_info_json();
 
 
 
@@ -268,6 +285,29 @@ void wifi_manager_generate_acess_points_json();
  * @note This is not thread-safe and should be called only if wifi_manager_lock_json_buffer call is successful.
  */
 void wifi_manager_clear_access_points_json();
+
+/**
+ * @brief Generates the registration name and email to display over HTTP
+ * @note This is not thread-safe and should be called only if wifi_manager_lcok_json_buffer call is successful.
+ */
+void wifi_manager_generate_reg_info_json();
+
+/**
+ * @brief Clear the registration info.
+ * @note This is not thread-safe and should be called only if wifi_manager_lock_json_buffer call is successful.
+ */
+void wifi_manager_clear_reg_info_json();
+
+/**
+ * @brief fetch registration info in the flash ram storage.
+ * @return true if a previously saved info was found, false otherwise.
+ */
+bool wifi_manager_fetch_reg_config();
+
+/**
+ * @brief saves the current registration info to flash ram storage.
+ */
+esp_err_t wifi_manager_save_reg_config(char* name, size_t szn, char* email, size_t sze);
 
 /**
  * @brief Check WIFI_MANAGER_WIFI_CONNECTED_BIT to see if we have an IP address

@@ -17,6 +17,7 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/types.h \
@@ -24,7 +25,6 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -109,7 +109,9 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_interface.h \
@@ -132,6 +134,7 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/arch.h \
@@ -152,6 +155,8 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs_dev.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/dirent.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/dirent.h \
@@ -175,7 +180,11 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
  /Users/tombo/esp/esp-idf/components/esp32/pm_impl.h \
  /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/trax.h \
  /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/eri.h \
- /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/xtensa-debug-module.h
+ /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/xtensa-debug-module.h \
+ /Users/tombo/esp/esp-idf/components/app_update/include/esp_ota_ops.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 
@@ -213,6 +222,8 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdio.h:
@@ -226,8 +237,6 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -397,7 +406,11 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h:
 
@@ -443,6 +456,8 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h:
@@ -482,6 +497,10 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs_dev.h:
 
 /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h:
 
@@ -530,4 +549,12 @@ cpu_start.o: /Users/tombo/esp/esp-idf/components/esp32/cpu_start.c \
 /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/eri.h:
 
 /Users/tombo/esp/esp-idf/components/xtensa-debug-module/include/xtensa-debug-module.h:
+
+/Users/tombo/esp/esp-idf/components/app_update/include/esp_ota_ops.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
 /Users/tombo/esp/esp-idf/components/esp32/./cpu_start.c:

@@ -16,19 +16,19 @@ locks.o: /Users/tombo/esp/esp-idf/components/newlib/locks.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
@@ -118,6 +118,8 @@ locks.o: /Users/tombo/esp/esp-idf/components/newlib/locks.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
@@ -126,23 +128,21 @@ locks.o: /Users/tombo/esp/esp-idf/components/newlib/locks.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
 
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
 

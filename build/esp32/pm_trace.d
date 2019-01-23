@@ -1,6 +1,6 @@
 pm_trace.o: /Users/tombo/esp/esp-idf/components/esp32/pm_trace.c \
  /Users/tombo/esp/esp-idf/components/esp32/pm_trace.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/gpio.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
@@ -44,7 +44,7 @@ pm_trace.o: /Users/tombo/esp/esp-idf/components/esp32/pm_trace.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/pm_trace.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/driver/include/driver/gpio.h:
 

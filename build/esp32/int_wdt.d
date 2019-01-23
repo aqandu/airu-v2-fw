@@ -1,5 +1,5 @@
 int_wdt.o: /Users/tombo/esp/esp-idf/components/esp32/int_wdt.c \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h \
@@ -90,7 +90,7 @@ int_wdt.o: /Users/tombo/esp/esp-idf/components/esp32/int_wdt.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_int_wdt.h
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 

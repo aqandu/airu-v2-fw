@@ -1,4 +1,4 @@
-main.o: /Users/tombo/esp/airu-dev/main/main.c \
+main.o: /Users/tombo/esp/airu-v2-fw/main/main.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -27,7 +27,7 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_types.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_reg.h \
@@ -103,7 +103,9 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_interface.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
@@ -123,6 +125,7 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/arch.h \
@@ -150,7 +153,6 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
  /Users/tombo/esp/esp-idf/components/mdns/include/mdns.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/api.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/netbuf.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/pbuf.h \
@@ -160,12 +162,16 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/inet.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/sockets.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/errno.h \
- /Users/tombo/esp/airu-dev/main/include/http_server_if.h \
- /Users/tombo/esp/airu-dev/main/include/wifi_manager.h \
- /Users/tombo/esp/airu-dev/main/include/pm_if.h \
- /Users/tombo/esp/airu-dev/main/include/mqtt_if.h \
- /Users/tombo/esp/airu-dev/main/include/hdc1080_if.h \
- /Users/tombo/esp/airu-dev/main/include/mics4514_if.h
+ /Users/tombo/esp/airu-v2-fw/main/include/http_server_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/wifi_manager.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/pm_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/hdc1080_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/mics4514_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/time_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/gps_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/ota_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/led_if.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -223,7 +229,7 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -375,7 +381,11 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h:
 
@@ -414,6 +424,8 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 
@@ -469,8 +481,6 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
 
 /Users/tombo/esp/esp-idf/components/mdns/include/mdns.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
-
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/api.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/netbuf.h:
@@ -489,15 +499,23 @@ main.o: /Users/tombo/esp/airu-dev/main/main.c \
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/errno.h:
 
-/Users/tombo/esp/airu-dev/main/include/http_server_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/http_server_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/wifi_manager.h:
+/Users/tombo/esp/airu-v2-fw/main/include/wifi_manager.h:
 
-/Users/tombo/esp/airu-dev/main/include/pm_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/pm_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/mqtt_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/mqtt_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/hdc1080_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/hdc1080_if.h:
 
-/Users/tombo/esp/airu-dev/main/include/mics4514_if.h:
-/Users/tombo/esp/airu-dev/main/./main.c:
+/Users/tombo/esp/airu-v2-fw/main/include/mics4514_if.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/time_if.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/gps_if.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/ota_if.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/led_if.h:
+/Users/tombo/esp/airu-v2-fw/main/./main.c:

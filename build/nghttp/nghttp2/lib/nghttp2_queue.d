@@ -31,7 +31,7 @@ nghttp2/lib/nghttp2_queue.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/nghttp/port/include/nghttp2/nghttp2ver.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h
 
 /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_queue.h:
@@ -96,7 +96,7 @@ nghttp2/lib/nghttp2_queue.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_queue.c:

@@ -1,23 +1,25 @@
-ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
- /Users/tombo/esp/airu-dev/main/include/ota_if.h \
- /Users/tombo/esp/airu-dev/main/include/app_utils.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
+ota_if.o: /Users/tombo/esp/airu-v2-fw/main/ota_if.c \
+ /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/config.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_types.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_types.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/lock.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/ota_if.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -29,8 +31,6 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
@@ -78,12 +78,24 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/app_utils.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_interface.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
+ /Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h \
  /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_types.h \
@@ -103,6 +115,7 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
  /Users/tombo/esp/esp-idf/components/vfs/include/sys/ioctl.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/select.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h \
+ /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/arch.h \
@@ -111,11 +124,6 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
- /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/inttypes.h \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
@@ -124,40 +132,23 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
  /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/def.h \
  /Users/tombo/esp/esp-idf/components/lwip/include/apps/dhcpserver/dhcpserver.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_os_adapter.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h \
- /Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_loop.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/app_update/include/esp_ota_ops.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
  /Users/tombo/esp/esp-idf/components/esp_http_client/include/esp_http_client.h \
  /Users/tombo/esp/esp-idf/components/nghttp/port/include/http_parser.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
  /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h \
  /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs_flash.h \
  /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h
 
-/Users/tombo/esp/airu-dev/main/include/ota_if.h:
-
-/Users/tombo/esp/airu-dev/main/include/app_utils.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h:
+/Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h:
 
@@ -167,17 +158,37 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/_types.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/_types.h:
 
+/Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h:
+
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/lock.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/ota_if.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -200,10 +211,6 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h:
 
@@ -299,6 +306,22 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/limits.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
+
+/Users/tombo/esp/airu-v2-fw/main/include/app_utils.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi.h:
+
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h:
@@ -309,7 +332,15 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_crypto_types.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_event.h:
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
+
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
+
+/Users/tombo/esp/esp-idf/components/esp_event/include/esp_event_base.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_event_legacy.h:
 
 /Users/tombo/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h:
 
@@ -349,6 +380,8 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_task.h:
 
+/Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
+
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/netif/dhcp_state.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/lwip/src/include/lwip/debug.h:
@@ -364,16 +397,6 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/sys_arch.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
-
-/Users/tombo/esp/esp-idf/components/newlib/include/limits.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/list.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/semphr.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
 /Users/tombo/esp/esp-idf/components/lwip/port/esp32/include/arch/vfs_lwip.h:
 
@@ -391,12 +414,6 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_wifi_os_adapter.h:
 
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/event_groups.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/timers.h:
-
-/Users/tombo/esp/esp-idf/components/freertos/include/freertos/task.h:
-
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_event_loop.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
@@ -409,17 +426,21 @@ ota_if.o: /Users/tombo/esp/airu-dev/main/ota_if.c \
 
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h:
 
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
+
 /Users/tombo/esp/esp-idf/components/esp_http_client/include/esp_http_client.h:
 
 /Users/tombo/esp/esp-idf/components/nghttp/port/include/http_parser.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
-
 /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h:
 
 /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs_flash.h:
 
 /Users/tombo/esp/esp-idf/components/nvs_flash/include/nvs.h:
-/Users/tombo/esp/airu-dev/main/./ota_if.c:
+/Users/tombo/esp/airu-v2-fw/main/./ota_if.c:

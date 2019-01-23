@@ -1,7 +1,7 @@
 libsodium/src/libsodium/randombytes/randombytes.o: \
  /Users/tombo/esp/esp-idf/components/libsodium/libsodium/src/libsodium/randombytes/randombytes.c \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -36,7 +36,7 @@ libsodium/src/libsodium/randombytes/randombytes.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 

@@ -22,7 +22,7 @@ port/crypto_hash_mbedtls/crypto_hash_sha512_mbedtls.o: \
  /Users/tombo/esp/esp-idf/components/libsodium/libsodium/src/libsodium/include/sodium/export.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/sha512.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
  /Users/tombo/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/limits.h \
@@ -73,7 +73,7 @@ port/crypto_hash_mbedtls/crypto_hash_sha512_mbedtls.o: \
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
 

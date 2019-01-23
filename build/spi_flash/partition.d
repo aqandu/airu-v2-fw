@@ -16,7 +16,7 @@ partition.o: /Users/tombo/esp/esp-idf/components/spi_flash/partition.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
@@ -43,6 +43,8 @@ partition.o: /Users/tombo/esp/esp-idf/components/spi_flash/partition.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
@@ -79,7 +81,7 @@ partition.o: /Users/tombo/esp/esp-idf/components/spi_flash/partition.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -132,6 +134,10 @@ partition.o: /Users/tombo/esp/esp-idf/components/spi_flash/partition.c \
 /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h:
 /Users/tombo/esp/esp-idf/components/spi_flash/./partition.c:

@@ -1,7 +1,7 @@
 src/bootloader_common.o: \
  /Users/tombo/esp/esp-idf/components/bootloader_support/src/bootloader_common.c \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -49,15 +49,19 @@ src/bootloader_common.o: \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_flash.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h \
- /Users/tombo/esp/esp-idf/components/soc/include/soc/gpio_periph.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/io_mux_reg.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
- /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h
+ /Users/tombo/esp/esp-idf/components/soc/include/soc/gpio_periph.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/io_mux_reg.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/param.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -153,13 +157,21 @@ src/bootloader_common.o: \
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_common.h:
 
-/Users/tombo/esp/esp-idf/components/soc/include/soc/gpio_periph.h:
-
-/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/io_mux_reg.h:
-
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
 
+/Users/tombo/esp/esp-idf/components/soc/include/soc/gpio_periph.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/io_mux_reg.h:
+
 /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_sha.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/param.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 /Users/tombo/esp/esp-idf/components/bootloader_support/src/bootloader_common.c:

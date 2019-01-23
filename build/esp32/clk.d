@@ -20,7 +20,7 @@ clk.o: /Users/tombo/esp/esp-idf/components/esp32/clk.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
@@ -66,7 +66,15 @@ clk.o: /Users/tombo/esp/esp-idf/components/esp32/clk.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/core-macros.h \
- /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_clock.h
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_clock.h \
+ /Users/tombo/esp/esp-idf/components/driver/include/driver/spi_common.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/lldesc.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h \
+ /Users/tombo/esp/esp-idf/components/soc/include/soc/spi_periph.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_pins.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_reg.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_struct.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_sig_map.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
 
@@ -110,7 +118,7 @@ clk.o: /Users/tombo/esp/esp-idf/components/esp32/clk.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
@@ -203,4 +211,20 @@ clk.o: /Users/tombo/esp/esp-idf/components/esp32/clk.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/core-macros.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include/bootloader_clock.h:
+
+/Users/tombo/esp/esp-idf/components/driver/include/driver/spi_common.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/lldesc.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/rom/queue.h:
+
+/Users/tombo/esp/esp-idf/components/soc/include/soc/spi_periph.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_pins.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_reg.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/spi_struct.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/gpio_sig_map.h:
 /Users/tombo/esp/esp-idf/components/esp32/./clk.c:

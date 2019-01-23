@@ -1,4 +1,4 @@
-hdc1080_if.o: /Users/tombo/esp/airu-dev/main/hdc1080_if.c \
+hdc1080_if.o: /Users/tombo/esp/airu-v2-fw/main/hdc1080_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -23,14 +23,14 @@ hdc1080_if.o: /Users/tombo/esp/airu-dev/main/hdc1080_if.c \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
- /Users/tombo/esp/airu-dev/main/include/hdc1080_if.h \
+ /Users/tombo/esp/airu-v2-fw/main/include/hdc1080_if.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_sleep.h \
@@ -135,7 +135,7 @@ hdc1080_if.o: /Users/tombo/esp/airu-dev/main/hdc1080_if.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h:
 
@@ -149,7 +149,7 @@ hdc1080_if.o: /Users/tombo/esp/airu-dev/main/hdc1080_if.c \
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h:
 
-/Users/tombo/esp/airu-dev/main/include/hdc1080_if.h:
+/Users/tombo/esp/airu-v2-fw/main/include/hdc1080_if.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_system.h:
 
@@ -260,4 +260,4 @@ hdc1080_if.o: /Users/tombo/esp/airu-dev/main/hdc1080_if.c \
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h:
 
 /Users/tombo/esp/esp-idf/components/esp_ringbuf/include/freertos/ringbuf.h:
-/Users/tombo/esp/airu-dev/main/./hdc1080_if.c:
+/Users/tombo/esp/airu-v2-fw/main/./hdc1080_if.c:

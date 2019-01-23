@@ -7,17 +7,22 @@ src/bootloader_random.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/features.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/wdev_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/config.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_types.h \
@@ -36,11 +41,6 @@ src/bootloader_random.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_dport_access.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_reg.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/specreg.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-core-state.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
@@ -90,6 +90,18 @@ src/bootloader_random.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
 
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
+
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/wdev_reg.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
@@ -98,7 +110,7 @@ src/bootloader_random.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -109,8 +121,6 @@ src/bootloader_random.o: \
 /Users/tombo/esp/esp-idf/components/newlib/include/newlib.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/config.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-isa.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h:
 
@@ -147,16 +157,6 @@ src/bootloader_random.o: \
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/uart_reg.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/specreg.h:
 

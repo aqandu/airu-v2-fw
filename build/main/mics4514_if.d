@@ -1,4 +1,4 @@
-mics4514_if.o: /Users/tombo/esp/airu-dev/main/mics4514_if.c \
+mics4514_if.o: /Users/tombo/esp/airu-v2-fw/main/mics4514_if.c \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/adc.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
@@ -22,7 +22,7 @@ mics4514_if.o: /Users/tombo/esp/airu-dev/main/mics4514_if.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -47,7 +47,7 @@ mics4514_if.o: /Users/tombo/esp/airu-dev/main/mics4514_if.c \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/tombo/esp/esp-idf/components/esp_adc_cal/include/esp_adc_cal.h \
- /Users/tombo/esp/airu-dev/main/include/mics4514_if.h
+ /Users/tombo/esp/airu-v2-fw/main/include/mics4514_if.h
 
 /Users/tombo/esp/esp-idf/components/driver/include/driver/adc.h:
 
@@ -95,7 +95,7 @@ mics4514_if.o: /Users/tombo/esp/airu-dev/main/mics4514_if.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -145,5 +145,5 @@ mics4514_if.o: /Users/tombo/esp/airu-dev/main/mics4514_if.c \
 
 /Users/tombo/esp/esp-idf/components/esp_adc_cal/include/esp_adc_cal.h:
 
-/Users/tombo/esp/airu-dev/main/include/mics4514_if.h:
-/Users/tombo/esp/airu-dev/main/./mics4514_if.c:
+/Users/tombo/esp/airu-v2-fw/main/include/mics4514_if.h:
+/Users/tombo/esp/airu-v2-fw/main/./mics4514_if.c:

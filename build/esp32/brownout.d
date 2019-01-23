@@ -22,13 +22,18 @@ brownout.o: /Users/tombo/esp/esp-idf/components/esp32/brownout.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/rtc_cntl_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
@@ -52,14 +57,9 @@ brownout.o: /Users/tombo/esp/esp-idf/components/esp32/brownout.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_intr.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/ets_sys.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h \
  /Users/tombo/esp/esp-idf/components/driver/include/driver/rtc_cntl.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
@@ -126,7 +126,7 @@ brownout.o: /Users/tombo/esp/esp-idf/components/esp32/brownout.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
 
@@ -139,6 +139,16 @@ brownout.o: /Users/tombo/esp/esp-idf/components/esp32/brownout.c \
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/cpu.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/rtc_cntl_reg.h:
 
@@ -186,21 +196,11 @@ brownout.o: /Users/tombo/esp/esp-idf/components/esp32/brownout.c \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_api.h:
 
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h:
-
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/tie.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/system.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtensa-versions.h:
-
-/Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core-matmap.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/touch_channel.h:
 

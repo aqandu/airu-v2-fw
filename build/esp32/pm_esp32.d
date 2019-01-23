@@ -22,6 +22,7 @@ pm_esp32.o: /Users/tombo/esp/esp-idf/components/esp32/pm_esp32.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
@@ -31,7 +32,6 @@ pm_esp32.o: /Users/tombo/esp/esp-idf/components/esp32/pm_esp32.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/sched.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_pm.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp32/pm.h \
@@ -144,6 +144,8 @@ pm_esp32.o: /Users/tombo/esp/esp-idf/components/esp32/pm_esp32.c \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
 
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
+
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h:
@@ -161,8 +163,6 @@ pm_esp32.o: /Users/tombo/esp/esp-idf/components/esp32/pm_esp32.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
-
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 

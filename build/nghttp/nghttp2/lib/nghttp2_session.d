@@ -43,7 +43,7 @@ nghttp2/lib/nghttp2_session.o: \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_pq.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_callbacks.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_helper.h \
  /Users/tombo/esp/esp-idf/components/nghttp/nghttp2/lib/nghttp2_net.h \
@@ -138,7 +138,7 @@ nghttp2/lib/nghttp2_session.o: \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 

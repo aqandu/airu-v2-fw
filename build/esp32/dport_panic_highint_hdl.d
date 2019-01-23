@@ -14,7 +14,7 @@ dport_panic_highint_hdl.o: \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_context.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_panic.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/dport_reg.h \
  /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h
@@ -47,7 +47,7 @@ dport_panic_highint_hdl.o: \
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_panic.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/soc.h:
 

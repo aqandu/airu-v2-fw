@@ -29,7 +29,7 @@ src/esp_https_ota.o: \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/hal.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/config/core.h \
@@ -84,6 +84,9 @@ src/esp_https_ota.o: \
  /Users/tombo/esp/esp-idf/components/app_update/include/esp_ota_ops.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h \
  /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h \
+ /Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log_internal.h
 
@@ -145,7 +148,7 @@ src/esp_https_ota.o: \
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOSConfig.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/xtensa_config.h:
 
@@ -254,6 +257,12 @@ src/esp_https_ota.o: \
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_partition.h:
 
 /Users/tombo/esp/esp-idf/components/spi_flash/include/esp_spi_flash.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_image_format.h:
+
+/Users/tombo/esp/esp-idf/components/bootloader_support/include/esp_flash_partitions.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_flash_data_types.h:
 
 /Users/tombo/esp/esp-idf/components/log/include/esp_log.h:
 

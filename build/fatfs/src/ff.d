@@ -10,7 +10,7 @@ src/ff.o: /Users/tombo/esp/esp-idf/components/fatfs/src/ff.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/reent.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -112,7 +112,7 @@ src/ff.o: /Users/tombo/esp/esp-idf/components/fatfs/src/ff.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/freertos/include/freertos/FreeRTOS.h:
 

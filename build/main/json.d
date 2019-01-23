@@ -1,4 +1,4 @@
-json.o: /Users/tombo/esp/airu-dev/main/json.c \
+json.o: /Users/tombo/esp/airu-v2-fw/main/json.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/ieeefp.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/_ansi.h \
@@ -22,7 +22,7 @@ json.o: /Users/tombo/esp/airu-dev/main/json.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
- /Users/tombo/esp/airu-dev/main/include/json.h
+ /Users/tombo/esp/airu-v2-fw/main/include/json.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -70,5 +70,5 @@ json.o: /Users/tombo/esp/airu-dev/main/json.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
 
-/Users/tombo/esp/airu-dev/main/include/json.h:
-/Users/tombo/esp/airu-dev/main/./json.c:
+/Users/tombo/esp/airu-v2-fw/main/include/json.h:
+/Users/tombo/esp/airu-v2-fw/main/./json.c:

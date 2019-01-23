@@ -18,7 +18,7 @@ vfs.o: /Users/tombo/esp/esp-idf/components/vfs/vfs.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/assert.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/errno.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/fcntl.h \
@@ -97,6 +97,8 @@ vfs.o: /Users/tombo/esp/esp-idf/components/vfs/vfs.c \
  /Users/tombo/esp/esp-idf/components/freertos/include/freertos/queue.h \
  /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/unistd.h \
+ /Users/tombo/esp/esp-idf/components/newlib/include/utime.h \
+ /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/termios.h \
  /Users/tombo/esp/esp-idf/components/log/include/esp_log.h \
@@ -140,7 +142,7 @@ vfs.o: /Users/tombo/esp/esp-idf/components/vfs/vfs.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/assert.h:
 
@@ -297,6 +299,10 @@ vfs.o: /Users/tombo/esp/esp-idf/components/vfs/vfs.c \
 /Users/tombo/esp/esp-idf/components/vfs/include/esp_vfs.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/unistd.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/include/utime.h:
+
+/Users/tombo/esp/esp-idf/components/newlib/platform_include/sys/utime.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/time.h:
 

@@ -14,7 +14,8 @@ reent_init.o: /Users/tombo/esp/esp-idf/components/newlib/reent_init.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/lock.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/cdefs.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h \
- /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
@@ -47,4 +48,6 @@ reent_init.o: /Users/tombo/esp/esp-idf/components/newlib/reent_init.c \
 /Users/tombo/esp/esp-idf/components/newlib/include/sys/string.h:
 
 /Users/tombo/esp/esp-idf/components/esp32/include/esp_attr.h:
+
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 /Users/tombo/esp/esp-idf/components/newlib/./reent_init.c:

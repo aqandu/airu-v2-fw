@@ -18,7 +18,7 @@ heap_trace.o: /Users/tombo/esp/esp-idf/components/heap/heap_trace.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/syslimits.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/endian.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_trace.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/_intsup.h \
@@ -126,7 +126,7 @@ heap_trace.o: /Users/tombo/esp/esp-idf/components/heap/heap_trace.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/include/machine/param.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/heap/include/esp_heap_trace.h:
 

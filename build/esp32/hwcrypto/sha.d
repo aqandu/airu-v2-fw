@@ -21,7 +21,7 @@ hwcrypto/sha.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/sha.c \
  /Users/tombo/esp/esp-idf/components/newlib/include/sys/stdio.h \
  /Users/tombo/esp/esp-idf/components/wpa_supplicant/port/include/byteswap.h \
  /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/stdlib.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/alloca.h \
@@ -50,7 +50,10 @@ hwcrypto/sha.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/sha.c \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/corebits.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-core-state.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h \
- /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/hwcrypto_reg.h
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/hwcrypto_reg.h \
+ /Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h \
+ /Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h \
+ /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h
 
 /Users/tombo/esp/esp-idf/components/newlib/include/string.h:
 
@@ -96,7 +99,7 @@ hwcrypto/sha.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/sha.c \
 
 /Users/tombo/esp/esp-idf/components/newlib/platform_include/assert.h:
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/newlib/include/stdlib.h:
 
@@ -155,4 +158,10 @@ hwcrypto/sha.o: /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/sha.c \
 /Users/tombo/esp/esp-idf/components/esp32/include/xtensa/xtruntime-frames.h:
 
 /Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/hwcrypto_reg.h:
+
+/Users/tombo/esp/esp-idf/components/driver/include/driver/periph_ctrl.h:
+
+/Users/tombo/esp/esp-idf/components/esp32/include/esp_err.h:
+
+/Users/tombo/esp/esp-idf/components/soc/esp32/include/soc/periph_defs.h:
 /Users/tombo/esp/esp-idf/components/esp32/hwcrypto/sha.c:

@@ -116,6 +116,7 @@ void data_task(void *pvParameters)
 		MICS4514_Poll(&co, &nox);
 		GPS_Poll(&gps);
 
+
 		//
 		// Send data over MQTT
 		//
@@ -181,19 +182,19 @@ void app_main()
 	MICS4514_Initialize();
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 2048, NULL, 5, &task_http_server);
+	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
 	xTaskCreate(&wifi_manager, "wifi_manager", 4096, NULL, 4, &task_wifi_manager);
 
-	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 3, &task_data);
-
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 3, &task_ota);
-
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_ota);
+
+	/* start the data task */
+//	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+
+	/* start the ota task */
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

@@ -1,6 +1,6 @@
 src/secure_boot_signatures.o: \
  /Users/tombo/esp/esp-idf/components/bootloader_support/src/secure_boot_signatures.c \
- /Users/tombo/esp/airu-dev/build/include/sdkconfig.h \
+ /Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h \
  /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_flash.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/stdint.h \
  /Users/tombo/esp/esp-idf/components/newlib/include/machine/_default_types.h \
@@ -46,7 +46,7 @@ src/secure_boot_signatures.o: \
  /Users/tombo/esp/esp-idf/components/esp32/include/rom/sha.h \
  /Users/tombo/esp/esp-idf/components/esp32/include/esp_types.h
 
-/Users/tombo/esp/airu-dev/build/include/sdkconfig.h:
+/Users/tombo/esp/airu-v2-fw/build/include/sdkconfig.h:
 
 /Users/tombo/esp/esp-idf/components/bootloader_support/include_bootloader/bootloader_flash.h:
 

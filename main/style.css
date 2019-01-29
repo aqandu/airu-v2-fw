@@ -28,6 +28,11 @@ input[type="button"] {
     text-align: center;
     display: block;
 }
+input[type='checkbox'] {
+    width:30px;
+    height:30px;
+    display: inline;
+}
 p {
     padding: 10px;
 }

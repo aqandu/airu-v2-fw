@@ -86,8 +86,8 @@ struct wifi_settings_t wifi_settings = {
 struct registration_info_t reg_info = {
 		.name = "No Name",
 		.email = "noemail@email.com",
-		.vis = 0,
-		.mac = "000000000000"
+		.vis = 1,
+		.mac = "00:00:00:00:00:00"
 };
 
 const char wifi_manager_nvs_namespace[] = "espwifimgr";
@@ -342,7 +342,7 @@ void wifi_manager_generate_reg_info_json(){
     strcat(reg_info_json, tmp);
 
     // MAC Address
-	sprintf(tmp, ",\"macAddress\":%s", reg_info.mac);
+	sprintf(tmp, ",\"macAddress\":\"%s\"}", reg_info.mac);
 	strcat(reg_info_json, tmp);
 }
 
@@ -620,6 +620,10 @@ void wifi_manager( void * pvParameters ){
     /* event handler and event group for the wifi driver */
 	wifi_manager_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_event_loop_init(wifi_manager_event_handler, NULL));
+
+    uint8_t tmp[6];
+    esp_efuse_mac_get_default(tmp);
+    sprintf(reg_info.mac, "%02X:%02X:%02X:%02X:%02X:%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
     /* wifi scanner config */
 	wifi_scan_config_t scan_config = {

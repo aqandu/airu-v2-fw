@@ -294,10 +294,9 @@ void http_server_netconn_serve(struct netconn *conn) {
 				ESP_LOGI(TAG, "POST /register.json");
 #endif
 				int lenN = 0, lenE = 0, lenV;
-				char *name = NULL, *email = NULL, *vis;
+				char *name = NULL, *email = NULL;
 				name = http_server_get_header(save_ptr, "X-Custom-name: ", &lenN);
 				email = http_server_get_header(save_ptr, "X-Custom-email: ", &lenE);
-				vis = http_server_get_header(save_ptr, "X-Custom-vis: ", &lenV);
 
 				if (lenN > JSON_REG_NAME_SIZE || lenE > JSON_REG_EMAIL_SIZE){
 					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
@@ -310,10 +309,6 @@ void http_server_netconn_serve(struct netconn *conn) {
 					memset(reg_info.email, 0x00, JSON_REG_EMAIL_SIZE);
 					memcpy(reg_info.name, name, lenN);
 					memcpy(reg_info.email, email, lenE);
-
-					char tmp[6];
-					esp_efuse_mac_get_default(tmp);
-					sprintf(reg_info.mac, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
 					ESP_LOGI(TAG, "Got name and email [%d, %d]\n", lenN, lenE);
 					ESP_LOGI(TAG, "Name:  %s", reg_info.name);

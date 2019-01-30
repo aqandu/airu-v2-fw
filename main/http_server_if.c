@@ -293,22 +293,30 @@ void http_server_netconn_serve(struct netconn *conn) {
 #if WIFI_MANAGER_DEBUG
 				ESP_LOGI(TAG, "POST /register.json");
 #endif
-				int lenN = 0, lenE = 0, lenV;
-				char *name = NULL, *email = NULL;
+				int lenN = 0, lenE = 0, lenV = 0;
+				char *name = NULL, *email = NULL, *viz = NULL;
 				name = http_server_get_header(save_ptr, "X-Custom-name: ", &lenN);
 				email = http_server_get_header(save_ptr, "X-Custom-email: ", &lenE);
+				viz = http_server_get_header(save_ptr, "X-Custom-visible: ", &lenV);
+				ESP_LOGI(TAG, "\n\n*** Sensor visible: %c\n\n", viz[0]);
 
 				if (lenN > JSON_REG_NAME_SIZE || lenE > JSON_REG_EMAIL_SIZE){
 					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
 					ESP_LOGI(TAG, "Name or email was too long\n");
 				}
 
-				if(name && email){
+				if(name && email && viz){
 
 					memset(reg_info.name, 0x00, JSON_REG_NAME_SIZE);
 					memset(reg_info.email, 0x00, JSON_REG_EMAIL_SIZE);
 					memcpy(reg_info.name, name, lenN);
 					memcpy(reg_info.email, email, lenE);
+					if(viz[0] == '1'){
+						reg_info.vis = true;
+					}
+					else {
+						reg_info.vis = false;
+					}
 
 					ESP_LOGI(TAG, "Got name and email [%d, %d]\n", lenN, lenE);
 					ESP_LOGI(TAG, "Name:  %s", reg_info.name);

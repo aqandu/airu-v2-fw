@@ -21,6 +21,25 @@
 */
 void MQTT_Initialize(void);
 
+void MQTT_Reinit(void);
+
+/*
+* @brief
+*
+* @param
+*
+* @return
+*/
+void MQTT_wifi_connected(void);
+
+/*
+* @brief
+*
+* @param
+*
+* @return
+*/
+void MQTT_wifi_disconnected(void);
 
 /*
 * @brief

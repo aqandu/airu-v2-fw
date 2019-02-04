@@ -219,11 +219,7 @@ function performRegistration(){
 
 	var name = $( "#reg_name" ).val();
 	var email = $( "#reg_email" ).val();
-	// var hidden = $( "#hide_gps" ).checked();
-	// var viz = "1";
-	// if (hidden === true) {
-	// 	viz = "0";
-	// }
+	var hidden = document.getElementById("hide_gps").checked;
 
 	name = CleanName(name);
 	if(name.length === 0) {
@@ -235,7 +231,7 @@ function performRegistration(){
 			dataType: 'json',
 			method: 'POST',
 			cache: false,
-			headers: {'X-Custom-name': name, 'X-Custom-email': email },
+			headers: {'X-Custom-name': name, 'X-Custom-email': email, 'X-Custom-hidden': hidden },
 			data: {'timestamp': Date.now()}
 		});
 		console.log("Calling 'lastRegistered' inside 'performRegistration'");
@@ -250,17 +246,17 @@ function lastRegistered(){
 		var h2 = "";
 		if(data['name'].length > 0){
 			console.log("got data");
-			h1 += '<h3>This device was last registered to {0}</h2>\n'.format(data['name']);
+			h1 += '<h4>This device was last registered to {0}</h4>'.format(data['name']);
 		}
 		else {
 			console.log("couldn't get data");
-			h1 += '<h3>This device is currently unregistered</h2>.\n';
+			h1 += '<h4>This device is currently unregistered</h4>';
 		}
-		if(data['macAddress'] === "000000000000") {
-			h2 += '<h4>Could not retreive mac address</h4>\n';
+		if(data['macAddress'].length === 0) {
+			h2 += '<h4>Could not retreive mac address</h4>';
 		}
 		else {
-			h2 += '<h4>MAC Address: {0}</h4>\n'.format(data['macAddress']);
+			h2 += '<h4>MAC Address: {0}</h4>'.format(data['macAddress']);
 		}
 		$( "#last-reg" ).html(h1);
 		$( "#mac-addr" ).html(h2);
@@ -367,7 +363,14 @@ function refreshAPHTML(data){
 	lastRegistered();
 }
 
-
+function togglepw(div_id){
+	var x = document.getElementById(div_id);
+	if (x.type === "password") {
+		x.type = "text";
+	} else {
+		x.type = "password";
+	}
+}
 
 function checkStatus(){
 	$.getJSON( "/status.json", function( data ) {
@@ -433,8 +436,6 @@ function checkStatus(){
 		}
 	})
 	.fail(function() {
-		//don't do anything, the server might be down while esp32 recalibrates radio
+		// this is a new comment!
 	});
-
-
 }

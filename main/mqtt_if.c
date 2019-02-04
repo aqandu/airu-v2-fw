@@ -11,16 +11,44 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "ota_if.h"
-
 #include "mqtt_if.h"
+//#include "wifi_manager.h"
+
+#define WIFI_CONNECTED_BIT 		BIT0
 
 static const char* TAG = "MQTT";
 static char DEVICE_MAC[13];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 
 static bool client_connected;
-
 static esp_mqtt_client_handle_t client;
+static EventGroupHandle_t mqtt_event_group;
+
+static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
+
+ /*
+ * This exact configuration was what works. Won't work
+ * without the "transport" parameter set.
+ *
+ * Copy and paste ca.pem into project->main
+ *
+ * Define the start and end pointers in .rodata with:
+ * 	"_binary_ca_pem_start" & "_binary_ca_pem_end",
+ * 	^ it's the filename for the CA with '.' replaced with '_'
+ *
+ * Must also define the name in the component.mk file under main
+ * 	so that it gets loaded into the .data section of memory
+ */
+static const esp_mqtt_client_config_t mqtt_cfg = {
+	.host = CONFIG_MQTT_HOST,
+	.username = CONFIG_MQTT_USERNAME,
+	.password = CONFIG_MQTT_PASSWORD,
+	.port = MQTT_SSL_DEFAULT_PORT,
+	.transport = MQTT_TRANSPORT_OVER_SSL,
+	.event_handle = mqtt_event_handler,
+	.cert_pem = (const char *)ca_pem_start,
+};
+
 
 /*
 * @brief
@@ -54,7 +82,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   esp_mqtt_client_destroy(this_client);
 		   client_connected = false;
-		   MQTT_Initialize();
+		   MQTT_Reinit();
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -115,28 +143,13 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 */
 void MQTT_Initialize(void)
 {
-	/*
-	 * This exact configuration was what works. Won't work
-	 * without the "transport" parameter set.
-	 *
-	 * Copy and paste ca.pem into project->main
-	 *
-	 * Define the start and end pointers in .rodata with:
-	 * 	"_binary_ca_pem_start" & "_binary_ca_pem_end",
-	 * 	^ it's the filename for the CA with '.' replaced with '_'
-	 *
-	 * Must also define the name in the component.mk file under main
-	 * 	so that it gets loaded into the .data section of memory
-	 */
-   const esp_mqtt_client_config_t mqtt_cfg = {
-		.host = CONFIG_MQTT_HOST,
-		.username = CONFIG_MQTT_USERNAME,
-		.password = CONFIG_MQTT_PASSWORD,
-		.port = MQTT_SSL_DEFAULT_PORT,
-		.transport = MQTT_TRANSPORT_OVER_SSL,
-		.event_handle = mqtt_event_handler,
-		.cert_pem = (const char *)ca_pem_start,
-   };
+   mqtt_event_group = xEventGroupCreate();
+   xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
+
+   /* Waiting for WiFi to connect */
+//   xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+
+   ESP_LOGI(TAG, "Initializing client...");
 
    uint8_t tmp[6];
    esp_efuse_mac_get_default(tmp);
@@ -145,6 +158,37 @@ void MQTT_Initialize(void)
    esp_mqtt_client_start(client);
 
    client_connected = false;
+}
+
+void MQTT_Reinit()
+{
+	ESP_LOGI(TAG, "Reinitializing client...");
+	uint8_t tmp[6];
+	esp_efuse_mac_get_default(tmp);
+	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	client = esp_mqtt_client_init(&mqtt_cfg);
+	esp_mqtt_client_start(client);
+
+	client_connected = false;
+}
+
+/*
+* @brief Signals MQTT to initialize.
+*
+* @param
+*
+* @return
+*/
+void MQTT_wifi_connected()
+{
+	xEventGroupSetBits(mqtt_event_group, WIFI_CONNECTED_BIT);
+}
+
+void MQTT_wifi_disconnected()
+{
+	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
+	esp_mqtt_client_stop(client);
+
 }
 
 /*

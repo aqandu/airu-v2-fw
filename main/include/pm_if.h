@@ -11,8 +11,6 @@
 #include "freertos/queue.h"
 #include "esp_err.h"
 
-static const char *TAG_PM = "PM";
-
 #define PM_UART_CH   UART_NUM_2
 #define PM_RXD_PIN   16
 #define PM_TXD_PIN   17

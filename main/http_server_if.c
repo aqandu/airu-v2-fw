@@ -74,9 +74,7 @@ extern const uint8_t code_js_end[] asm("_binary_code_js_end");
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[] asm("_binary_index_html_end");
 
-#if WIFI_MANAGER_DEBUG
 const static char* TAG = "HTTP";
-#endif
 
 /* const http headers stored in ROM */
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\nContent-type: text/html\n\n";
@@ -98,20 +96,19 @@ void http_server(void *pvParameters) {
 	http_server_event_group = xEventGroupCreate();
 
 	/* do not start the task until wifi_manager says it's safe to do so! */
-#if WIFI_MANAGER_DEBUG
-	printf("http_server: waiting for start bit\n");
-#endif
+
+	ESP_LOGI(TAG, "waiting for start bit\n");
+
 	uxBits = xEventGroupWaitBits(http_server_event_group, HTTP_SERVER_START_BIT_0, pdFALSE, pdTRUE, portMAX_DELAY );
-#if WIFI_MANAGER_DEBUG
-	printf("http_server: received start bit, starting server\n");
-#endif
+
+	ESP_LOGI(TAG, "received start bit, starting server\n");
 
 	struct netconn *conn, *newconn;
 	err_t err;
 	conn = netconn_new(NETCONN_TCP);
 	netconn_bind(conn, IP_ADDR_ANY, 80);
 	netconn_listen(conn);
-	printf("HTTP Server listening...\n");
+	ESP_LOGI(TAG, "HTTP Server listening...\n");
 	do {
 		err = netconn_accept(conn, &newconn);
 		if (err == ERR_OK) {
@@ -163,7 +160,7 @@ void http_server_netconn_serve(struct netconn *conn) {
 
 		if(line) {
 
-			printf("BUFF: %s\n", buf);
+//			ESP_LOGI(TAG, "> %s\n", buf);
 			// default page
 			if(strstr(line, "GET / ")) {
 				netconn_write(conn, http_html_hdr, sizeof(http_html_hdr) - 1, NETCONN_NOCOPY);
@@ -187,9 +184,9 @@ void http_server_netconn_serve(struct netconn *conn) {
 				}
 				else{
 					netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: GET /ap.json failed to obtain mutex\n");
-#endif
+
+					ESP_LOGI(TAG, "http_server_netconn_serve: GET /ap.json failed to obtain mutex\n");
+
 				}
 				/* request a wifi scan */
 				wifi_manager_scan_async();
@@ -212,55 +209,36 @@ void http_server_netconn_serve(struct netconn *conn) {
 				}
 				else{
 					netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: GET /status failed to obtain mutex\n");
-#endif
-				}
-			} // END: "GET /status.json"
 
-			// GET /register.json
+					ESP_LOGI(TAG, "http_server_netconn_serve: GET /status failed to obtain mutex\n");
+
+				}
+			}
 			else if(strstr(line, "GET /register.json ")) {
-				printf("GET /register.json\n");
 				if(wifi_manager_lock_json_buffer(( TickType_t ) 10)){
-					if(wifi_manager_fetch_reg_config()) {
-						wifi_manager_generate_reg_info_json();
-						char *buff = wifi_manager_get_reg_info_json();
-						if(buff){
-							printf("sending reg data: %s\n", buff);
-							netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY);
-							netconn_write(conn, buff, strlen(buff), NETCONN_NOCOPY);
-							wifi_manager_unlock_json_buffer();
-						}
-						else{
-							printf("couldn't get reg data (2)\n");
-							netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
-						}
+					wifi_manager_fetch_reg_config();
+					wifi_manager_generate_reg_info_json();
+					char *buff = wifi_manager_get_reg_info_json();
+					if(buff){
+						netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY);
+						netconn_write(conn, buff, strlen(buff), NETCONN_NOCOPY);
+						wifi_manager_unlock_json_buffer();
 					}
 					else{
-						printf("couldn't get reg data (1)\n");
 						netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
 					}
-					wifi_manager_unlock_json_buffer();
 				}
+				wifi_manager_unlock_json_buffer();
+			}
 
-			} // end "GET /register.json"
-
-			// DELETE /connect.json
 			else if(strstr(line, "DELETE /connect.json ")) {
-#if WIFI_MANAGER_DEBUG
-				printf("http_server_netconn_serve: DELETE /connect.json\n");
-#endif
 				/* request a disconnection from wifi and forget about it */
 				wifi_manager_disconnect_async();
 				netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); /* 200 ok */
 			}
 
-			// POST /connect.json
 			else if(strstr(line, "POST /connect.json ")) {
-#if WIFI_MANAGER_DEBUG
-				printf("http_server_netconn_serve: POST /connect.json\n");
-#endif
-
+				ESP_LOGI(TAG, "%s", save_ptr);
 				bool found = false;
 				int lenS = 0, lenP = 0;
 				char *ssid = NULL, *password = NULL;
@@ -273,9 +251,10 @@ void http_server_netconn_serve(struct netconn *conn) {
 					memcpy(config->sta.ssid, ssid, lenS);
 					memcpy(config->sta.password, password, lenP);
 
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: wifi_manager_connect_async() call\n");
-#endif
+					ESP_LOGI(TAG, "%s / %s", config->sta.ssid, config->sta.password);
+
+					ESP_LOGI(TAG, "http_server_netconn_serve: wifi_manager_connect_async() call\n");
+
 					wifi_manager_connect_async();
 					netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); //200ok
 					found = true;
@@ -288,56 +267,39 @@ void http_server_netconn_serve(struct netconn *conn) {
 
 			}
 
-			// POST /register.json
 			else if(strstr(line, "POST /register.json ")) {
-#if WIFI_MANAGER_DEBUG
-				ESP_LOGI(TAG, "POST /register.json");
-#endif
 				int lenN = 0, lenE = 0, lenV = 0;
-				char *name = NULL, *email = NULL, *viz = NULL;
+				char *name = NULL, *email = NULL, *hidden = NULL;
 				name = http_server_get_header(save_ptr, "X-Custom-name: ", &lenN);
 				email = http_server_get_header(save_ptr, "X-Custom-email: ", &lenE);
-				viz = http_server_get_header(save_ptr, "X-Custom-visible: ", &lenV);
-				ESP_LOGI(TAG, "\n\n*** Sensor visible: %c\n\n", viz[0]);
+				hidden = http_server_get_header(save_ptr, "X-Custom-hidden: ", &lenV);
 
 				if (lenN > JSON_REG_NAME_SIZE || lenE > JSON_REG_EMAIL_SIZE){
 					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
-					ESP_LOGI(TAG, "Name or email was too long\n");
 				}
 
-				if(name && email && viz){
+				if(name && email && hidden){
 
 					memset(reg_info.name, 0x00, JSON_REG_NAME_SIZE);
 					memset(reg_info.email, 0x00, JSON_REG_EMAIL_SIZE);
 					memcpy(reg_info.name, name, lenN);
 					memcpy(reg_info.email, email, lenE);
-					if(viz[0] == '1'){
-						reg_info.vis = true;
-					}
-					else {
-						reg_info.vis = false;
-					}
-
-					ESP_LOGI(TAG, "Got name and email [%d, %d]\n", lenN, lenE);
-					ESP_LOGI(TAG, "Name:  %s", reg_info.name);
-					ESP_LOGI(TAG, "Email: %s", reg_info.email);
-					ESP_LOGI(TAG, "MAC:   %s", reg_info.mac);
-					ESP_LOGI(TAG, "Vis:	  %d", reg_info.vis);
+					reg_info.hidden = (hidden[0] == 't');
 
 					// Save registration info to nvs flash
-					wifi_manager_save_reg_config(name, lenN, email, lenE);
+					wifi_manager_save_reg_config();
 
 					netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); //200OK
 
-					http_server_post_registration();
+					if(wifi_manager_connected_to_access_point()) {
+						http_server_post_registration();
+					}
 				}
 				else{
 					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
-#if WIFI_MANAGER_DEBUG
-					printf("Couldn't extract name and email\n");
-#endif
+
 				}
-			} // end "POST /register.json"
+			}
 
 			// Default: route not found
 			else{
@@ -373,7 +335,7 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
             if (!esp_http_client_is_chunked_response(evt->client)) {
-                 printf("%.*s", evt->data_len, (char*)evt->data);
+                 ESP_LOGI(TAG, "%.*s", evt->data_len, (char*)evt->data);
             }
 
             break;

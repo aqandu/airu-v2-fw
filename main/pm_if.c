@@ -23,6 +23,8 @@
 
 #define PM_TIMER_TIMEOUT_MS 5000
 
+static const char* TAG_PM = "PM";
+
 static void _pm_accum_rst(void);
 static esp_err_t get_packet_from_buffer(void);
 static esp_err_t get_data_from_packet(uint8_t *packet);

@@ -80,6 +80,7 @@ static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
+static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
 static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
@@ -90,7 +91,7 @@ static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive
 void monitoring_task(void *pvParameter)
 {
 	for(;;){
-//		printf("free heap: %d\n",esp_get_free_heap_size());
+		printf("free heap: %d\n",esp_get_free_heap_size());
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 	}
 }
@@ -106,9 +107,9 @@ void data_task(void *pvParameters)
 	esp_gps_t gps;
 	char mqtt_pkt[MQTT_PKT_LEN];
 
-	vTaskDelay(1000 / portTICK_PERIOD_MS);
+	vTaskDelay(60000 / portTICK_PERIOD_MS);
 	for(;;){
-		vTaskDelay(3000 / portTICK_PERIOD_MS);
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
 
 		PMS_Poll(&pm_dat);
@@ -138,8 +139,8 @@ void data_task(void *pvParameters)
 									hum,			/* Humidity */
 									co,				/* CO */
 									nox				/* NOx */);
-		MQTT_Publish(MQTT_DBG_TPC, mqtt_pkt);
-		printf("\nMQTT Publish Topic (F): %s\n", MQTT_DBG_TPC);
+		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
+		printf("\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
 		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%zu/%zu\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
 		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
 		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
@@ -155,9 +156,7 @@ void data_task(void *pvParameters)
 
 void app_main()
 {
-	/* disable the default wifi logging */
-	esp_log_level_set("wifi", ESP_LOG_INFO);
-	//	esp_log_level_set(TAG, ESP_LOG_NONE);
+//	esp_log_level_set("*", ESP_LOG_INFO);
 
 	/* initialize flash memory */
 	nvs_flash_init();
@@ -185,16 +184,16 @@ void app_main()
 	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 4096, NULL, 4, &task_wifi_manager);
+	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_ota);
+	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
 	/* start the data task */
-//	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
 
 	/* start the ota task */
-//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

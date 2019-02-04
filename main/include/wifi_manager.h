@@ -74,7 +74,7 @@ extern "C" {
 #define DEFAULT_AP_SSID_HIDDEN 		0
 
 /** @brief Defines access point's name. */
-#define DEFAULT_AP_SSID 			"airu-dev"
+#define DEFAULT_AP_SSID 			"AirU"
 
 /** @brief Defines access point's password.
  *	@warning In the case of an open access point, the password must be a null string "" or "\0" if you want to be verbose but waste one byte.
@@ -172,7 +172,7 @@ struct registration_info_t{
 	char name[JSON_REG_NAME_SIZE];
 	char email[JSON_REG_EMAIL_SIZE];
 	char mac[12];
-	bool vis;
+	bool hidden;
 };
 extern struct registration_info_t reg_info;
 
@@ -307,7 +307,13 @@ bool wifi_manager_fetch_reg_config();
 /**
  * @brief saves the current registration info to flash ram storage.
  */
-esp_err_t wifi_manager_save_reg_config(char* name, size_t szn, char* email, size_t sze);
+esp_err_t wifi_manager_save_reg_config();
+
+/**
+ * @brief saves the current wifi settings to flash ram storage.
+ */
+esp_err_t wifi_manager_save_wifi_settings();
+
 
 /**
  * @brief Check WIFI_MANAGER_WIFI_CONNECTED_BIT to see if we have an IP address

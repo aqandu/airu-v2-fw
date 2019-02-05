@@ -82,7 +82,7 @@ static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
+static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -106,8 +106,9 @@ void data_task(void *pvParameters)
 	uint16_t co, nox;
 	esp_gps_t gps;
 	char mqtt_pkt[MQTT_PKT_LEN];
+	uint64_t uptime = 0;
 
-	vTaskDelay(60000 / portTICK_PERIOD_MS);
+	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
 		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
@@ -117,6 +118,7 @@ void data_task(void *pvParameters)
 		MICS4514_Poll(&co, &nox);
 		GPS_Poll(&gps);
 
+		uptime = esp_timer_get_time() / 1000000;
 
 		//
 		// Send data over MQTT
@@ -128,10 +130,10 @@ void data_task(void *pvParameters)
 		 */
 		bzero(mqtt_pkt, MQTT_PKT_LEN);
 		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									1, 				/* secActive */
-									0.0,			/* Altitude */
-									1.0, 			/* Latitude */
-									2.0, 			/* Longitude */
+									uptime, 		/* secActive */
+									gps.alt,		/* Altitude */
+									gps.lat, 		/* Latitude */
+									gps.lon, 		/* Longitude */
 									pm_dat.pm1,		/* PM1 */
 									pm_dat.pm2_5,	/* PM2.5 */
 									pm_dat.pm10, 	/* PM10 */
@@ -141,9 +143,11 @@ void data_task(void *pvParameters)
 									nox				/* NOx */);
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
 		printf("\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%zu/%zu\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
+		printf("Packet: %s\n", mqtt_pkt);
+//		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
+//		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
+//		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
+//		printf("Uptime: %llu\n", uptime);
 
 		//
 		// Save data to the SD card
@@ -164,6 +168,8 @@ void app_main()
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+
+	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
 
 	/* Initialize the LED Driver */
 	LED_Initialize();

@@ -22,6 +22,7 @@
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
 
+#define WIFI_CONNECTED_BIT 	BIT0
 
 static const unsigned long MS_BETWEEN_NTP_UPDATE = 600000;
 static const unsigned long SEC_JAN1_2018 = 1514764800;
@@ -29,8 +30,9 @@ static const char *TAG = "TIME";
 static time_t utc_time = 0;
 static clock_t ms_active = 0;
 
-static time_t _sntp_obtain_time(void);
+static EventGroupHandle_t ntp_event_group;
 
+static time_t _sntp_obtain_time(void);
 
 /*
 * @brief	Try 10 times to get the current time from the NTP server
@@ -84,6 +86,11 @@ time_t time_gmtime(void){
 }
 
 
+void sntp_wifi_connected()
+{
+	xEventGroupSetBits(ntp_event_group, WIFI_CONNECTED_BIT);
+}
+
 /*
 * @brief	Initialize the parameters for the NTP server and update the system time.
 *
@@ -97,6 +104,11 @@ void sntp_initialize(void)
 	struct tm timeinfo;
     char strftime_buf[64];
 
+    ntp_event_group = xEventGroupCreate();
+    xEventGroupClearBits(ntp_event_group, WIFI_CONNECTED_BIT);
+
+    /* Waiting for WiFi to connect */
+//    xEventGroupWaitBits(ntp_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
 	ESP_LOGI(TAG, "Initializing SNTP");
 
     sntp_setoperatingmode(SNTP_OPMODE_POLL);

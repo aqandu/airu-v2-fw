@@ -44,6 +44,7 @@ extern "C" {
 void http_server(void *pvParameters);
 void http_server_netconn_serve(struct netconn *conn);
 void http_server_set_event_start();
+void http_server_post_registration();
 
 /**
  * @brief gets a char* pointer to the first occurence of header_name withing the complete http request request.

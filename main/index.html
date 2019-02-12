@@ -7,7 +7,7 @@
 		<script src="/jquery.js"></script>
 		<link rel="stylesheet" href="/style.css">
 		<script src="/code.js"></script>
-		<title>esp32-wifi-manager</title>
+		<title>airu-wifi-manager</title>
 	</head>
 	<body>
 		<div id="app">
@@ -28,8 +28,8 @@
 					</section>
 					<h2>or choose a network...</h2>
 					<section id="wifi-list">
+						Wi-Fi: Looking for available Networks...
 					</section>
-					<div id="pwrdby"><em>Powered by </em><a id="acredits" href="#"><strong>esp32-wifi-manager</strong></a>.</div>
 				</div>
 				<div id="connect_manual">
 					<header>
@@ -39,10 +39,11 @@
 					<section>
 						<input id="manual_ssid" type="text" placeholder="SSID" value="">
 						<input id="manual_pwd" type="password" placeholder="Password" value="">
+						<input type="checkbox" onclick="togglepw('manual_pwd')">Show Password
 					</section>
 					<div class="buttons">
-							<input id="manual_join" type="button" value="Join" data-connect="manual" />
-							<input id="manual_cancel" type="button" value="Cancel"/>
+						<input id="manual_join" type="button" value="Join" data-connect="manual" />
+						<input id="manual_cancel" type="button" value="Cancel"/>
 					</div>
 				</div>
 				<div id="connect">
@@ -52,6 +53,7 @@
 					<h2>Password for <span id="ssid-pwd"></span></h2>
 					<section>
 						<input id="pwd" type="password" placeholder="Password" value="">
+						<input type="checkbox" onclick="togglepw('pwd')">Show Password
 					</section>
 					<div class="buttons">
 							<input id="join" type="button" value="Join" />
@@ -66,7 +68,7 @@
 					<section>
 						<div id="loading">
 							<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>
-							<p class="tctr">You may lose wifi access while the esp32 recalibrates its radio. Please wait until your device automatically reconnects. This can take up to 30s.</p>
+							<p class="tctr">You may lose WiFi access while your AirU recalibrates. Please wait until your device automatically reconnects. This can take up to 30s.</p>
 						</div>
 						<div id="connect-success">
 							<h3 class="gr">Success!</h3>
@@ -80,6 +82,25 @@
 						<input id="ok-connect" type="button" value="OK" class="ctr" />
 					</div>
 				</div>
+                <div id="register">
+                    <h2>Register Your Device</span></h2>
+					<div id="last-reg">
+						<h4>This device is currently unregistered</h4>
+					</div>
+                    <div id="mac-addr">
+                    	<h4>Could not retreive mac address</h4>
+                    </div>
+					<div id="name_result"></div>
+					<div id="email_result"></div>
+                    <section>
+                        <input id="reg_name" type="text" placeholder="Name" value="" /><br>
+                        <input id="reg_email" type="text" placeholder="Email" value="" />
+                    </section>
+                    <input id="hide_gps" type="checkbox" name="hide-gps" value="hide" /> Would you like to hide your device location on the AQ&U map?<br>
+                    <div class="buttons">
+                        <input id="reg_btn" type="button" value="Register" />
+                    </div>
+                </div>
 				<div id="connect-details">
 					<div id="connect-details-wrap">
 						<header>
@@ -111,26 +132,6 @@
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-		<div id="credits">
-			<header>
-				<h1>About this app...</h1>
-			</header>
-			<h2></h2>
-			<section>
-				<p><strong>esp32-wifi-manager</strong>, &copy; 2017, Tony Pottier<br />Licender under the MIT License.</p>
-				<p>
-					This app would not be possible without the following libraries:
-				</p>
-				<ul>
-					<li>SpinKit, &copy;  2015, Tobias Ahlin. Licensed under the MIT License.</li>
-					<li>jQuery, The jQuery Foundation. Licensed under the MIT License.</li>
-					<li>cJSON, &copy; 2009-2017, Dave Gamble and cJSON contributors. Licensed under the MIT License.</li>
-				</ul>
-			</section>
-			<div class="buttons">
-				<input id="ok-credits" type="button" value="OK" class="ctr" />
 			</div>
 		</div>
 	</body>

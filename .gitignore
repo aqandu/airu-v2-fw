@@ -1,0 +1,4 @@
+# Ignore the build
+build/
+.DS_Store
+.settings/

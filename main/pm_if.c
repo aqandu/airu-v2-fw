@@ -23,15 +23,17 @@
 
 #define PM_TIMER_TIMEOUT_MS 5000
 
+static const char* TAG_PM = "PM";
+
 static void _pm_accum_rst(void);
 static esp_err_t get_packet_from_buffer(void);
 static esp_err_t get_data_from_packet(uint8_t *packet);
 static uint8_t pm_checksum();
-static void uart_pm_manager_task(void *pvParameters);
+static void uart_pm_event_mgr(void *pvParameters);
 static void vTimerCallback(TimerHandle_t xTimer);
 
 /* Global variables */
-static QueueHandle_t PM_event_queue;
+static QueueHandle_t pm_event_queue;
 static TimerHandle_t pm_timer;
 static pm_data_t pm_accum;
 static uint8_t pm_buf[BUF_SIZE];
@@ -89,15 +91,21 @@ esp_err_t PMS_Initialize()
     .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
   };
   err = uart_param_config(PM_UART_CH, &uart_config);
+  if(err != ESP_OK)
+  		return err;
 
   // set UART pins
   err = uart_set_pin(PM_UART_CH, PM_TXD_PIN, PM_RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+  if(err != ESP_OK)
+  		return err;
 
   // install UART driver
-  err = uart_driver_install(PM_UART_CH, BUF_SIZE, 0, 20, &PM_event_queue, 0);
+  err = uart_driver_install(PM_UART_CH, BUF_SIZE, 0, 20, &pm_event_queue, 0);
+  if(err != ESP_OK)
+  		return err;
 
   // create a task to handler UART event from ISR for the PM sensor
-  xTaskCreate(uart_pm_manager_task, "vPM_task", 2048, NULL, 12, NULL);
+  xTaskCreate(uart_pm_event_mgr, "vPM_task", 2048, NULL, 12, NULL);
 
   // create the timer to determine validity of pm data
   pm_timer = xTimerCreate("pm_timer",
@@ -124,7 +132,7 @@ esp_err_t PMS_Initialize()
 */
 esp_err_t PMS_Reset()
 {
-  /* need gpio library set up first */
+  /* TODO: need gpio library set up first */
 
 	return ESP_FAIL;
 }
@@ -156,14 +164,14 @@ esp_err_t PMS_Poll(pm_data_t *dat)
 * @return
 *
 */
-static void uart_pm_manager_task(void *pvParameters)
+static void uart_pm_event_mgr(void *pvParameters)
 {
   uart_event_t event;
 
   for(;;) 
   {
     //Waiting for UART event.
-    if(xQueueReceive(PM_event_queue, (void * )&event, (portTickType)portMAX_DELAY)) 
+    if(xQueueReceive(pm_event_queue, (void * )&event, (portTickType)portMAX_DELAY))
     {
       switch(event.type) 
       {
@@ -179,13 +187,13 @@ static void uart_pm_manager_task(void *pvParameters)
         case UART_FIFO_OVF:
           ESP_LOGI(TAG_PM, "hw fifo overflow");
           uart_flush_input(PM_UART_CH);
-          xQueueReset(PM_event_queue);
+          xQueueReset(pm_event_queue);
           break;
                 
         case UART_BUFFER_FULL:
           ESP_LOGI(TAG_PM, "ring buffer full");
           uart_flush_input(PM_UART_CH);
-          xQueueReset(PM_event_queue);
+          xQueueReset(pm_event_queue);
           break;
             
         case UART_BREAK:

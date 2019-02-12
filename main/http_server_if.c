@@ -40,6 +40,7 @@ function to process requests, decode URLs, serve files, etc. etc.
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
+#include "esp_http_client.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
@@ -73,6 +74,7 @@ extern const uint8_t code_js_end[] asm("_binary_code_js_end");
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[] asm("_binary_index_html_end");
 
+const static char* TAG = "HTTP";
 
 /* const http headers stored in ROM */
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\nContent-type: text/html\n\n";
@@ -84,7 +86,6 @@ const static char http_404_hdr[] = "HTTP/1.1 404 Not Found\nContent-Length: 0\n\
 const static char http_503_hdr[] = "HTTP/1.1 503 Service Unavailable\nContent-Length: 0\n\n";
 const static char http_ok_json_no_cache_hdr[] = "HTTP/1.1 200 OK\nContent-type: application/json\nCache-Control: no-store, no-cache, must-revalidate, max-age=0\nPragma: no-cache\n\n";
 
-
 void http_server_set_event_start(){
 	xEventGroupSetBits(http_server_event_group, HTTP_SERVER_START_BIT_0 );
 }
@@ -95,20 +96,19 @@ void http_server(void *pvParameters) {
 	http_server_event_group = xEventGroupCreate();
 
 	/* do not start the task until wifi_manager says it's safe to do so! */
-#if WIFI_MANAGER_DEBUG
-	printf("http_server: waiting for start bit\n");
-#endif
+
+	ESP_LOGI(TAG, "waiting for start bit\n");
+
 	uxBits = xEventGroupWaitBits(http_server_event_group, HTTP_SERVER_START_BIT_0, pdFALSE, pdTRUE, portMAX_DELAY );
-#if WIFI_MANAGER_DEBUG
-	printf("http_server: received start bit, starting server\n");
-#endif
+
+	ESP_LOGI(TAG, "received start bit, starting server\n");
 
 	struct netconn *conn, *newconn;
 	err_t err;
 	conn = netconn_new(NETCONN_TCP);
 	netconn_bind(conn, IP_ADDR_ANY, 80);
 	netconn_listen(conn);
-	printf("HTTP Server listening...\n");
+	ESP_LOGI(TAG, "HTTP Server listening...\n");
 	do {
 		err = netconn_accept(conn, &newconn);
 		if (err == ERR_OK) {
@@ -160,6 +160,7 @@ void http_server_netconn_serve(struct netconn *conn) {
 
 		if(line) {
 
+//			ESP_LOGI(TAG, "> %s\n", buf);
 			// default page
 			if(strstr(line, "GET / ")) {
 				netconn_write(conn, http_html_hdr, sizeof(http_html_hdr) - 1, NETCONN_NOCOPY);
@@ -183,9 +184,9 @@ void http_server_netconn_serve(struct netconn *conn) {
 				}
 				else{
 					netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: GET /ap.json failed to obtain mutex\n");
-#endif
+
+					ESP_LOGI(TAG, "http_server_netconn_serve: GET /ap.json failed to obtain mutex\n");
+
 				}
 				/* request a wifi scan */
 				wifi_manager_scan_async();
@@ -208,24 +209,36 @@ void http_server_netconn_serve(struct netconn *conn) {
 				}
 				else{
 					netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: GET /status failed to obtain mutex\n");
-#endif
+
+					ESP_LOGI(TAG, "http_server_netconn_serve: GET /status failed to obtain mutex\n");
+
 				}
 			}
+			else if(strstr(line, "GET /register.json ")) {
+				if(wifi_manager_lock_json_buffer(( TickType_t ) 10)){
+					wifi_manager_fetch_reg_config();
+					wifi_manager_generate_reg_info_json();
+					char *buff = wifi_manager_get_reg_info_json();
+					if(buff){
+						netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY);
+						netconn_write(conn, buff, strlen(buff), NETCONN_NOCOPY);
+						wifi_manager_unlock_json_buffer();
+					}
+					else{
+						netconn_write(conn, http_503_hdr, sizeof(http_503_hdr) - 1, NETCONN_NOCOPY);
+					}
+				}
+				wifi_manager_unlock_json_buffer();
+			}
+
 			else if(strstr(line, "DELETE /connect.json ")) {
-#if WIFI_MANAGER_DEBUG
-				printf("http_server_netconn_serve: DELETE /connect.json\n");
-#endif
 				/* request a disconnection from wifi and forget about it */
 				wifi_manager_disconnect_async();
 				netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); /* 200 ok */
 			}
-			else if(strstr(line, "POST /connect.json ")) {
-#if WIFI_MANAGER_DEBUG
-				printf("http_server_netconn_serve: POST /connect.json\n");
-#endif
 
+			else if(strstr(line, "POST /connect.json ")) {
+				ESP_LOGI(TAG, "%s", save_ptr);
 				bool found = false;
 				int lenS = 0, lenP = 0;
 				char *ssid = NULL, *password = NULL;
@@ -238,9 +251,10 @@ void http_server_netconn_serve(struct netconn *conn) {
 					memcpy(config->sta.ssid, ssid, lenS);
 					memcpy(config->sta.password, password, lenP);
 
-#if WIFI_MANAGER_DEBUG
-					printf("http_server_netconn_serve: wifi_manager_connect_async() call\n");
-#endif
+					ESP_LOGI(TAG, "%s / %s", config->sta.ssid, config->sta.password);
+
+					ESP_LOGI(TAG, "http_server_netconn_serve: wifi_manager_connect_async() call\n");
+
 					wifi_manager_connect_async();
 					netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); //200ok
 					found = true;
@@ -252,10 +266,48 @@ void http_server_netconn_serve(struct netconn *conn) {
 				}
 
 			}
+
+			else if(strstr(line, "POST /register.json ")) {
+				int lenN = 0, lenE = 0, lenV = 0;
+				char *name = NULL, *email = NULL, *hidden = NULL;
+				name = http_server_get_header(save_ptr, "X-Custom-name: ", &lenN);
+				email = http_server_get_header(save_ptr, "X-Custom-email: ", &lenE);
+				hidden = http_server_get_header(save_ptr, "X-Custom-hidden: ", &lenV);
+
+				if (lenN > JSON_REG_NAME_SIZE || lenE > JSON_REG_EMAIL_SIZE){
+					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
+				}
+
+				if(name && email && hidden){
+
+					memset(reg_info.name, 0x00, JSON_REG_NAME_SIZE);
+					memset(reg_info.email, 0x00, JSON_REG_EMAIL_SIZE);
+					memcpy(reg_info.name, name, lenN);
+					memcpy(reg_info.email, email, lenE);
+					reg_info.hidden = (hidden[0] == 't');
+
+					// Save registration info to nvs flash
+					wifi_manager_save_reg_config();
+
+					netconn_write(conn, http_ok_json_no_cache_hdr, sizeof(http_ok_json_no_cache_hdr) - 1, NETCONN_NOCOPY); //200OK
+
+					if(wifi_manager_connected_to_access_point()) {
+						http_server_post_registration();
+					}
+				}
+				else{
+					netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
+
+				}
+			}
+
+			// Default: route not found
 			else{
 				netconn_write(conn, http_400_hdr, sizeof(http_400_hdr) - 1, NETCONN_NOCOPY);
 			}
 		}
+
+		// NO request found
 		else{
 			netconn_write(conn, http_404_hdr, sizeof(http_404_hdr) - 1, NETCONN_NOCOPY);
 		}
@@ -263,4 +315,64 @@ void http_server_netconn_serve(struct netconn *conn) {
 
 	/* free the buffer */
 	netbuf_delete(inbuf);
+}
+
+static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
+{
+    switch(evt->event_id) {
+        case HTTP_EVENT_ERROR:
+            ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
+            break;
+        case HTTP_EVENT_HEADER_SENT:
+            ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
+            break;
+        case HTTP_EVENT_ON_HEADER:
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
+            break;
+        case HTTP_EVENT_ON_DATA:
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+            if (!esp_http_client_is_chunked_response(evt->client)) {
+                 ESP_LOGI(TAG, "%.*s", evt->data_len, (char*)evt->data);
+            }
+
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            ESP_LOGD(TAG, "HTTP_EVENT_DISCONNECTED");
+            break;
+    }
+    return ESP_OK;
+}
+
+void http_server_post_registration()
+{
+   esp_http_client_config_t config = {
+		.url = "http://air.eng.utah.edu/dbapi/api/registerSensor",
+		.event_handler = _http_event_handler,
+	};
+	esp_http_client_handle_t client = esp_http_client_init(&config);
+
+	char *buff = wifi_manager_get_reg_info_json();
+	if(buff){
+		ESP_LOGI(TAG, "REG POST: %s", buff);
+
+		esp_http_client_set_method(client, HTTP_METHOD_POST);
+		esp_http_client_set_header(client, "Content-Type", "application/json");
+		esp_http_client_set_post_field(client, buff, strlen(buff));
+		esp_err_t err = esp_http_client_perform(client);
+		if (err == ESP_OK) {
+			ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
+					esp_http_client_get_status_code(client),
+					esp_http_client_get_content_length(client));
+		} else {
+			ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+		}
+
+		esp_http_client_cleanup(client);
+	}
 }

@@ -28,6 +28,11 @@ input[type="button"] {
     text-align: center;
     display: block;
 }
+input[type="checkbox"] {
+    width:30px;
+    height:30px;
+    display: inline;
+}
 p {
     padding: 10px;
 }
@@ -147,6 +152,20 @@ h3 {
 }
 #manual_join {
     float: right;
+}
+#reg_name {
+    border: none;
+    width: 80%;
+    margin-left: 35px;
+    padding: 10px 0px 10px 10px;
+    display: block
+}
+#reg_email {
+    border: none;
+    width: 80%;
+    margin-left: 35px;
+    padding: 10px 0px 10px 10px;
+    display: block
 }
 #yes-disconnect {
     display: inline-block;

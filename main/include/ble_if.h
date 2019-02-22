@@ -17,14 +17,21 @@
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
 
-#define GATTS_TAG "GATTS"
-
 
 typedef struct {
     uint8_t *prepare_buf;
     int 	prepare_len;
 } prepare_type_env_t;
 
+
+/*
+ * @brief   
+ *
+ * @param   
+ *
+ * @return  
+ */
+extern void ble_wifi_cred_recv_set_event_ready();
 
 /*
  * @brief 	

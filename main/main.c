@@ -90,7 +90,7 @@ static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive
  */
 void monitoring_task(void *pvParameter)
 {
-	for(;;){
+	while(1){
 		printf("free heap: %d\n",esp_get_free_heap_size());
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 	}

@@ -1,9 +1,9 @@
 # AirU V2 Repository
 
-## Workspace Setup
+# Workspace Setup
 To setup all the tools and workspace required, just follow the [Espressif Getting Started Guide.](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/) 
 
-# Notes for installing on Windows
+## Notes for installing on Windows
 First of all, I do not recommend working with the ESP32 in a Windows environment. You need to install and use MingW32, and it is extremely slow. It is much better to run a virtual machine (VirtualBox, or VMWare Workstation through the UofU). When the ESP32 is connected to your computer, go to Device Manager and locate the device. If it is showing up as an Unkown Device, have Windows try to automatically install the driver, it should be able to do so. Check which COM port the ESP32 is connected to by looking in Device Manager. In the `Serial Flash Config` page of `make menuconfig`, the port is just the device COM port, like `COM3`, whereas in Linux its something like `/dev/ttyS2`, and in MacOS it looks like `/dev/cu.usb1440`. 
 
 # TODO:

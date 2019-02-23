@@ -5,8 +5,11 @@
  *      Author: tombo
  */
 
-#ifndef MAIN_INCLUDE_WIFI_IF_H_
-#define MAIN_INCLUDE_WIFI_IF_H_
+#ifndef WIFI_IF_H
+#define WIFI_IF_H
+
+
+#include "esp_system.h"
 
 
 /*
@@ -16,7 +19,7 @@
 *
 * @return
 */
-void wifi_init_sta(void);
+void wifi_sta_Initialize();
 
 
 /*
@@ -26,7 +29,7 @@ void wifi_init_sta(void);
 *
 * @return
 */
-void wifi_init_softap(void);
+esp_err_t wifi_sta_event_handler(void *ctx, system_event_t *event);
 
 
-#endif /* MAIN_INCLUDE_WIFI_IF_H_ */
+#endif /* WIFI_IF_H */

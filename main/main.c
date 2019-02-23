@@ -69,6 +69,7 @@ Notes:
 #include "ota_if.h"
 #include "led_if.h"
 #include "ble_if.h"
+#include "wifi_if.h"
 
 
 /* GPIO */
@@ -246,10 +247,14 @@ void app_main()
 	printf("Waiting of wifi ssid and password...\n");
 	uxBits = xEventGroupWaitBits(ble_event_group, (1 << 0), pdFALSE, pdTRUE, portMAX_DELAY);
 	printf("Got wifi ssid and password\n");
+
+	printf("SSID: %s\n", ssid);
+	printf("PASSWORD: %s\n", password);
     //while(!ble_wifi_cred_ready)
     //    vTaskDelay(500 / portTICK_PERIOD_MS);
 
     // Set the wifi for the board using the credentials recieved
+    //wifi_sta_Initialize();
 
     // make sure it connected
 

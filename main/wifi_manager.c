@@ -766,7 +766,7 @@ void wifi_manager( void * pvParameters ){
 				ESP_LOGI(TAG, "WiFi was not connected to begin with!");
 			}
 
-			LED_SetWifiConn(LED_WIFI_DISCONNECTED);
+			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 
@@ -839,7 +839,7 @@ void wifi_manager( void * pvParameters ){
 						wifi_manager_save_sta_config();
 
 						/* update the LED */
-						LED_SetWifiConn(LED_WIFI_CONNECTED);
+						LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 
 						/* Start SNTP */
 						sntp_initialize();
@@ -857,7 +857,7 @@ void wifi_manager( void * pvParameters ){
 						memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
 
 						/* update the LED */
-						LED_SetWifiConn(LED_WIFI_DISCONNECTED);
+						LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 						/* Shut down the MQTT socket - It'll come back up when we reconnect */
 //						MQTT_wifi_disconnected();

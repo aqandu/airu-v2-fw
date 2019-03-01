@@ -68,6 +68,7 @@ Notes:
 #include "gps_if.h"
 #include "ota_if.h"
 #include "led_if.h"
+#include "sd_if.h"
 
 /* GPIO */
 #define STAT1_LED 21
@@ -82,7 +83,7 @@ static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
+static const char *MQTT_PKT = "usu\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -106,6 +107,7 @@ void data_task(void *pvParameters)
 	uint16_t co, nox;
 	esp_gps_t gps;
 	char mqtt_pkt[MQTT_PKT_LEN];
+	char sd_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
 
 	vTaskDelay(5000 / portTICK_PERIOD_MS);
@@ -142,21 +144,37 @@ void data_task(void *pvParameters)
 									co,				/* CO */
 									nox				/* NOx */);
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		printf("\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		printf("Packet: %s\n", mqtt_pkt);
-//		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-//		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-//		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-//		printf("Uptime: %llu\n", uptime);
+		ESP_LOGI(TAG, "\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
+		ESP_LOGI(TAG, "Packet: %s\n", mqtt_pkt);
+		ESP_LOGI(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
+		ESP_LOGI(TAG, "GPS Datetime: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
+		ESP_LOGI(TAG, "GPS: %.4f, %.4f\n", gps.lat, gps.lon);
+		ESP_LOGI(TAG, "Uptime: %llu\n", uptime);
 
 		//
 		// Save data to the SD card
+		// TODO: Get time from NTP/GPS, update time source
 		//
-
+		bzero(sd_pkt, MQTT_PKT_LEN);
+		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%c\n",
+									gps.hour, gps.min, gps.sec,	/* time */
+									DEVICE_MAC,		/* ID */
+									uptime, 		/* secActive */
+									gps.alt,		/* Altitude */
+									gps.lat, 		/* Latitude */
+									gps.lon, 		/* Longitude */
+									pm_dat.pm1,		/* PM1 */
+									pm_dat.pm2_5,	/* PM2.5 */
+									pm_dat.pm10, 	/* PM10 */
+									temp,			/* Temperature */
+									hum,			/* Humidity */
+									co,				/* CO */
+									nox,			/* NO */
+									'G');			/* Time Source ([N]TP/[G]PS)*/
+		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 
 	}
 }
-
 
 void app_main()
 {
@@ -185,6 +203,9 @@ void app_main()
 
 	/* Initialize the MICS Driver */
 	MICS4514_Initialize();
+
+	/* Initialize the SD Card Driver */
+	sd_init();
 
 	/* start the HTTP Server task */
 	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);

@@ -16,6 +16,7 @@
 #include "driver/uart.h"
 #include "esp_log.h"
 #include "gps_if.h"
+#include "led_if.h"
 #include "math.h"
 
 #define GPS_UART_NUM 		UART_NUM_1
@@ -137,6 +138,9 @@ esp_err_t GPS_Initialize()
     uart_flush(GPS_UART_NUM);
 
 	xTaskCreate(uart_gps_event_mgr, "uart_pms_event_task", 2048, NULL, 12, NULL);
+
+	ESP_LOGE(TAG, "Setting GPS NOT SET Bit...");
+	LED_SetEventBit(LED_EVENT_GPS_RTC_NOT_SET_BIT);
 
 	return err;
 }
@@ -356,12 +360,16 @@ esp_err_t parse(char *nmea) {
 		  year = (fulldate % 100);
 		}
 
-		esp_gps.day 	= day;
-		esp_gps.month 	= month;
-		esp_gps.year 	= year;
-		esp_gps.hour 	= hour;
-		esp_gps.min 	= minute;
-		esp_gps.sec 	= seconds;
+		esp_gps.day   = day;
+		esp_gps.month = month;
+		esp_gps.year  = year;
+		esp_gps.hour  = hour;
+		esp_gps.min   = minute;
+		esp_gps.sec   = seconds;
+
+		if (year < 80) {
+			LED_SetEventBit(LED_EVENT_GPS_RTC_SET_BIT);
+		}
 
 		return ESP_OK;
 	}
@@ -383,13 +391,13 @@ uint8_t parseHex(char c) {
 
 void GPS_Poll(esp_gps_t* gps)
 {
-	gps->alt = esp_gps.alt;
-	gps->lat = esp_gps.lat;
-	gps->lon = esp_gps.lon;
-	gps->year = esp_gps.year;
+	gps->alt   = esp_gps.alt;
+	gps->lat   = esp_gps.lat;
+	gps->lon   = esp_gps.lon;
+	gps->year  = esp_gps.year;
 	gps->month = esp_gps.month;
-	gps->day = esp_gps.day;
-	gps->hour = esp_gps.hour;
-	gps->min = esp_gps.min;
-	gps->sec = esp_gps.sec;
+	gps->day   = esp_gps.day;
+	gps->hour  = esp_gps.hour;
+	gps->min   = esp_gps.min;
+	gps->sec   = esp_gps.sec;
 }

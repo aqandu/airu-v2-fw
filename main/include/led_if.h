@@ -9,12 +9,16 @@
 #define MAIN_INCLUDE_LED_IF_H_
 
 typedef enum {
-	LED_WIFI_DISCONNECTED = 0,
-	LED_WIFI_CONNECTED	  = 1
-}led_wifi_conn_t;
+	LED_EVENT_WIFI_DISCONNECTED_BIT = BIT0,
+	LED_EVENT_WIFI_CONNECTED_BIT = BIT1,
+	LED_EVENT_GPS_RTC_NOT_SET_BIT = BIT2,
+	LED_EVENT_GPS_RTC_SET_BIT = BIT3,
+	LED_EVENT_ALL_BITS = (BIT0 | BIT1 | BIT2 | BIT3)
+}led_events_t;
+
 
 void LED_Initialize( void );
-void LED_SetWifiConn(led_wifi_conn_t bit);
+void LED_SetEventBit(led_events_t bit);
 void led_task(void* pvParameters);
 
 

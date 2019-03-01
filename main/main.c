@@ -83,7 +83,7 @@ static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "usu\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
+static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -110,7 +110,7 @@ void data_task(void *pvParameters)
 	char sd_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
 
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
+//	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
 		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
@@ -153,7 +153,6 @@ void data_task(void *pvParameters)
 
 		//
 		// Save data to the SD card
-		// TODO: Get time from NTP/GPS, update time source
 		//
 		bzero(sd_pkt, MQTT_PKT_LEN);
 		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%c\n",
@@ -178,7 +177,6 @@ void data_task(void *pvParameters)
 
 void app_main()
 {
-//	esp_log_level_set("*", ESP_LOG_INFO);
 
 	/* initialize flash memory */
 	nvs_flash_init();

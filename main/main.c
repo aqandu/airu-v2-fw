@@ -201,10 +201,8 @@ void app_main()
 	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
 
 	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);	//Notifies MQTT that a packet is ready
 
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

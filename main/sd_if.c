@@ -20,7 +20,7 @@
 #include "sd_if.h"
 
 static const char *TAG = "SD";
-static const char *DATA_HEADER = "Time (GMT),MAC,Uptime (s),Altitude (m),Latitude (DD.dd),Longitude (DD.dd),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (C),Humidity,RED (x/4096),OX (x/4096),Time Source ([N]TP/[G]PS)\n";
+static const char *DATA_HEADER = "Time (GMT),MAC,PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3)\n";
 
 static sdmmc_card_t* card = NULL;
 
@@ -126,7 +126,7 @@ esp_err_t sd_deinit(void)
  * believe GPS is a local time. GPS should always be correct as long as there's
  * a battery, so I don't think it will be a big deal.
  */
-esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
+esp_err_t sd_write_data(char* pkt)
 {
 	esp_err_t err = ESP_FAIL;
 	time_t now; /* time_t == long */
@@ -134,20 +134,23 @@ esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
     struct stat st;
     char filename[23];
 
-    ESP_LOGI(TAG, "SD Packet:\n%s", pkt);
+    ESP_LOGI(TAG, "> %s", pkt);
 
 	// Files are created daily. Filename is YYYY-MM-DD.csv
-//    time(&now);
-//    localtime_r(&now, &timeinfo);
-//    strftime(filename, sizeof(filename), "/sdcard/%y-%m-%d.csv", &timeinfo);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    if (timeinfo.tm_year > 125 || timeinfo.tm_year < 119) {
+    	return ESP_FAIL;
+    }
+    strftime(filename, sizeof(filename), "/sdcard/%y-%m-%d.csv", &timeinfo);
 
-	sprintf(filename, "/sdcard/%02d-%02d-%02d.csv", year, month, day);
+//	sprintf(filename, "/sdcard/%02d-%02d-%02d.csv", year, month, day);
 
-    ESP_LOGI(TAG, "Filename: %s", filename);
+//    ESP_LOGI(TAG, "Filename: %s", filename);
 
     // If file doesn't exist, need to add header
     bool exists = stat(filename, &st) == 0;
-    ESP_LOGI(TAG, "File %s", exists ? "exists" : "does not exist.");
+//    ESP_LOGI(TAG, "File %s", exists ? "exists" : "does not exist.");
 
     FILE* f = fopen(filename, "a");
     if (f == NULL) {

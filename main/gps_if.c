@@ -10,6 +10,8 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
@@ -19,11 +21,13 @@
 #include "led_if.h"
 #include "math.h"
 
+
 #define GPS_UART_NUM 		UART_NUM_1
 #define GPS_TX_GPIO 		22
 #define GPS_RX_GPIO 		23
 #define MAX_SENTENCE_LEN 	1024
 #define NMEA_RDY_BIT		BIT0
+
 
 static uint8_t nmea[MAX_SENTENCE_LEN];
 //static EventGroupHandle_t gps_event_group;
@@ -90,7 +94,11 @@ static void uart_gps_event_mgr(void *pvParameters)
 					if (pos != -1) {
 						int read_len = uart_read_bytes(GPS_UART_NUM, nmea, pos + 1, 100 / portTICK_PERIOD_MS);
 						nmea[read_len] = '\0';
-						parse((char*)nmea);
+						err = parse((char*)nmea);
+						if (err == ESP_OK) {
+//							ESP_LOGI(TAG, "Setting time using GPS...");
+							GPS_settime();
+						}
 					}
 					else {
 						uart_flush_input(GPS_UART_NUM);
@@ -145,6 +153,28 @@ esp_err_t GPS_Initialize()
 	return err;
 }
 
+
+esp_err_t GPS_settime() {
+	struct tm timeinfo;
+	time_t posix = 0;
+	struct timeval tv_time;
+	setenv("TZ", "UTC", 1);
+	tzset();
+
+	timeinfo.tm_year = 	(int)esp_gps.year + 100;
+	timeinfo.tm_mon  = esp_gps.month - 1;
+	timeinfo.tm_mday = esp_gps.day;
+	timeinfo.tm_hour = esp_gps.hour;
+	timeinfo.tm_min  = esp_gps.min;
+	timeinfo.tm_sec  = esp_gps.sec;
+
+	posix = mktime(&timeinfo);
+	tv_time.tv_sec = posix;
+	tv_time.tv_usec = 0;
+	settimeofday(&tv_time, 0);
+	return ESP_OK;
+}
+
 /*
  *	This function was taken from Limor Fried/Ladyada,
  * 	from the Adafruit GPS library for Adafruit Industries.
@@ -182,6 +212,7 @@ esp_err_t parse(char *nmea) {
 		  return false;
 		}
 	}
+
 	int32_t degree;
 	long minutes;
 	char degreebuff[10];

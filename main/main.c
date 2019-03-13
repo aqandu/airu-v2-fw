@@ -97,81 +97,37 @@ void monitoring_task(void *pvParameter)
 	}
 }
 
-/*
- * Data gather task
- */
-void data_task(void *pvParameters)
+void pm_reset_task(void *pvParameters)
 {
-	pm_data_t pm_dat;
-	double temp, hum;
-	uint16_t co, nox;
-	esp_gps_t gps;
-	char mqtt_pkt[MQTT_PKT_LEN];
-	char sd_pkt[MQTT_PKT_LEN];
-	uint64_t uptime = 0;
-
-//	vTaskDelay(5000 / portTICK_PERIOD_MS);
+	time_t posix;
+	PMS_SET(1);
 	for(;;){
+		PMS_RESET(0);
+		LED_Set(STAT1_CH, 0);
+		ESP_LOGI(TAG, "RESET = 0");
 		vTaskDelay(60000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Data Task...");
 
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
-		GPS_Poll(&gps);
+		PMS_RESET(1);
+		LED_Set(STAT1_CH, 1);
+		ESP_LOGI(TAG, "RESET = 1");
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
+	}
+}
 
-		uptime = esp_timer_get_time() / 1000000;
+void pm_set_task(void *pvParameters)
+{
+	time_t posix;
+	PMS_RESET(1);
+	for(;;){
+		PMS_SET(0);
+		LED_Set(STAT2_CH, 0);
+		ESP_LOGI(TAG, "SET = 0");
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 
-		//
-		// Send data over MQTT
-		//
-
-		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
-		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
-		bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox				/* NOx */);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		ESP_LOGI(TAG, "\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		ESP_LOGI(TAG, "Packet: %s\n", mqtt_pkt);
-		ESP_LOGI(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-		ESP_LOGI(TAG, "GPS Datetime: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-		ESP_LOGI(TAG, "GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-		ESP_LOGI(TAG, "Uptime: %llu\n", uptime);
-
-		//
-		// Save data to the SD card
-		//
-		bzero(sd_pkt, MQTT_PKT_LEN);
-		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%c\n",
-									gps.hour, gps.min, gps.sec,	/* time */
-									DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox,			/* NO */
-									'G');			/* Time Source ([N]TP/[G]PS)*/
-		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
-
+		PMS_SET(1);
+		LED_Set(STAT2_CH, 1);
+		ESP_LOGI(TAG, "SET = 1");
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -185,7 +141,7 @@ void app_main()
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
-	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+//	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
 
 	/* Initialize the LED Driver */
 	LED_Initialize();
@@ -197,31 +153,32 @@ void app_main()
 	PMS_Initialize();
 
 	/* Initialize the HDC1080 Driver */
-	HDC1080_Initialize();
+//	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
+//	MICS4514_Initialize();
 
 	/* Initialize the SD Card Driver */
 	sd_init();
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+//	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+//	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
-	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+	xTaskCreate(&pm_reset_task, "data_task", 4096, NULL, 2, &task_data);
+//	xTaskCreate(&pm_set_task, "data_task", 4096, NULL, 2, &task_data);
+
 
 	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
-#if WIFI_MANAGER_DEBUG
-	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
-#endif
+//#if WIFI_MANAGER_DEBUG
+//	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
+//#endif
 }

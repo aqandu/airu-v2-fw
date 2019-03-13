@@ -20,8 +20,9 @@ typedef struct {
 	uint8_t sec;
 } esp_gps_t;
 
-esp_err_t GPS_Initialize(void);
+esp_err_t GPS_Initialize( void );
 void GPS_Poll(esp_gps_t* gps);
+esp_err_t GPS_settime( void );
 
 
 #endif /* MAIN_INCLUDE_GPS_IF_H_ */

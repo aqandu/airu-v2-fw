@@ -14,14 +14,6 @@
 #include "esp_log.h"
 #include "led_if.h"
 
-#define STAT1_LED 21	/* RED 	 */
-#define STAT2_LED 19	/* GREEN */
-#define STAT3_LED 18	/* BLUE  */
-
-#define STAT1_CH	LEDC_CHANNEL_0
-#define STAT2_CH	LEDC_CHANNEL_1
-#define STAT3_CH	LEDC_CHANNEL_2
-
 #define LEDC_RESOLUTION		LEDC_TIMER_8_BIT
 #define LEDC_NUM_LEDS     	(3)
 #define LEDC_DUTY         	(0x1 << (LEDC_RESOLUTION - 2))		/* 1/4 Max Duty */
@@ -89,6 +81,7 @@ void led_task(void *pvParameters)
 	esp_err_t err;
 	EventBits_t uxBits;
 
+	LED_Set(STAT1_CH, 0);
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
@@ -113,4 +106,10 @@ void led_task(void *pvParameters)
 			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
 		}
 	}
+}
+
+void LED_Set(int ch, uint8_t level)
+{
+	ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, (level ? LEDC_DUTY : 0));
+	ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
 }

@@ -1,0 +1,23 @@
+These MAC addresses are for testing low power PM sensor. Tofigh will test them. 
+- FULL just write data to the SD card as it comes in. 
+- SET cycles PM SET on/off 60 sec/60 sec
+- RESET cycles PM RESET on/off 60 sec/ 60 sec 
+
+FULL:
+3C71BF153B14
+30AEA4EFAA24
+3C71BF137040
+3C71BF1371CC
+
+SET:
+3C71BF137210
+3C71BF1533BC
+3C71BF147784
+3C71BF14CB58
+
+RESET:
+3C71BF153534
+3C71BF153938
+3C71BF153D60
+3C71BF153674
+

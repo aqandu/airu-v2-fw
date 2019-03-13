@@ -5,7 +5,6 @@
  *      Author: tombo
  */
 
-#include "time_if.h"
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
@@ -21,6 +20,7 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
+#include "time_if.h"
 
 #define WIFI_CONNECTED_BIT 	BIT0
 

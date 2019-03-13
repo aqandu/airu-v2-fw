@@ -14,21 +14,31 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "freertos/event_groups.h"
+#include "driver/gpio.h"
 #include "driver/uart.h"
 #include "esp_log.h"
 #include "pm_if.h"
+#include "sd_if.h"
 
+#define GPIO_PM_RESET	17
+#define GPIO_PM_SET		5
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_PM_RESET) | (1ULL<<GPIO_PM_SET))
+
+#define PM_DATA_IN BIT0
 #define PM_TIMER_TIMEOUT_MS 5000
 
-static const char* TAG_PM = "PM";
+static const char* TAG = "PM";
+static const char *DATA_PKT = "%li,%s,%.2f,%.2f,%.2f\n";	/* timestamp, MAC, PM1, PM2.5, PM10 */
 
 static void _pm_accum_rst(void);
-static esp_err_t get_packet_from_buffer(void);
-static esp_err_t get_data_from_packet(uint8_t *packet);
-static uint8_t pm_checksum();
+static esp_err_t _get_packet_from_buffer(void);
+static esp_err_t _get_data_from_packet(uint8_t *packet);
+static uint8_t _pm_checksum();
 static void uart_pm_event_mgr(void *pvParameters);
 static void vTimerCallback(TimerHandle_t xTimer);
 
@@ -37,6 +47,9 @@ static QueueHandle_t pm_event_queue;
 static TimerHandle_t pm_timer;
 static pm_data_t pm_accum;
 static uint8_t pm_buf[BUF_SIZE];
+EventGroupHandle_t pm_event_group;
+EventBits_t uxBits;
+static char DEVICE_MAC[13];
 
 /*
  * @brief 	PM data timer callback. If no valid PM data is received
@@ -49,7 +62,7 @@ static uint8_t pm_buf[BUF_SIZE];
  */
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-	ESP_LOGI(TAG_PM, "PM Timer Timeout -- Resetting PM Sample Accumulator");
+	ESP_LOGI(TAG, "PM Timer Timeout -- Resetting PM Sample Accumulator");
 	xTimerStop(xTimer, 0);
 	_pm_accum_rst();
 }
@@ -69,6 +82,27 @@ static void _pm_accum_rst()
 	pm_accum.sample_count = 0;
 }
 
+
+void pm_sd_task(void *pvParameters) {
+	char packet[100];
+
+	pm_event_group = xEventGroupCreate();
+	time_t posix;
+
+	for (;;) {
+		ESP_LOGI(TAG, "Waiting for PM data...");
+		uxBits = xEventGroupWaitBits(pm_event_group, PM_DATA_IN, pdTRUE, pdTRUE, portMAX_DELAY);
+		if (uxBits & PM_DATA_IN){
+			_get_packet_from_buffer();
+			_pm_accum_rst();
+//			ESP_LOGI(TAG, "PM: (%.2f, %.2f, %.2f)", pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
+			time(&posix);
+			sprintf(packet, DATA_PKT, posix, DEVICE_MAC, pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
+			sd_write_data(packet);
+		}
+	}
+
+}
 /*
 * @brief
 *
@@ -104,6 +138,24 @@ esp_err_t PMS_Initialize()
   if(err != ESP_OK)
   		return err;
 
+  // Config the SET/RESET GPIO
+  gpio_config_t io_conf;
+  // disable interrupt
+  io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+  // set as output
+  io_conf.mode = GPIO_MODE_OUTPUT;
+  // bit mask of the pins
+  io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+  // disable pull-down mode
+  io_conf.pull_down_en = 0;
+  // disable pull-up mode
+  io_conf.pull_up_en = 0;
+  // configure GPIO with the given settings
+  gpio_config(&io_conf);
+
+  PMS_SET(1);
+  PMS_RESET(1);
+
   // create a task to handler UART event from ISR for the PM sensor
   xTaskCreate(uart_pm_event_mgr, "vPM_task", 2048, NULL, 12, NULL);
 
@@ -119,6 +171,12 @@ esp_err_t PMS_Initialize()
   // start the first timer
   xTimerStart(pm_timer, 0);
 
+  xTaskCreate(&pm_sd_task, "data_task", 4096, NULL, 1, &pm_sd_task);
+  uint8_t tmp[6];
+  esp_efuse_mac_get_default(tmp);
+  sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+  ESP_LOGI(TAG, "\nMAC Address: %s\n", DEVICE_MAC);
+
   return err;
 }
 
@@ -130,11 +188,19 @@ esp_err_t PMS_Initialize()
 * @return
 *
 */
-esp_err_t PMS_Reset()
+void PMS_RESET(uint32_t level)
 {
-  /* TODO: need gpio library set up first */
+	gpio_set_level(GPIO_PM_RESET, level);
+}
 
-	return ESP_FAIL;
+void PMS_SET(uint32_t level)
+{
+	gpio_set_level(GPIO_PM_SET, level);
+}
+
+uint8_t PMS_Active()
+{
+	return gpio_get_level(GPIO_PM_RESET);
 }
 
 esp_err_t PMS_Poll(pm_data_t *dat)
@@ -179,37 +245,39 @@ static void uart_pm_event_mgr(void *pvParameters)
           if(event.size == 24) 
           {
             uart_read_bytes(PM_UART_CH, pm_buf, event.size, portMAX_DELAY);
-            get_packet_from_buffer();
+//            _get_packet_from_buffer();
+            xEventGroupSetBits(pm_event_group, PM_DATA_IN);
+//            ESP_LOGI(TAG, "Event MGR set PM_DATA_IN...");
           }
           uart_flush_input(PM_UART_CH);
           break;
 
         case UART_FIFO_OVF:
-          ESP_LOGI(TAG_PM, "hw fifo overflow");
+          ESP_LOGI(TAG, "hw fifo overflow");
           uart_flush_input(PM_UART_CH);
           xQueueReset(pm_event_queue);
           break;
                 
         case UART_BUFFER_FULL:
-          ESP_LOGI(TAG_PM, "ring buffer full");
+          ESP_LOGI(TAG, "ring buffer full");
           uart_flush_input(PM_UART_CH);
           xQueueReset(pm_event_queue);
           break;
             
         case UART_BREAK:
-          ESP_LOGI(TAG_PM, "uart rx break");
+          ESP_LOGI(TAG, "uart rx break");
           break;
                 
         case UART_PARITY_ERR:
-          ESP_LOGI(TAG_PM, "uart parity error");
+          ESP_LOGI(TAG, "uart parity error");
           break;
                 
         case UART_FRAME_ERR:
-          ESP_LOGI(TAG_PM, "uart frame error");
+          ESP_LOGI(TAG, "uart frame error");
           break;
 
         default:
-          ESP_LOGI(TAG_PM, "uart event type: %d", event.type);
+          ESP_LOGI(TAG, "uart event type: %d", event.type);
           break;
       }//case
     }//if
@@ -227,9 +295,9 @@ static void uart_pm_event_mgr(void *pvParameters)
 * @return
 *
 */
-static esp_err_t get_packet_from_buffer(){
+static esp_err_t _get_packet_from_buffer(){
   if(pm_buf[0] == 'B' && pm_buf[1] == 'M'){
-	  if(pm_checksum()){
+	  if(_pm_checksum()){
 		  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
 		  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
 		  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
@@ -250,7 +318,7 @@ static esp_err_t get_packet_from_buffer(){
 * @return
 *
 */
-static esp_err_t get_data_from_packet(uint8_t *packet)
+static esp_err_t _get_data_from_packet(uint8_t *packet)
 {
   uint16_t tmp;
   uint8_t tmp2;
@@ -294,7 +362,7 @@ static esp_err_t get_data_from_packet(uint8_t *packet)
 * @return
 *
 */
-static uint8_t pm_checksum()
+static uint8_t _pm_checksum()
 {
 	uint16_t checksum;
 	uint16_t sum = 0;
@@ -308,3 +376,5 @@ static uint8_t pm_checksum()
 
 	return (sum == checksum);
 }
+
+

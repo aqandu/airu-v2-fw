@@ -26,6 +26,8 @@
 #define LEDC_NUM_LEDS     	(3)
 #define LEDC_DUTY         	(0x1 << (LEDC_RESOLUTION - 2))		/* 1/4 Max Duty */
 
+static void _push(uint8_t ch, uint32_t duty);
+
 static const char* TAG = "LED";
 
 static EventGroupHandle_t led_event_group;
@@ -52,6 +54,13 @@ static ledc_channel_config_t ledc_channel[LEDC_NUM_LEDS] = {
         .timer_sel  = LEDC_TIMER_0
     },
 };
+
+
+static void _push(uint8_t ch, uint32_t duty)
+{
+	ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, duty);
+	ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+}
 
 
 void LED_Initialize()
@@ -93,33 +102,22 @@ void led_task(void *pvParameters)
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
 		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
-			ch = STAT1_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+			_push(STAT1_CH, LEDC_DUTY);
 		}
 		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
-			ch = STAT1_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
-		}
-		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
-			ch = STAT3_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
-		}
-		if (uxBits & LED_EVENT_GPS_RTC_SET_BIT) {
-			ch = STAT3_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+			_push(STAT1_CH, 0);
 		}
 		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
-			ch = STAT2_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 1);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+			_push(STAT2_CH, LEDC_DUTY);
 		}
 		if (uxBits & LED_EVENT_MICS_HEATER_OFF_BIT) {
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+			_push(STAT2_CH, 0);
+		}
+		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
+			_push(STAT3_CH, LEDC_DUTY);
+		}
+		if (uxBits & LED_EVENT_GPS_RTC_SET_BIT) {
+			_push(STAT3_CH, 0);
 		}
 	}
 }

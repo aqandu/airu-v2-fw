@@ -18,9 +18,13 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "driver/uart.h"
+#include "driver/gpio.h"
 #include "esp_log.h"
 #include "pm_if.h"
 
+#define GPIO_PM_RESET	17
+#define GPIO_PM_SET		5
+#define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_PM_RESET) | (1ULL << GPIO_PM_SET))
 #define PM_TIMER_TIMEOUT_MS 5000
 
 static const char* TAG_PM = "PM";
@@ -116,6 +120,18 @@ esp_err_t PMS_Initialize()
   // clear out the pm data accumulator
   _pm_accum_rst();
 
+  // SET and RESET GPIOs
+  gpio_config_t io_conf;
+  io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+  io_conf.mode = GPIO_MODE_OUTPUT;
+  io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+  io_conf.pull_down_en = 0;
+  io_conf.pull_up_en = 0;
+  gpio_config(&io_conf);
+
+  PMS_SET(1);
+  PMS_RESET(1);
+
   // start the first timer
   xTimerStart(pm_timer, 0);
 
@@ -130,12 +146,31 @@ esp_err_t PMS_Initialize()
 * @return
 *
 */
-esp_err_t PMS_Reset()
+void PMS_RESET(uint32_t level)
 {
-  /* TODO: need gpio library set up first */
-
-	return ESP_FAIL;
+  gpio_set_level(GPIO_PM_RESET, level);
 }
+
+
+/*
+* @brief
+*
+* @param
+*
+* @return
+*
+*/
+void PMS_SET(uint32_t level)
+{
+  gpio_set_level(GPIO_PM_SET, level);
+}
+
+
+uint8_t PMS_Active()
+{
+	return gpio_get_level(GPIO_PM_RESET);
+}
+
 
 esp_err_t PMS_Poll(pm_data_t *dat)
 {

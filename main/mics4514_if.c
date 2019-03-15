@@ -10,16 +10,35 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_adc_cal.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+#include "driver/gpio.h"
 #include "mics4514_if.h"
+#include "led_if.h"
 
+#define GPIO_MICS_PWR	33
+#define GPIO_MICS_HTR	32
+#define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_MICS_PWR) | (1ULL << GPIO_MICS_HTR))
+#define HEATER_TIMER_TIMEOUT_MS (1000UL * 60UL)
 #define NO_OF_SAMPLES	64
 #define DEFAULT_VREF	1100 	// Use adc2_vref_to_gpio() to obtain a better estimate
 
-static const char* TAG = "MICS4514";
+static const char* TAG = "MICS";
 static esp_adc_cal_characteristics_t *adc_chars;
+static TimerHandle_t heater_timer;
 
 static void check_efuse(void);
 static void print_char_val_type(esp_adc_cal_value_t val_type);
+static void vTimerCallback(TimerHandle_t xTimer);
+
+
+static void vTimerCallback(TimerHandle_t xTimer)
+{
+	ESP_LOGI(TAG, "Timer timeout reached...");
+	xTimerStop(xTimer, 0);
+	MICS4514_Heater(0);
+}
 
 /*
  *
@@ -39,6 +58,34 @@ static void check_efuse()
     } else {
     	ESP_LOGI(TAG, "eFuse Vref: NOT supported\n");
     }
+}
+
+void MICS4514_Enable()
+{
+	gpio_set_level(GPIO_MICS_PWR, 1);
+}
+
+void MICS4514_Disable()
+{
+	gpio_set_level(GPIO_MICS_PWR, 0);
+}
+
+void MICS4514_Heater(uint32_t level)
+{
+	gpio_set_level(GPIO_MICS_HTR, level);
+	LED_SetEventBit((!!level) ? LED_EVENT_MICS_HEATER_ON_BIT : LED_EVENT_MICS_HEATER_OFF_BIT);
+}
+
+void MICS4514_HeaterTimed(uint32_t ms_on)
+{
+	MICS4514_Heater(1);
+	xTimerChangePeriod(heater_timer, (1000 * ms_on) / portTICK_PERIOD_MS, 0);
+	xTimerStart(heater_timer, 0);
+}
+
+uint8_t MIC4514_HeaterActive()
+{
+	return gpio_get_level(GPIO_MICS_HTR);
 }
 
 /*
@@ -62,6 +109,15 @@ void MICS4514_Initialize(void)
 {
 	esp_adc_cal_value_t val_type;
 
+	// Set up the GPIO for power and heater
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 0;
+	gpio_config(&io_conf);
+
 	//Check if Two Point or Vref are burned into eFuse
 	check_efuse();
 
@@ -77,6 +133,12 @@ void MICS4514_Initialize(void)
 										DEFAULT_VREF,
 										adc_chars);
 	print_char_val_type(val_type);
+
+	heater_timer = xTimerCreate("heater_timer",
+								(HEATER_TIMER_TIMEOUT_MS / portTICK_PERIOD_MS),
+								pdFALSE, (void*)NULL,
+								vTimerCallback);
+
 	return;
 }
 

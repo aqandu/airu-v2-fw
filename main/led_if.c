@@ -112,5 +112,14 @@ void led_task(void *pvParameters)
 			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
 			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
 		}
+		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
+			ch = STAT2_CH;
+			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 1);
+			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+		}
+		if (uxBits & LED_EVENT_MICS_HEATER_OFF_BIT) {
+			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
+			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+		}
 	}
 }

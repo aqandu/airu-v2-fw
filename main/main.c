@@ -220,7 +220,7 @@ void app_main()
     BLE_Initialize();
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+	//xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
 	//xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
@@ -236,7 +236,7 @@ void app_main()
 	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
 
 	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+	//xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

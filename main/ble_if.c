@@ -429,7 +429,7 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             {
                 cur++;
             }
-            memcpy(ssid, recv_data, cur);
+            memcpy(ssid, recv_data, cur+1);
             cur++;
 
             pos = cur;

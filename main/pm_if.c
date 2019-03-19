@@ -94,11 +94,11 @@ void pm_sd_task(void *pvParameters) {
 		uxBits = xEventGroupWaitBits(pm_event_group, PM_DATA_IN, pdTRUE, pdTRUE, portMAX_DELAY);
 		if (uxBits & PM_DATA_IN){
 			_get_packet_from_buffer();
-			_pm_accum_rst();
 //			ESP_LOGI(TAG, "PM: (%.2f, %.2f, %.2f)", pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
 			time(&posix);
 			sprintf(packet, DATA_PKT, posix, DEVICE_MAC, pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
 			sd_write_data(packet);
+			_pm_accum_rst();
 		}
 	}
 

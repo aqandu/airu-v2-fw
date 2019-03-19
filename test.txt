@@ -1,0 +1,81 @@
+Toolchain path: /Users/tombo/esp/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc
+Toolchain version: crosstool-ng-1.22.0-80-g6c4433a
+Compiler version: 5.2.0
+Python requirements from /Users/tombo/esp/esp-idf/requirements.txt are satisfied.
+MONITOR
+¥×Š=â ’Ê6€Â:’&Gój
+C!Íñšâe€	uİ…ÊÊê¥•³!U‰	½ı´'ÂE¢Â³U½¦°
+õ%‘A³ê%½ÏUÙŠÌë™Õg³:i€¢ ³U°'Â•å¡±İ_¤.G‚ø‚Œ¼EÉöÂÁ0I}Ñr¶'ÂÁ°iÍ°EÉöÂÁ0‰‘½´.—‚¸Âœ½´.—‚¸Â¡ëÑ¥4ê± ³ëÍ»‚Å¶§*ŠëÅ¤'ÂM¦–‚Ê8Œ+ÙšSH¬+Ñšâm¦–aL‰K¹i•âŠëÅ¤'ÂQ°ú˜Â0Œ+Ùš’”#û…d'ÂÑ0Â4¢l¥Ëª•-F¨å‹Éù‚¸‚˜Ò7”#á[0;32mI (288) cpu_start: Pro cpu up.[0m
+[0;32mI (288) cpu_start: Application information:[0m
+[0;32mI (288) cpu_start: Project name:     mqtt_ssl[0m
+[0;32mI (290) cpu_start: App version:      d5b0c81-dirty[0m
+[0;32mI (296) cpu_start: Compile time:     15:53:28[0m
+[0;32mI (301) cpu_start: Compile date:     Feb  4 2019[0m
+[0;32mI (306) cpu_start: ESP-IDF:          v3.3-beta1-223-ga62cbfec9[0m
+[0;32mI (313) cpu_start: Starting app cpu, entry point is 0x40080f3c[0m
+[0;32mI (0) cpu_start: App cpu up.[0m
+[0;32mI (323) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (330) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (336) heap_init: At 3FFB9710 len 000268F0 (154 KiB): DRAM[0m
+[0;32mI (342) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (349) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (355) heap_init: At 40090A20 len 0000F5E0 (61 KiB): IRAM[0m
+[0;32mI (361) cpu_start: Pro cpu start user code[0m
+[0;32mI (43) cpu_start: Starting scheduler on PRO CPU.[0m
+[0;32mI (0) cpu_start: Starting scheduler on APP CPU.[0m
+
+MAC Address: 3C71BF153690
+
+[0;32mI (133) uart: queue free spaces: 20[0m
+[0;32mI (143) uart: queue free spaces: 20[0m
+[0;32mI (143) HDC1080: HDC1080 was properly configured[0m
+[0;32mI (143) MICS4514: eFuse Two Point: NOT supported
+[0m
+[0;32mI (143) MICS4514: eFuse Vref: Supported
+[0m
+[0;32mI (153) MICS4514: Characterized using eFuse Vref
+[0m
+[0;32mI (153) HTTP: waiting for start bit
+[0m
+[0;32mI (163) WMG: About to fetch wifi sta config[0m
+[0;32mI (163) LED: Waiting for something to happen...[0m
+[0;32mI (163) WMG: Start DHCP client for STA interface. If not already running
+[0m
+[0;32mI (163) OTA: Waiting for MQTT to trigger OTA...[0m
+I (183) wifi: wifi driver task: 3ffbad5c, prio:23, stack:3584, core=0
+free heap: 228192
+I (193) wifi: wifi firmware version: 44ce2e2
+I (193) wifi: config NVS flash: enabled
+I (203) wifi: config nano formating: disabled
+[0;32mI (203) system_api: Base MAC address is not set, read default base MAC address from BLK0 of EFUSE[0m
+[0;32mI (213) system_api: Base MAC address is not set, read default base MAC address from BLK0 of EFUSE[0m
+I (243) wifi: Init dynamic tx buffer num: 32
+I (243) wifi: Init data frame dynamic rx buffer num: 32
+I (243) wifi: Init management frame dynamic rx buffer num: 32
+I (243) wifi: Init static rx buffer size: 1600
+I (253) wifi: Init static rx buffer num: 10
+I (253) wifi: Init dynamic rx buffer num: 32
+I (253) wifi: Set ps type: 1
+
+[0;32mI (1163) phy: phy_version: 4006, e540b8e, Dec 17 2018, 11:53:06, 0, 0[0m
+I (1163) wifi: mode : sta (3c:71:bf:15:36:90) + softAP (3c:71:bf:15:36:91)
+I (1173) wifi: Init max length of beacon: 752/752
+I (1173) wifi: Init max length of beacon: 752/752
+[0;32mI (1173) WMG: starting softAP with ssid AirU-3690
+[0m
+[0;32mI (1173) WMG: Event Handler Event ID: 2[0m
+[0;32mI (1183) WMG: starting softAP with 20 MHz bandwidth
+[0m
+[0;32mI (1183) WMG: Event Handler Event ID: 13[0m
+[0;32mI (1193) WMG: starting softAP on channel 5
+[0m
+[0;32mI (1203) WMG: wifi_manager: STA power save enabled
+[0m
+[0;32mI (1203) WMG: softAP started, starting http_server
+[0m
+[0;32mI (1213) HTTP: received start bit, starting server
+[0m
+[0;32mI (1223) HTTP: HTTP Server listening...
+[0m
+[0;32mI (5143) PM: PM Timer Timeout -- Resetting PM Sample Accumulator[0m
+free heap: 197544

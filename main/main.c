@@ -49,6 +49,13 @@ Notes:
 #include "esp_adc_cal.h"
 #include "esp_spi_flash.h"
 #include "esp_event_loop.h"
+
+#include "esp_sleep.h"
+#include "driver/rtc_io.h"
+#include "soc/rtc_cntl_reg.h"
+#include "soc/sens_reg.h"
+#include "soc/rtc.h"
+
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -110,69 +117,6 @@ void data_task(void *pvParameters)
 	char sd_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
 
-//	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	for(;;){
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Data Task...");
-
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
-		GPS_Poll(&gps);
-
-		uptime = esp_timer_get_time() / 1000000;
-
-		//
-		// Send data over MQTT
-		//
-
-		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
-		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
-		bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox				/* NOx */);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		ESP_LOGI(TAG, "\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		ESP_LOGI(TAG, "Packet: %s\n", mqtt_pkt);
-		ESP_LOGI(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-		ESP_LOGI(TAG, "GPS Datetime: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-		ESP_LOGI(TAG, "GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-		ESP_LOGI(TAG, "Uptime: %llu\n", uptime);
-
-		//
-		// Save data to the SD card
-		//
-		bzero(sd_pkt, MQTT_PKT_LEN);
-		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%c\n",
-									gps.hour, gps.min, gps.sec,	/* time */
-									DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox,			/* NO */
-									'G');			/* Time Source ([N]TP/[G]PS)*/
-		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
-
-	}
 }
 
 void app_main()
@@ -191,37 +135,57 @@ void app_main()
 	LED_Initialize();
 
 	/* Initialize the GPS Driver */
-	GPS_Initialize();
+//	GPS_Initialize();
 
 	/* Initialize the PM Driver */
-	PMS_Initialize();
+//	PMS_Initialize();
 
 	/* Initialize the HDC1080 Driver */
-	HDC1080_Initialize();
+//	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
+//	MICS4514_Initialize();
+	MICS4514_GPIO_Init();
 
 	/* Initialize the SD Card Driver */
-	sd_init();
+//	sd_init();
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+//	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+//	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+//	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+//
+//	/* start the data task */
+//	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+//
+//	/* start the ota task */
+////	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+//
+//	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
+//#if WIFI_MANAGER_DEBUG
+//	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
+//#endif
+	static RTC_DATA_ATTR struct timeval sleep_enter_time;
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	int sleep_time_ms = (now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (now.tv_usec - sleep_enter_time.tv_usec) / 1000;
+	switch (esp_sleep_get_wakeup_cause()) {
+		case ESP_SLEEP_WAKEUP_TIMER: {
+			ESP_LOGI(TAG, "Wake up from timer. Time spent in deep sleep: %dms", sleep_time_ms);
+			break;
+		}
+		case ESP_SLEEP_WAKEUP_UNDEFINED:
+		default:
+			ESP_LOGI(TAG, "Not a deep sleep reset");
 
-	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
+	}
 
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
-
-	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
-#if WIFI_MANAGER_DEBUG
-	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
-#endif
+	const int wakeup_time_sec = 5;
+	ESP_LOGI(TAG, "Enabling timer wakeup %ds", wakeup_time_sec);
+	esp_sleep_enable_timer_wakeup(wakeup_time_sec * 1000000);
+	esp_deep_sleep_start();
 }

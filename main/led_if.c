@@ -108,9 +108,11 @@ void led_task(void *pvParameters)
 			_push(STAT1_CH, 0);
 		}
 		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
+			ESP_LOGI(TAG, "MICS ON BIT");
 			_push(STAT2_CH, LEDC_DUTY);
 		}
 		if (uxBits & LED_EVENT_MICS_HEATER_OFF_BIT) {
+			ESP_LOGI(TAG, "MICS OFF BIT");
 			_push(STAT2_CH, 0);
 		}
 		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {

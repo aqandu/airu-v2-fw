@@ -62,22 +62,25 @@ static void check_efuse()
 
 void MICS4514_Enable()
 {
-	gpio_set_level(GPIO_MICS_PWR, 1);
+	gpio_set_level(GPIO_MICS_PWR, 0);
+	LED_SetEventBit(LED_EVENT_MICS_HEATER_ON_BIT);
 }
 
 void MICS4514_Disable()
 {
-	gpio_set_level(GPIO_MICS_PWR, 0);
+	gpio_set_level(GPIO_MICS_PWR, 1);
+	LED_SetEventBit(LED_EVENT_MICS_HEATER_OFF_BIT);
+
 }
 
 void MICS4514_Heater(uint32_t level)
 {
-	gpio_set_level(GPIO_MICS_HTR, level);
-	LED_SetEventBit((!!level) ? LED_EVENT_MICS_HEATER_ON_BIT : LED_EVENT_MICS_HEATER_OFF_BIT);
+	gpio_set_level(GPIO_MICS_HTR, !level);	// !level b/c P-FET
 }
 
 void MICS4514_HeaterTimed(uint32_t ms_on)
 {
+	MICS4514_Enable();
 	MICS4514_Heater(1);
 	xTimerChangePeriod(heater_timer, (1000 * ms_on) / portTICK_PERIOD_MS, 0);
 	xTimerStart(heater_timer, 0);
@@ -102,13 +105,8 @@ static void print_char_val_type(esp_adc_cal_value_t val_type)
     }
 }
 
-/*
- *
- */
-void MICS4514_Initialize(void)
+void MICS4514_GPIO_Init(void)
 {
-	esp_adc_cal_value_t val_type;
-
 	// Set up the GPIO for power and heater
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
@@ -118,12 +116,24 @@ void MICS4514_Initialize(void)
 	io_conf.pull_up_en = 0;
 	gpio_config(&io_conf);
 
+	MICS4514_Disable();
+}
+
+/*
+ *
+ */
+void MICS4514_Initialize(void)
+{
+	esp_adc_cal_value_t val_type;
+
+	MICS4514_GPIO_Init();
+
 	//Check if Two Point or Vref are burned into eFuse
 	check_efuse();
 
 	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC_CHANNEL_5, ADC_ATTEN_DB_11); 	// Pin 9, GPIO33
-	adc1_config_channel_atten(ADC_CHANNEL_3, ADC_ATTEN_DB_11);	// Pin 5, GPIO39
+	adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11); 	// Pin 6, GPIO34
+	adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_11);		// Pin 7, GPIO35
 
 	//Characterize ADC
 	adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
@@ -138,8 +148,6 @@ void MICS4514_Initialize(void)
 								(HEATER_TIMER_TIMEOUT_MS / portTICK_PERIOD_MS),
 								pdFALSE, (void*)NULL,
 								vTimerCallback);
-
-	return;
 }
 
 /*
@@ -151,8 +159,8 @@ void MICS4514_Poll(uint16_t *ox_val, uint16_t *red_val)
 	*red_val = 0;
 
 	for (int i = 0; i < NO_OF_SAMPLES; i++) {
-		*ox_val  += adc1_get_raw(ADC_CHANNEL_5);
-		*red_val += adc1_get_raw(ADC_CHANNEL_3);
+		*ox_val  += adc1_get_raw(ADC1_CHANNEL_6);
+		*red_val += adc1_get_raw(ADC1_CHANNEL_7);
 	}
 	*ox_val  /= NO_OF_SAMPLES;
 	*red_val /= NO_OF_SAMPLES;
@@ -160,5 +168,4 @@ void MICS4514_Poll(uint16_t *ox_val, uint16_t *red_val)
 	//Convert adc_reading to voltage in mV
 	*ox_val = esp_adc_cal_raw_to_voltage(*ox_val, adc_chars);
 	*red_val = esp_adc_cal_raw_to_voltage(*red_val, adc_chars);
-	return;
 }

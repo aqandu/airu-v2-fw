@@ -10,6 +10,17 @@
 
 
 #include "esp_system.h"
+#include "esp_event.h"
+
+
+/*
+ * @brief   
+ *
+ * @param   
+ *
+ * @return  
+ */
+void ble_wifi_cred_recv_set_event_ready();
 
 
 /*

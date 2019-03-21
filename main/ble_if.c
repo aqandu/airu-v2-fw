@@ -1,7 +1,7 @@
 /*
  * ble_if.h
  *
- *  Created on: Feb 14, 2018
+ *  Created on: Feb 14, 2019
  *      Author: tombo
  */
 #include <string.h>
@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_bt.h"
 
+#include "wifi_if.h"
 #include "ble_if.h"
 
 
@@ -21,7 +22,7 @@
 #define PREPARE_BUF_MAX_SIZE        1024
 #define PROFILE_NUM     2
 #define PROFILE_APP_ID  0
-#define DEVICE_NAME     "AIRU:20FA"
+#define DEVICE_NAME     "AIRU:746C"
 
 static const char* TAG = "BLE";
 
@@ -132,8 +133,8 @@ static struct gatts_profile_inst gl_profile_tab[PROFILE_NUM] = {
 static prepare_type_env_t a_prepare_write_env;
 static uint8_t recv_data[256];
 
-extern uint8_t ssid[48];
-extern uint8_t password[48];
+extern char ssid[48];
+extern char password[48];
 
 
 /*
@@ -395,16 +396,20 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         esp_gatt_rsp_t rsp;
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 9;
-        rsp.attr_value.value[0] = 0x41; // "AIRU:20FA"
-        rsp.attr_value.value[1] = 0x49;
-        rsp.attr_value.value[2] = 0x52;
-        rsp.attr_value.value[3] = 0x55;
-        rsp.attr_value.value[4] = 0x3A;
-        rsp.attr_value.value[5] = 0x32;
-        rsp.attr_value.value[6] = 0x30;
-        rsp.attr_value.value[7] = 0x4b;
-        rsp.attr_value.value[8] = 0x32;
+        rsp.attr_value.len = 6;
+
+        char DEVICE_MAC[13];
+        uint8_t tmp[6];
+        esp_efuse_mac_get_default(tmp);
+        sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+        //printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+
+        rsp.attr_value.value[0] = 0x3C; // "AIRU:746C     3C:71:BF:13:74:6C
+        rsp.attr_value.value[1] = 0x71;
+        rsp.attr_value.value[2] = 0xBF;
+        rsp.attr_value.value[3] = 0x13;
+        rsp.attr_value.value[4] = 0x74;
+        rsp.attr_value.value[5] = 0x6C;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                     ESP_GATT_OK, &rsp);
         break;

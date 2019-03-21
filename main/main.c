@@ -78,8 +78,8 @@ Notes:
 #define STAT3_LED 18
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
-EventGroupHandle_t ble_event_group;
-EventBits_t uxBits;
+//EventGroupHandle_t ble_event_group;
+//EventBits_t uxBits;
 
 static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
@@ -91,8 +91,8 @@ static const char *TAG = "AIRU";
 static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 // ble_if extern globals
-char ssid[48];
-char password[48];
+//char ssid[48];
+//char password[48];
 
 
 
@@ -103,9 +103,9 @@ char password[48];
  *
  * @return  
  */
-void ble_wifi_cred_recv_set_event_ready(){
-    xEventGroupSetBits(ble_event_group, (1 << 0));
-}
+//void ble_wifi_cred_recv_set_event_ready(){
+//    xEventGroupSetBits(ble_event_group, (1 << 0));
+//}
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -184,7 +184,7 @@ void data_task(void *pvParameters)
 void app_main()
 {
 	esp_err_t ret;
-	ble_event_group = xEventGroupCreate();
+	//ble_event_group = xEventGroupCreate();
 //	esp_log_level_set("*", ESP_LOG_INFO);
 
 	/* initialize flash memory */
@@ -219,6 +219,10 @@ void app_main()
     /* start the BLE task */
     BLE_Initialize();
 
+    /* start the wifi task */
+    /* NEED TO CREATE A NEW TASK HERE TO WAIT FOR SSID AND PASSWORD FROM BLE SO THAT MAIN CAN CONTINUTE TO INITIALIZE OTHER THINGS */
+    wifi_sta_Initialize();
+
 	/* start the HTTP Server task */
 	//xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
@@ -226,11 +230,11 @@ void app_main()
 	//xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+	//xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
 	/* start the OTA task */
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
+	//vTaskDelay(5000 / portTICK_PERIOD_MS);
+	//xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
 
 	/* start the data task */
 	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
@@ -242,23 +246,6 @@ void app_main()
 #if WIFI_MANAGER_DEBUG
 	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
 #endif
-
-	// Wait to recive the WIFI credentials over BLE
-	printf("Waiting of wifi ssid and password...\n");
-	uxBits = xEventGroupWaitBits(ble_event_group, (1 << 0), pdFALSE, pdTRUE, portMAX_DELAY);
-	printf("Got wifi ssid and password\n");
-
-	printf("SSID: %s\n", ssid);
-	printf("PASSWORD: %s\n", password);
-    //while(!ble_wifi_cred_ready)
-    //    vTaskDelay(500 / portTICK_PERIOD_MS);
-
-    // Set the wifi for the board using the credentials recieved
-    //wifi_sta_Initialize();
-
-    // make sure it connected
-
-    // disable ble if connected successfully
 
 	printf("main ending...\n");
 

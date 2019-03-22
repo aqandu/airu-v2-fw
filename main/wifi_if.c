@@ -16,6 +16,10 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
+//#include "http_server_if.h"
+//#include "led_if.h"
+//#include "time_if.h"
+//#include "mqtt_if.h"
 #include "ble_if.h"
 #include "wifi_if.h"
 
@@ -68,6 +72,16 @@ esp_err_t wifi_sta_event_handler(void *ctx, system_event_t *event)
                  ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
         s_retry_num = 0;
         xEventGroupSetBits(sta_wifi_event_group, WIFI_CONNECTED_BIT);
+
+        /* update the LED */
+        //LED_SetWifiConn(LED_WIFI_CONNECTED);
+
+        /* Start SNTP */
+        //sntp_initialize();
+
+        /* Start MQTT */
+        //MQTT_Initialize();
+
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         {
@@ -136,6 +150,11 @@ void wifi_sta_Initialize()
     ESP_LOGI(TAG, "wifi_init_sta finished.");
     ESP_LOGI(TAG, "connect to ap SSID:%s password:%s",
              set_ssid, set_password);
+
+    // Start http server when AirU is connected
+    //uxBits = xEventGroupWaitBits( , (1 << 0), pdFALSE, pdTRUE, portMAX_DELAY);
+    //ESP_LOGI(TAG, "softAP started, starting http_server\n");
+    //http_server_set_event_start();
 
 }
 

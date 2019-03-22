@@ -22,7 +22,7 @@
 #define PREPARE_BUF_MAX_SIZE        1024
 #define PROFILE_NUM     2
 #define PROFILE_APP_ID  0
-#define DEVICE_NAME     "AIRU:746C"
+//#define DEVICE_NAME     "AIRU:746C"
 #define DEVICE_NAME_LEN 10
 
 static const char* TAG = "BLE";
@@ -133,7 +133,7 @@ static struct gatts_profile_inst gl_profile_tab[PROFILE_NUM] = {
 
 static prepare_type_env_t a_prepare_write_env;
 static uint8_t recv_data[256];
-//device_name[DEVICE_NAME_LEN];
+static char device_name[DEVICE_NAME_LEN];
 
 extern char ssid[48];
 extern char password[48];
@@ -152,19 +152,19 @@ esp_err_t BLE_Initialize() {
 
 	ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
 
-    //char mac[13];
-    //uint8_t tmp[6];
-    //esp_efuse_mac_get_default(tmp);
-    //sprintf(mac, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-    //device_name[0] = 'A';
-    //device_name[1] = 'I';
-    //device_name[2] = 'R';
-    //device_name[3] = 'U';
-    //device_name[4] = ':';
-    //device_name[5] = mac[9];
-    //device_name[6] = mac[10];
-    //device_name[7] = mac[11];
-    //device_name[8] = mac[12];
+    char mac[13];
+    uint8_t tmp[6];
+    esp_efuse_mac_get_default(tmp);
+    sprintf(mac, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+    device_name[0] = 'A';
+    device_name[1] = 'I';
+    device_name[2] = 'R';
+    device_name[3] = 'U';
+    device_name[4] = ':';
+    device_name[5] = mac[8];
+    device_name[6] = mac[9];
+    device_name[7] = mac[10];
+    device_name[8] = mac[11];
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     ret = esp_bt_controller_init(&bt_cfg);
@@ -369,7 +369,7 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         gl_profile_tab[PROFILE_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_APP_ID].service_id.id.uuid.uuid.uuid16 = GATTS_SERVICE_UUID;
 
-        esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(DEVICE_NAME);
+        esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(device_name);
         if (set_dev_name_ret){
             ESP_LOGE(TAG, "set device name failed, error code = %x", set_dev_name_ret);
         }
@@ -419,7 +419,7 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         rsp.attr_value.value[2] = 0xBF;
         rsp.attr_value.value[3] = 0x13;
         rsp.attr_value.value[4] = 0x74;
-        rsp.attr_value.value[5] = 0x6C;
+        rsp.attr_value.value[5] = 0x6E;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                     ESP_GATT_OK, &rsp);
         break;

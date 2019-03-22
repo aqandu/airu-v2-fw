@@ -220,7 +220,7 @@ void app_main()
     BLE_Initialize();
 
     /* start the wifi task */
-    /* NEED TO CREATE A NEW TASK HERE TO WAIT FOR SSID AND PASSWORD FROM BLE SO THAT MAIN CAN CONTINUTE TO INITIALIZE OTHER THINGS */
+    // This is a blocking call
     wifi_sta_Initialize();
 
 	/* start the HTTP Server task */

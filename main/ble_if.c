@@ -417,9 +417,9 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         rsp.attr_value.value[0] = 0x3C; // "AIRU:746C     3C:71:BF:13:74:6C
         rsp.attr_value.value[1] = 0x71;
         rsp.attr_value.value[2] = 0xBF;
-        rsp.attr_value.value[3] = 0x13;
-        rsp.attr_value.value[4] = 0x74;
-        rsp.attr_value.value[5] = 0x6E;
+        rsp.attr_value.value[3] = 0x15;
+        rsp.attr_value.value[4] = 0x34;
+        rsp.attr_value.value[5] = 0x48;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                     ESP_GATT_OK, &rsp);
         break;

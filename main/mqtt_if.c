@@ -2,11 +2,11 @@
  * mqtt_if.c
  *
  *  Created on: Oct 7, 2018
- *      Author: tombo
+ *  Author: tombo
  */
 
 #include <string.h>
-//#include <time.h>			//Scott added
+#include <stdio.h>
 #include "esp_err.h"
 #include "esp_system.h"
 #include "esp_log.h"
@@ -14,6 +14,14 @@
 #include "ota_if.h"
 #include "mqtt_if.h"
 //#include "wifi_manager.h"
+
+#include <time.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/error.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
+#include <base64url.h>
+#include "jwt_if.h"
 
 #define WIFI_CONNECTED_BIT 		BIT0
 
@@ -27,201 +35,67 @@ extern const uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
 static bool client_connected;
 static esp_mqtt_client_handle_t client;
 static EventGroupHandle_t mqtt_event_group;
-
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 
-////Constants Scott Added-------------------------------------------
-//static const char* address = "ssl://mqtt.googleapis.com:8883";
-//static const char* clientid = "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/airu_sensor}";
-//static const char* deviceid = "airu_sensor";			//must be unique for each device
-//static const char* projectid = "scottgale";
-//static const char* registryid = "airu-sensor-registry";
-//static const char* topic = "projects/scottgale/topics/telemetry-topic"; //devices/{your-device-id}/events (c example)
-//static const char* region = "us-central1";
+////Google IoT constants / connection parameters-------------------------------------------
+static const char* HOST = "mqtt.googleapis.com";							// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
+static const char* URI = "https://cloudiotdevice.googleapis.com";			// URI for IoT
+static const char* PROJECT_ID = "scottgale";
+static const int PORT = 8883;
+static const char* USER_NAME = "unused"; 									// Unused by Google IoT but supplied to ensure password is read
+static const char* TOPIC = "/devices/M3C71BF14B324/events";
+static const char* MSG = "{'DEVICE_ID': 1, 'PM1': 1.0, 'PM25': 2.5, 'PM10': 10}"; 	// Testing message
+static char* CLIENT_ID= "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/M3C71BF14B324";
 
 
-//
-static const int EXP_TIME = 600; //300 = 5 minutes, 600 = 10 minutes, 82800 = 23 hours
-//
-//static const int kQos = 1;
-//static const unsigned long kTimeout = 10000L;
-//static const char* kUsername = "unused";
-//
-//static const unsigned long kInitialConnectIntervalMillis = 500L;
-//static const unsigned long kMaxConnectIntervalMillis = 6000L;
-//static const unsigned long kMaxConnectRetryTimeElapsedMillis = 900000L;
-//static const float kIntervalMultiplier = 1.5f;
-//
-////End Constants Scott Added---------------------------------------------
-//
-//
-///*
-//* @brief This function get the time for the Google IoT connection/authentication
-//* and is used ICW the JWT library
-//*
-//* @param iat and exp are char*'s to be populated with time.
-//*  iat: issued at time
-//*  exp: expiration time - time which connection with Google will terminate
-//*  time_size: denotes the length (number of characters in the time) - **not sure if
-//*  this is needed . . .  may change to sprintf and remove the int time_size**
-//*
-//* @return
-//
-//static void getIatExp (char* iat, char* exp, int time_size){
-//	time_t now_seconds = time(NULL);
-//	snprintf(iat, time_size, "%lu", now_seconds);
-//	snprintf(exp, time_size, "%lu", now_seconds + EXP_TIME);	//Set expiration time
-//}
-//
-///*
-//* @brief Calculates a JSON Web Token (JWT) given the path to a private key and
-//* Google Cloud project ID. Returns the JWT as a string that the caller must
-//* free.
-//*
-//* @param
-//*
-//* @return JWT - used to create a connection with G-IoT
-//*/
-//static char* CreateJwt() {
-//  char iat_time[sizeof(time_t) * 3 + 2];
-//  char exp_time[sizeof(time_t) * 3 + 2];
-//  uint8_t* key = NULL; 						// Stores the Base64 encoded certificate
-//  size_t key_len = 0;
-//  jwt_t *jwt = NULL;							// Need libJWT
-//  int ret = 0;
-//  char *out = NULL;
-//
-//  // Read private key from file
-//  FILE *fp = fopen(keypath, "r");
-//  if (fp == (void*) NULL) {
-//    printf("Could not open file: %s\n", keypath);
-//    return "";
-//  }
-//  fseek(fp, 0L, SEEK_END);
-//  key_len = ftell(fp);
-//  fseek(fp, 0L, SEEK_SET);
-//  key = malloc(sizeof(uint8_t) * (key_len + 1)); // certificate length + \0
-//
-//  fread(key, 1, key_len, fp);
-//  key[key_len] = '\0';
-//  fclose(fp);
-//
-//  // Get JWT parts
-//  getIatExp(iat_time, exp_time, sizeof(iat_time));
-//
-//  jwt_new(&jwt);
-//
-//  // Write JWT
-//  ret = jwt_add_grant(jwt, "iat", iat_time);
-//  if (ret) {
-//    printf("Error setting issue timestamp: %d\n", ret);
-//  }
-//  ret = jwt_add_grant(jwt, "exp", exp_time);
-//  if (ret) {
-//    printf("Error setting expiration: %d\n", ret);
-//  }
-//  ret = jwt_add_grant(jwt, "aud", projectid);
-//  if (ret) {
-//    printf("Error adding audience: %d\n", ret);
-//  }
-//  ret = jwt_set_alg(jwt, jwt_str_alg("RS256"), key, key_len);
-//  if (ret) {
-//    printf("Error during set alg: %d\n", ret);
-//  }
-//  out = jwt_encode_str(jwt);
-//  if(!out) {
-//      perror("Error during token creation:");
-//  }
-//
-//  jwt_free(jwt);
-//  free(key);
-//  return out;
-//}
-//
-///**
-// * Publish a given message, passed in as payload, to Cloud IoT Core using the
-// * values passed to the sample, stored in the global opts structure. Returns
-// * the result code from the MQTT client.
-// */
-//// [START iot_mqtt_publish]
-//int Publish(char* payload, int payload_size) {
-//  int rc = -1;
-//  MQTTClient client = {0};
-//  MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-//  MQTTClient_message pubmsg = MQTTClient_message_initializer;
-//  MQTTClient_deliveryToken token = {0};
-//
-//  MQTTClient_create(&client, address, clientid,
-//      MQTTCLIENT_PERSISTENCE_NONE, NULL);
-//  conn_opts.keepAliveInterval = 60;
-//  conn_opts.cleansession = 1;
-//  conn_opts.username = kUsername;
-//  conn_opts.password = CreateJwt();
-//  MQTTClient_SSLOptions sslopts = MQTTClient_SSLOptions_initializer;
-//
-//  sslopts.trustStore = rootpath;
-//  sslopts.privateKey = keypath;
-//  conn_opts.ssl = &sslopts;
-//
-//  unsigned long retry_interval_ms = kInitialConnectIntervalMillis;
-//  unsigned long total_retry_time_ms = 0;
-//  while ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
-//    if (rc == 3) {  // connection refused: server unavailable
-//      usleep(retry_interval_ms / 1000);
-//      total_retry_time_ms += retry_interval_ms;
-//      if (total_retry_time_ms >= kMaxConnectRetryTimeElapsedMillis) {
-//        printf("Failed to connect, maximum retry time exceeded.");
-//        exit(EXIT_FAILURE);
-//      }
-//      retry_interval_ms *= kIntervalMultiplier;
-//      if (retry_interval_ms > kMaxConnectIntervalMillis) {
-//        retry_interval_ms = kMaxConnectIntervalMillis;
-//      }
-//    } else {
-//      printf("Failed to connect, return code %d\n", rc);
-//      exit(EXIT_FAILURE);
-//    }
-//  }
-//
-//  pubmsg.payload = payload;
-//  pubmsg.payloadlen = payload_size;
-//  pubmsg.qos = kQos;
-//  pubmsg.retained = 0;
-//  MQTTClient_publishMessage(client, topic, &pubmsg, &token);
-//  printf("Waiting for up to %lu seconds for publication of %s\n"
-//          "on topic %s for client with ClientID: %s\n",
-//          (kTimeout/1000), payload, topic, clientid);
-//  rc = MQTTClient_waitForCompletion(client, token, kTimeout);
-//  printf("Message with delivery token %d delivered\n", token);
-//  MQTTClient_disconnect(client, 10000);
-//  MQTTClient_destroy(&client);
-//
-//  return rc;
-//}
 
-//---------------------------Original Code----------------------------------------------------------
- /*
- * This exact configuration was what works. Won't work
- * without the "transport" parameter set.
- *
- * Copy and paste ca.pem into project->main
- *
- * Define the start and end pointers in .rodata with:
- * 	"_binary_ca_pem_start" & "_binary_ca_pem_end",
- * 	^ it's the filename for the CA with '.' replaced with '_'
- *
- * Must also define the name in the component.mk file under main
- * 	so that it gets loaded into the .data section of memory
- */
-static const esp_mqtt_client_config_t mqtt_cfg = {
-	.host = CONFIG_MQTT_HOST,
-	.username = CONFIG_MQTT_USERNAME,
-	.password = CONFIG_MQTT_PASSWORD,
-	.port = MQTT_SSL_DEFAULT_PORT,
-	.transport = MQTT_TRANSPORT_OVER_SSL,
-	.event_handle = mqtt_event_handler,
-	.cert_pem = (const char *)ca_pem_start,
-};
+uint8_t rsa[] = "-----BEGIN RSA PRIVATE KEY-----\n"\
+		"MIIEowIBAAKCAQEA96GB5a9It42MCsrhx3haflIShFebMAzxxainHqfE0C/qYIDs\n"\
+		"Swi1+I5MflTJ5drgD7AH/EgMOMVAIZy972l2Mb5uJIojFy4xznVhTDw0J3BVnca+\n"\
+		"tnKHpz3LCSmrSa6OKqZd9z6rspaGo5bE2HHOGA5RPclw6xsoQ2m8hlcHOw7c0gMn\n"\
+		"9qLjoistiPFtVvTl+d7T7iI9XkI9bvQrCHZHbLaomR5TOLmqYOK3qK8Kk9CaD3I2\n"\
+		"fY5hzD8LTnn2OnKvPLNwIfiE937AbHkoRYMY6eLfOF3MGZJ1p8NcK/o5vY0kes0S\n"\
+		"w4xTWTNwxcfnt7u7AaQOzno+q9gvsnP5qlUahwIDAQABAoIBAEUgoflzaDJNYlW0\n"\
+		"8zhS4bg3wxGMvza3tlp+TUDihq+zYJNWCiCcKuhbGQF/O+ldo4TdmC0WE8tZTSDU\n"\
+		"97S41RTn2yl6InebHq5K2EGG4OxNkKj9zUlzSWknd+Fz72wfPXKshLi7lwTAvo82\n"\
+		"THc7tdPDU2yTKmGHcEL5ZnZ+HveeDvRMAptAsERQKVXlUXeBp79yc2GDQaxodSkX\n"\
+		"nqV2qUCKNs25B69z9OX2T3zmpgFCK7RJXUPKallL1XCKWiwKC2sNrW1mt617//Ca\n"\
+		"byLgkHhc7ARbjoGhH4z07rxcklsy1GuCw0qWcZK2MWrpF+pOl87HzhJRwjLfCqx8\n"\
+		"/78nhSECgYEA/itauFKFSnQemkHG0aFdzLYA/BN3HV5+V0rbN4SAlq7UiCQfcA90\n"\
+		"UpRcGI/4yATLBBMSk1sam2gpPPfKADEYjutc0jYc33SoQORBHHIvZcVqwdV1k7v6\n"\
+		"/MB7NYexBQZ6oIcGgXHKHLWWMbXpAPI/HE/sr8ptUxbcG7GTb3BA8NcCgYEA+WoY\n"\
+		"4mSjxNoHoHHLK+/ByZaP0jrDQpgeNxULT9NPIw+Uz61KmOFTDRP4fUXSuQ1DZJzN\n"\
+		"GI+PL2I4uNOI7MggzhDtftsia+ZGoZxAY70N8LnoZwbsfWr88jwWBMnvwNfa5iZN\n"\
+		"KwbCrEZz7GsjoxF2Cqh8hOSRnyFGKbLw9t2U/dECgYA/mH10jUFIpdFaa4bhwOyF\n"\
+		"YizQ5dXyBUi7csFzHLZH/aqz/cXX9iX226RHiQ6IjZp2hIcrU6pOpDtdQ+rJLX+l\n"\
+		"kwKAnoWO69OFmRcplPCDGGhj45MtyeU9BLRPaopCZaKdM+vOy7f0gwL3oTqRwAtG\n"\
+		"fEEOoynDln6wdzgatA2rtQKBgGxOeU3eXAuAjm1K3OpQa/uJKR0mrWH+wqgyuD3K\n"\
+		"ygO0oW9plgo7VqBIOtDTgEUhkFFhkeKHfKsb4PvJyBzibvRs/2Tl7dWjIqrNOlzV\n"\
+		"XPdbE6OhqxJvYjYih4E+26EHWyQ0H7B+eAztbyuL/uayD2tjbOcchmvuvBQhg2gA\n"\
+		"ItHxAoGBAN+sXx6KlVfxR3kDBnZuNTIppmFLudOJn44C6y9udZ7iwYv7n0azDhsT\n"\
+		"Gk+83eV8hAQtlWRK/ojUe2XDlOiyH8ZIt6WQAa4WNv16brq4CN6OeqYt1Y7enqlY\n"\
+		"pztSqxIX6eYphlp3JAJDc36yVf1AYfcBHurO4j24iqiSiv8D/dqX\n"\
+		"-----END RSA PRIVATE KEY-----";
+
+static esp_mqtt_client_config_t getMQTT_Config(){
+
+	char* JWT_PASSWORD = createGCPJWT(PROJECT_ID, rsa, sizeof(rsa)+1);
+	printf("%s\n", JWT_PASSWORD);
+
+	esp_mqtt_client_config_t mqtt_cfg = {							// was static const
+		.client_id = CLIENT_ID,
+		.host = HOST,
+		.uri = URI,
+		.username = USER_NAME,										// Not used by Google IoT -
+		.password = JWT_PASSWORD,									// JWT
+		.port = PORT,												// can be set static in make menuconfig
+		.transport = MQTT_TRANSPORT_OVER_SSL,						// This setting is what worked
+		.event_handle = mqtt_event_handler,
+		.cert_pem = (const char *)roots_pem_start					// roots_pem_start
+	};
+	return mqtt_cfg;
+}
+
 
 
 /*
@@ -243,13 +117,13 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   msg_id = esp_mqtt_client_subscribe(this_client, "v2/all", 2);
-		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+		   //msg_id = esp_mqtt_client_subscribe(this_client, "v2/all", 2);							// Add function call to subscribe OR subscribe
+		   //ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);							// in the connection section
 
 		   sprintf(tmp, "v2/%s", DEVICE_MAC);
-		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
-		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
-		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+		   ESP_LOGI(TAG, "No subscriptions at this time - MTF");
+		   //msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
+		   //ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -261,7 +135,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_SUBSCRIBED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-		   ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 		   break;
 
 	   case MQTT_EVENT_UNSUBSCRIBED:
@@ -315,6 +189,25 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 *
 * @return
 */
+
+void mqtt_task(void* pvParameters){
+	ESP_LOGI(TAG, "Starting mqtt task ...");
+	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
+	client = esp_mqtt_client_init(&mqtt_cfg);
+	ESP_LOGI(TAG, "Connecting to Google IoT MQTT broker ...");
+	esp_mqtt_client_start(client);
+
+	client_connected = false;
+
+	while(1){
+		vTaskDelay(20000 / portTICK_PERIOD_MS);
+		//printf("MQTT TASK LOOP - Publishing . . . \n");
+		//MQTT_Publish(TOPIC, MSG);
+	}
+}
+
+
+
 void MQTT_Initialize(void)
 {
    mqtt_event_group = xEventGroupCreate();
@@ -325,16 +218,19 @@ void MQTT_Initialize(void)
 
    ESP_LOGI(TAG, "Initializing client ...");
 
-   ESP_LOGI(TAG, "rsaprivate_pem file read test: %c", (char)rsaprivate_pem_start[0]);
-   printf("roots_pem file read test: %c\n", (char)roots_pem_start[0]);
-
    uint8_t tmp[6];
    esp_efuse_mac_get_default(tmp);
    sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-   client = esp_mqtt_client_init(&mqtt_cfg);
-   esp_mqtt_client_start(client);
 
-   client_connected = false;
+   //esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
+   //client = esp_mqtt_client_init(&mqtt_cfg);
+   //ESP_LOGI(TAG, "Connecting to Google IoT MQTT broker ...");
+   //esp_mqtt_client_start(client);
+
+   //client_connected = false;
+
+   xTaskCreate(&mqtt_task, "jwt", 12000, NULL, 1, NULL);
+
 }
 
 void MQTT_Reinit()
@@ -343,6 +239,7 @@ void MQTT_Reinit()
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
 	client = esp_mqtt_client_init(&mqtt_cfg);
 	esp_mqtt_client_start(client);
 
@@ -380,7 +277,7 @@ void MQTT_Publish(const char* topic, const char* msg)
 	int msg_id;
 	if(client_connected) {
 		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
-		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+		ESP_LOGI(TAG, "Sent packet: %s\n Topic: %s\t. msg_id=%d", msg, topic, msg_id);
 	}
 	else {
 		ESP_LOGI(TAG, "MQTT Client is not connected");

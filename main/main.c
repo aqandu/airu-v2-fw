@@ -168,8 +168,7 @@ void data_task(void *pvParameters)
 									temp,			/* Temperature */
 									hum,			/* Humidity */
 									co,				/* CO */
-									nox,			/* NO */
-									);
+									nox);			/* NO */
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 
 	}

@@ -155,7 +155,7 @@ void data_task(void *pvParameters)
 		// Save data to the SD card
 		//
 		bzero(sd_pkt, MQTT_PKT_LEN);
-		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%c\n",
+		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n",
 									gps.hour, gps.min, gps.sec,	/* time */
 									DEVICE_MAC,		/* ID */
 									uptime, 		/* secActive */
@@ -169,7 +169,7 @@ void data_task(void *pvParameters)
 									hum,			/* Humidity */
 									co,				/* CO */
 									nox,			/* NO */
-									'G');			/* Time Source ([N]TP/[G]PS)*/
+									);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 
 	}

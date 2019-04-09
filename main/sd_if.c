@@ -20,7 +20,7 @@
 #include "sd_if.h"
 
 static const char *TAG = "SD";
-static const char *DATA_HEADER = "Time (GMT),MAC,Uptime (s),Altitude (m),Latitude (DD.dd),Longitude (DD.dd),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (C),Humidity,RED (x/4096),OX (x/4096),Time Source ([N]TP/[G]PS)\n";
+static const char *DATA_HEADER = "Time (GMT),MAC,Uptime (s),Altitude (m),Latitude (DD.dd),Longitude (DD.dd),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (C),Humidity,RED (x/4096),OX (x/4096)\n";
 
 static sdmmc_card_t* card = NULL;
 

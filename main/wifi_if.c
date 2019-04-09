@@ -16,10 +16,10 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-//#include "http_server_if.h"
-//#include "led_if.h"
-//#include "time_if.h"
-//#include "mqtt_if.h"
+#include "http_server_if.h"
+#include "led_if.h"
+#include "time_if.h"
+#include "mqtt_if.h"
 #include "ble_if.h"
 #include "wifi_if.h"
 
@@ -74,13 +74,13 @@ esp_err_t wifi_sta_event_handler(void *ctx, system_event_t *event)
         xEventGroupSetBits(sta_wifi_event_group, WIFI_CONNECTED_BIT);
 
         /* update the LED */
-        //LED_SetWifiConn(LED_WIFI_CONNECTED);
+        LED_SetWifiConn(LED_WIFI_CONNECTED);
 
         /* Start SNTP */
-        //sntp_initialize();
+        sntp_initialize();
 
         /* Start MQTT */
-        //MQTT_Initialize();
+        MQTT_Initialize();
 
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:

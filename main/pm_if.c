@@ -33,7 +33,7 @@
 #define PM_TIMER_TIMEOUT_MS 5000
 
 static const char* TAG = "PM";
-static const char *DATA_PKT = "%li,%s,%.2f,%.2f,%.2f\n";	/* timestamp, MAC, PM1, PM2.5, PM10 */
+static const char *DATA_PKT = "%li,%s,%d,%d,%d\n";	/* timestamp, MAC, PM1, PM2.5, PM10 */
 
 static void _pm_accum_rst(void);
 static esp_err_t _get_packet_from_buffer(void);
@@ -94,9 +94,10 @@ void pm_sd_task(void *pvParameters) {
 		uxBits = xEventGroupWaitBits(pm_event_group, PM_DATA_IN, pdTRUE, pdTRUE, portMAX_DELAY);
 		if (uxBits & PM_DATA_IN){
 			_get_packet_from_buffer();
+			xTimerReset(pm_timer, 0);
 //			ESP_LOGI(TAG, "PM: (%.2f, %.2f, %.2f)", pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
 			time(&posix);
-			sprintf(packet, DATA_PKT, posix, DEVICE_MAC, pm_accum.pm1, pm_accum.pm2_5, pm_accum.pm10);
+			sprintf(packet, DATA_PKT, posix, DEVICE_MAC, (int)pm_accum.pm1, (int)pm_accum.pm2_5, (int)pm_accum.pm10);
 			sd_write_data(packet);
 			_pm_accum_rst();
 		}

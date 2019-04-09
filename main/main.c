@@ -80,6 +80,8 @@ static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t task_data = NULL;
+static TaskHandle_t task_pm_set = NULL;
+static TaskHandle_t task_pm_reset = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
@@ -97,37 +99,16 @@ void monitoring_task(void *pvParameter)
 	}
 }
 
-void pm_reset_task(void *pvParameters)
-{
-	time_t posix;
-	PMS_SET(1);
-	for(;;){
-		PMS_RESET(0);
-		LED_Set(STAT1_CH, 0);
-		ESP_LOGI(TAG, "RESET = 0");
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
-
-		PMS_RESET(1);
-		LED_Set(STAT1_CH, 1);
-		ESP_LOGI(TAG, "RESET = 1");
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
-	}
-}
-
 void pm_set_task(void *pvParameters)
 {
-	time_t posix;
-	PMS_RESET(1);
+	bool set = true;
+	PMS_RESET(set);
 	for(;;){
-		PMS_SET(0);
-		LED_Set(STAT2_CH, 0);
-		ESP_LOGI(TAG, "SET = 0");
+		PMS_SET(set);
+		LED_Set(STAT2_CH, set);
+		ESP_LOGI(TAG, "SET = %d", set);
 		vTaskDelay(60000 / portTICK_PERIOD_MS);
-
-		PMS_SET(1);
-		LED_Set(STAT2_CH, 1);
-		ESP_LOGI(TAG, "SET = 1");
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
+		set = !set;
 	}
 }
 
@@ -170,8 +151,7 @@ void app_main()
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
-	xTaskCreate(&pm_reset_task, "data_task", 4096, NULL, 2, &task_data);
-//	xTaskCreate(&pm_set_task, "data_task", 4096, NULL, 2, &task_data);
+	xTaskCreate(&pm_set_task, "pm_set_task", 4096, NULL, 2, &task_pm_set);
 
 
 	/* start the ota task */

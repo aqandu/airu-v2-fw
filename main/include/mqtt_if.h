@@ -9,6 +9,8 @@
 #define MAIN_INCLUDE_MQTT_IF_H_
 
 #define MQTT_PKT_LEN 256
+#define MQTT_TOPIC_LEN 50
+#define MQTT_CLIENTID_LEN 100
 #define MQTT_DBG_TPC "v2/dbg"
 #define MQTT_DAT_TPC "airu/offline"
 

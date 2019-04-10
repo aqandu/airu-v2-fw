@@ -84,9 +84,8 @@ static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
-static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-static const char* MQTT_TOPIC = "/devices/M3C71BF14B324/events/telemetry-topic";
+
+
 /**
  * @brief RTOS task that periodically prints the heap memory available.
  * @note Pure debug information, should not be ever started on production code!
@@ -95,27 +94,31 @@ void monitoring_task(void *pvParameter)
 {
 	for(;;){
 		printf("free heap: %d\n",esp_get_free_heap_size());
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		vTaskDelay(10000 / portTICK_PERIOD_MS);
 	}
 }
+
 
 /*
  * Data gather task
  */
 void data_task(void *pvParameters)
 {
+	static const char *TAG = "DATA TASK";
 	pm_data_t pm_dat;
 	double temp, hum;
 	uint16_t co, nox;
 	esp_gps_t gps;
+
 	char mqtt_pkt[MQTT_PKT_LEN];
+
 	uint64_t uptime = 0;
 	time_t dtg;
 
 	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
 		vTaskDelay(30000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Data Task...");
+
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
@@ -129,36 +132,30 @@ void data_task(void *pvParameters)
 		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
 		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 		 */
-		memset(mqtt_pkt, '\0', MQTT_PKT_LEN);
+		memset(mqtt_pkt, 0, MQTT_PKT_LEN);
 		sprintf(mqtt_pkt, "{\"DEVICE_ID\": 99, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TIMESTAMP\": %ld}", pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, dtg);
 		printf("\nMQTT PACKET %s\n", mqtt_pkt);
-		//Original Code
-		/*bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		 ID
-									uptime, 		 secActive
-									gps.alt,		 Altitude
-									gps.lat, 		 Latitude
-									gps.lon, 		 Longitude
-									pm_dat.pm1,		 PM1
-									pm_dat.pm2_5,	 PM2.5
-									pm_dat.pm10, 	 PM10
-									temp,			 Temperature
-									hum,			 Humidity
-									co,				 CO
-									nox				 NOx );*/
 
-		MQTT_Publish(MQTT_TOPIC, mqtt_pkt);
+		MQTT_Publish("TOPIC", mqtt_pkt);
 
-
+		/*sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		 ID
+											uptime, 		 secActive
+											gps.alt,		 Altitude
+											gps.lat, 		 Latitude
+											gps.lon, 		 Longitude
+											pm_dat.pm1,		 PM1
+											pm_dat.pm2_5,	 PM2.5
+											pm_dat.pm10, 	 PM10
+											temp,			 Temperature
+											hum,			 Humidity
+											co,				 CO
+											nox				 NOx );*/
 //		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
 //		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
 //		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
 //
-
-
 	}
 }
-
 
 void app_main()
 {
@@ -192,7 +189,7 @@ void app_main()
 	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);			// Changed 6000 to 22000
+	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);		// Changed 6000 to 22000
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
@@ -202,7 +199,7 @@ void app_main()
 	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
 
 	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 16000, NULL, 2, &task_data);	//Notifies MQTT that a packet is ready   Changed 4096 to 8192
+	//xTaskCreate(&data_task, "data_task", 16000, NULL, 2, &task_data);					//Notifies MQTT that a packet is ready   Changed 4096 to 8192
 
 
 

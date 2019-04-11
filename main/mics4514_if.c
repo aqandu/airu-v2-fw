@@ -70,7 +70,6 @@ void MICS4514_Disable()
 {
 	gpio_set_level(GPIO_MICS_PWR, 1);
 	LED_SetEventBit(LED_EVENT_MICS_HEATER_OFF_BIT);
-
 }
 
 void MICS4514_Heater(uint32_t level)

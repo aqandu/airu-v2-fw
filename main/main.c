@@ -146,7 +146,7 @@ void data_task(void *pvParameters)
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
 		ESP_LOGI(TAG, "\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
 		ESP_LOGI(TAG, "Packet: %s\n", mqtt_pkt);
-		ESP_LOGI(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
+		ESP_LOGE(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
 		ESP_LOGI(TAG, "GPS Datetime: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
 		ESP_LOGI(TAG, "GPS: %.4f, %.4f\n", gps.lat, gps.lon);
 		ESP_LOGI(TAG, "Uptime: %llu\n", uptime);
@@ -168,7 +168,7 @@ void data_task(void *pvParameters)
 									temp,			/* Temperature */
 									hum,			/* Humidity */
 									co,				/* CO */
-									nox,			/* NO */
+									nox				/* NO */
 									);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 

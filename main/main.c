@@ -21,11 +21,7 @@ SOFTWARE.
 
 @file main.c
 @author Thomas Becnel
-@author Trenton Taylor
 @brief Entry point for the ESP32 application.
-@thanks Special thanks to Tony Pottier for the esp32-wifi-manager repo
-	@see https://idyl.io
-	@see https://github.com/tonyp7/esp32-wifi-manager
 
 Notes:
 	- GPS: 	keep rolling average of GPS alt, lat, lon. Set up GPS UART handler

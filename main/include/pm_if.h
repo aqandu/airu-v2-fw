@@ -78,7 +78,11 @@ esp_err_t PMS_Poll(pm_data_t *dat);
 
 void PMS_RESET(uint32_t level);
 void PMS_SET(uint32_t level);
+void PMS_Disable(void);
+void PMS_Enable(void);
 uint8_t PMS_Active( void );
+esp_err_t PMS_WaitForData(pm_data_t *dat);
+esp_err_t PMS_Sleep(void);
 
 
 

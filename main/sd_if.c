@@ -44,7 +44,7 @@ static sdmmc_card_t* card = NULL;
 #define PIN_NUM_CS   13
 #endif //USE_SPI_MODE
 
-esp_err_t sd_init(void)
+esp_err_t SD_Initialize(void)
 {
     ESP_LOGI(TAG, "Initializing SD card");
 
@@ -115,7 +115,7 @@ esp_err_t sd_init(void)
 }
 
 
-esp_err_t sd_deinit(void)
+esp_err_t SD_Deinitialize(void)
 {
     return esp_vfs_fat_sdmmc_unmount();
 }
@@ -126,7 +126,7 @@ esp_err_t sd_deinit(void)
  * believe GPS is a local time. GPS should always be correct as long as there's
  * a battery, so I don't think it will be a big deal.
  */
-esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
+esp_err_t SD_LogData(char* pkt, uint8_t year, uint8_t month, uint8_t day)
 {
 	esp_err_t err = ESP_FAIL;
 	time_t now; /* time_t == long */

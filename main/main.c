@@ -44,7 +44,7 @@ Notes:
 #include "driver/spi_master.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
-#include "esp_wifi.h"
+//#include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_adc_cal.h"
 #include "esp_spi_flash.h"
@@ -60,34 +60,28 @@ Notes:
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
-#include "mdns.h"
-#include "lwip/api.h"
-#include "lwip/err.h"
-#include "lwip/netdb.h"
+//#include "mdns.h"
+//#include "lwip/api.h"
+//#include "lwip/err.h"
+//#include "lwip/netdb.h"
+//
+//#include "http_server_if.h"
+//#include "wifi_manager.h"
 
-#include "http_server_if.h"
-#include "wifi_manager.h"
 #include "pm_if.h"
-#include "mqtt_if.h"
 #include "hdc1080_if.h"
 #include "mics4514_if.h"
-#include "time_if.h"
 #include "gps_if.h"
-#include "ota_if.h"
 #include "led_if.h"
 #include "sd_if.h"
 
 /* GPIO */
-#define STAT1_LED 21
-#define STAT2_LED 19
-#define STAT3_LED 18
-#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
+//#define STAT1_LED 21
+//#define STAT2_LED 19
+//#define STAT3_LED 18
+//#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
 static char DEVICE_MAC[13];
-static TaskHandle_t task_http_server = NULL;
-static TaskHandle_t task_wifi_manager = NULL;
-static TaskHandle_t task_data = NULL;
-static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
 
@@ -95,28 +89,87 @@ static const char *TAG = "AIRU";
  * @brief RTOS task that periodically prints the heap memory available.
  * @note Pure debug information, should not be ever started on production code!
  */
-void monitoring_task(void *pvParameter)
-{
-	while(1){
-		printf("free heap: %d\n",esp_get_free_heap_size());
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
-	}
-}
+//void monitoring_task(void *pvParameter)
+//{
+//	while(1){
+//		printf("free heap: %d\n",esp_get_free_heap_size());
+//		vTaskDelay(5000 / portTICK_PERIOD_MS);
+//	}
+//}
 
 /*
  * Data gather task
  */
-void data_task(void *pvParameters)
+void happy_little_task(void *pvParameters)
 {
 	pm_data_t pm_dat;
-	double temp, hum;
-	uint16_t co, nox;
+//	double temp, hum;
+//	uint16_t co, nox;
 	esp_gps_t gps;
-	char mqtt_pkt[MQTT_PKT_LEN];
-	char sd_pkt[MQTT_PKT_LEN];
-	uint64_t uptime = 0;
+	char sd_pkt[250];
 
+	static RTC_DATA_ATTR struct timeval sleep_enter_time;
+	struct timeval now;
+
+// This holds GPIO pins in their state before sleepy time (light and deep)
+
+	gettimeofday(&now, NULL);
+	int sleep_time_ms = (now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (now.tv_usec - sleep_enter_time.tv_usec) / 1000;
+	switch (esp_sleep_get_wakeup_cause()) {
+		case ESP_SLEEP_WAKEUP_TIMER: {
+			ESP_LOGI(TAG, "Wake up from timer. Time spent in deep sleep: %dms", sleep_time_ms);
+			break;
+		}
+		case ESP_SLEEP_WAKEUP_UNDEFINED:
+		default:
+			ESP_LOGI(TAG, "Not a deep sleep reset");
+	}
+
+	// Collect PM Data
+	ESP_LOGI(TAG, "Waiting for PM data...");
+//	PMS_WaitForData(&pm_dat);
+	ESP_LOGI(TAG, "PM1 = %.2f", pm_dat.pm1);
+
+
+	// Collect timestamp from GPS
+
+	// Create packet
+
+	// Dump to SD card
+//	SD_LogData(char* pkt, uint8_t year, uint8_t month, uint8_t day);
+
+	/**
+	* Shutdown operation
+	*/
+
+	// Unmount SD
+	SD_Deinitialize();
+
+
+	// Turn off PM Sensor
+	// 	more efficient to keep logic on if sleep time is under 120 s
+//	PMS_Sleep();
+	PMS_Disable();
+	ESP_LOGI(TAG, "PMS Disabled... Waiting 5 seconds before deep sleep...");
+	vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+	// GPS?
+
+	// Shhhhh
+	ESP_LOGI(TAG, "Enabling timer wakeup %ds", CONFIG_SLEEP_TIME_SEC);
+	esp_sleep_enable_timer_wakeup(CONFIG_SLEEP_TIME_SEC * 1000000);
+	esp_deep_sleep_start();
+
+	while(1){
+		ESP_LOGI(TAG, "PMS Enable...");
+		PMS_Enable();
+		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		ESP_LOGI(TAG, "PMS Disable...");
+		PMS_Disable();
+		vTaskDelay(5000 / portTICK_PERIOD_MS);
+	}
 }
+
 
 void app_main()
 {
@@ -134,57 +187,31 @@ void app_main()
 	LED_Initialize();
 
 	/* Initialize the GPS Driver */
-//	GPS_Initialize();
+	GPS_Initialize();
 
 	/* Initialize the PM Driver */
-//	PMS_Initialize();
+	PMS_Initialize();
 
 	/* Initialize the HDC1080 Driver */
-//	HDC1080_Initialize();
+	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
 //	MICS4514_Initialize();
 	MICS4514_GPIO_Init();
+	MICS4514_Disable();
 
 	/* Initialize the SD Card Driver */
-//	sd_init();
-
-	/* start the HTTP Server task */
-//	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
-
-	/* start the wifi manager task */
-//	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+	SD_Initialize();
 
 	/* start the led task */
 //	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 //
 //	/* start the data task */
-//	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
-//
-//	/* start the ota task */
-////	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+	xTaskCreate(&happy_little_task, "data_task", 4096, NULL, 2, NULL);
+
 //
 //	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 //#if WIFI_MANAGER_DEBUG
 //	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
 //#endif
-	static RTC_DATA_ATTR struct timeval sleep_enter_time;
-	struct timeval now;
-	gettimeofday(&now, NULL);
-	int sleep_time_ms = (now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (now.tv_usec - sleep_enter_time.tv_usec) / 1000;
-	switch (esp_sleep_get_wakeup_cause()) {
-		case ESP_SLEEP_WAKEUP_TIMER: {
-			ESP_LOGI(TAG, "Wake up from timer. Time spent in deep sleep: %dms", sleep_time_ms);
-			break;
-		}
-		case ESP_SLEEP_WAKEUP_UNDEFINED:
-		default:
-			ESP_LOGI(TAG, "Not a deep sleep reset");
-
-	}
-
-	const int wakeup_time_sec = 5;
-	ESP_LOGI(TAG, "Enabling timer wakeup %ds", wakeup_time_sec);
-	esp_sleep_enable_timer_wakeup(wakeup_time_sec * 1000000);
-	esp_deep_sleep_start();
 }

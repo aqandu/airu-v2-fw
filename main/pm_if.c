@@ -17,8 +17,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "freertos/event_groups.h"
 #include "driver/uart.h"
 #include "driver/gpio.h"
+#include "esp_sleep.h"
+#include "driver/rtc_io.h"
+#include "soc/rtc_cntl_reg.h"
+#include "soc/sens_reg.h"
+#include "soc/rtc.h"
 #include "esp_log.h"
 #include "pm_if.h"
 
@@ -26,8 +32,9 @@
 #define GPIO_PM_SET		5
 #define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_PM_RESET) | (1ULL << GPIO_PM_SET))
 #define PM_TIMER_TIMEOUT_MS 5000
+#define PM_WAIT_FOR_VALID_DATA BIT0
 
-static const char* TAG_PM = "PM";
+static const char* TAG = "PM";
 
 static void _pm_accum_rst(void);
 static esp_err_t get_packet_from_buffer(void);
@@ -42,6 +49,11 @@ static TimerHandle_t pm_timer;
 static pm_data_t pm_accum;
 static uint8_t pm_buf[BUF_SIZE];
 
+static volatile unsigned long long valid_sample_count = 0;
+
+EventGroupHandle_t pm_event_group = NULL;
+EventBits_t uxBits;
+
 /*
  * @brief 	PM data timer callback. If no valid PM data is received
  * 			for PM_TIMER_TIMEOUT_MS then we clear out the pm data accumulator
@@ -53,7 +65,7 @@ static uint8_t pm_buf[BUF_SIZE];
  */
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-	ESP_LOGI(TAG_PM, "PM Timer Timeout -- Resetting PM Sample Accumulator");
+	ESP_LOGI(TAG, "PM Timer Timeout -- Resetting PM Sample Accumulator");
 	xTimerStop(xTimer, 0);
 	_pm_accum_rst();
 }
@@ -171,9 +183,28 @@ uint8_t PMS_Active()
 	return gpio_get_level(GPIO_PM_RESET);
 }
 
+void PMS_Disable()
+{
+	PMS_SET(0);
+	PMS_RESET(0);
+	for (int i=0;i<50;i++){
+		ESP_LOGI(TAG, "%d:\t%d", i, RTC_GPIO_IS_VALID_GPIO(i));
+	}
+	rtc_gpio_hold_en(GPIO_PM_SET);
+	rtc_gpio_hold_en(GPIO_PM_RESET);
+}
+
+void PMS_Enable()
+{
+	PMS_SET(1);
+	PMS_RESET(1);
+	rtc_gpio_hold_en(GPIO_PM_SET);
+	rtc_gpio_hold_en(GPIO_PM_RESET);
+}
 
 esp_err_t PMS_Poll(pm_data_t *dat)
 {
+	ESP_LOGI(TAG, "Polling PMS data now...");
 	if(pm_accum.sample_count == 0) {
 		dat->pm1   = -1;
 		dat->pm2_5 = -1;
@@ -186,6 +217,59 @@ esp_err_t PMS_Poll(pm_data_t *dat)
 	dat->pm10  = pm_accum.pm10  / pm_accum.sample_count;
 
 	_pm_accum_rst();
+
+	return ESP_OK;
+}
+
+
+/**
+ * @brief
+ *
+ * @param
+ *
+ * @return
+ *
+ */
+esp_err_t PMS_WaitForData(pm_data_t *dat)
+{
+	// Start the mutex used to handle waiting for valid data
+	ESP_LOGI(TAG, "PMS_WaitForData Called...");
+	pm_event_group = xEventGroupCreate();
+	ESP_LOGI(TAG, "PMS_WaitForData waiting for valid PM data...");
+	xEventGroupWaitBits(pm_event_group, PM_WAIT_FOR_VALID_DATA, pdFALSE, pdTRUE, portMAX_DELAY);
+	ESP_LOGI(TAG, "PMS_WaitForData retreived valid data flag...");
+	vEventGroupDelete(pm_event_group);
+	PMS_Poll(dat);
+	return ESP_OK;
+}
+
+
+
+/**
+ * @brief
+ *
+ * @param
+ *
+ * @return
+ *
+ */
+esp_err_t PMS_Sleep()
+{
+
+	if (CONFIG_SLEEP_TIME_SEC < 120) {
+		PMS_SET(0);
+		PMS_RESET(1);
+		ESP_LOGI(TAG, "Sleeping PM Sensor with SET=0, RST=1");
+	}
+	else {
+		PMS_SET(1);
+		PMS_RESET(0);
+		ESP_LOGI(TAG, "Sleeping PM Sensor with SET=1, RST=0");
+	}
+
+	ESP_LOGI(TAG, "Locking PM SET/RESET States...");
+	rtc_gpio_hold_en(GPIO_PM_SET);
+	rtc_gpio_hold_en(GPIO_PM_RESET);
 
 	return ESP_OK;
 }
@@ -220,31 +304,31 @@ static void uart_pm_event_mgr(void *pvParameters)
           break;
 
         case UART_FIFO_OVF:
-          ESP_LOGI(TAG_PM, "hw fifo overflow");
+          ESP_LOGI(TAG, "hw fifo overflow");
           uart_flush_input(PM_UART_CH);
           xQueueReset(pm_event_queue);
           break;
                 
         case UART_BUFFER_FULL:
-          ESP_LOGI(TAG_PM, "ring buffer full");
+          ESP_LOGI(TAG, "ring buffer full");
           uart_flush_input(PM_UART_CH);
           xQueueReset(pm_event_queue);
           break;
             
         case UART_BREAK:
-          ESP_LOGI(TAG_PM, "uart rx break");
+          ESP_LOGI(TAG, "uart rx break");
           break;
                 
         case UART_PARITY_ERR:
-          ESP_LOGI(TAG_PM, "uart parity error");
+          ESP_LOGI(TAG, "uart parity error");
           break;
                 
         case UART_FRAME_ERR:
-          ESP_LOGI(TAG_PM, "uart frame error");
+          ESP_LOGI(TAG, "uart frame error");
           break;
 
         default:
-          ESP_LOGI(TAG_PM, "uart event type: %d", event.type);
+          ESP_LOGI(TAG, "uart event type: %d", event.type);
           break;
       }//case
     }//if
@@ -265,10 +349,28 @@ static void uart_pm_event_mgr(void *pvParameters)
 static esp_err_t get_packet_from_buffer(){
   if(pm_buf[0] == 'B' && pm_buf[1] == 'M'){
 	  if(pm_checksum()){
-		  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
-		  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
-		  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
-		  pm_accum.sample_count++;
+		  valid_sample_count++;
+		  ESP_LOGI(TAG, "Valid PM Packet Received... [%llu]", valid_sample_count);
+		  /**
+		   * Don't start accumulating data until it is valid. If PM_RESET we need to wait
+		   * 15 samples before valid data, if PM_SET we need to wait 3 samples. RESET vs SET
+		   * are determined by sleep length.
+		   * 	CONFIG_SLEEP_TIME_SEC < 120  --> toggle SET, RST == 1
+		   * 	CONFIG_SLEEP_TIME_SEC >= 120 --> toggle RST, SET == 1
+		   */
+		  if ((CONFIG_SLEEP_TIME_SEC < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
+			  ESP_LOGI(TAG, "Valid sample threshold reached!");
+			  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
+			  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
+			  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
+			  pm_accum.sample_count++;
+
+			  // Function is waiting for this to return
+			  if (pm_event_group != NULL) {
+				  ESP_LOGI(TAG, "Setting PM Valid Data flag...");
+				  xEventGroupSetBits(pm_event_group, PM_WAIT_FOR_VALID_DATA);
+			  }
+		  }
 		  xTimerReset(pm_timer, 0);
 		  return ESP_OK;
 	  }

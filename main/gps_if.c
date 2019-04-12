@@ -14,6 +14,8 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "driver/uart.h"
+#include <time.h>
+#include <sys/time.h>
 #include "esp_log.h"
 #include "gps_if.h"
 #include "led_if.h"
@@ -38,13 +40,7 @@ static bool setSystemTimeFromGPS = false;
 static esp_gps_t esp_gps = {
 		.lat 	= -1,
 		.lon 	= -1,
-		.alt 	= -1,
-		.year 	= 0,
-		.month 	= 0,
-		.day 	= 0,
-		.hour 	= 0,
-		.min 	= 0,
-		.sec 	= 0
+		.alt 	= -1
 };
 
 static void uart_gps_event_mgr(void *pvParameters)
@@ -92,7 +88,7 @@ static void uart_gps_event_mgr(void *pvParameters)
 					if (pos != -1) {
 						int read_len = uart_read_bytes(GPS_UART_NUM, nmea, pos + 1, 100 / portTICK_PERIOD_MS);
 						nmea[read_len] = '\0';
-						parse((char*)nmea);
+						err = parse((char*)nmea);
 					}
 					else {
 						uart_flush_input(GPS_UART_NUM);
@@ -160,7 +156,6 @@ esp_err_t GPS_Initialize()
  */
 esp_err_t parse(char *nmea) {
 
-	printf("%s", nmea);
 	uint8_t hour = 0;
 	uint8_t minute = 0;
 	uint8_t seconds = 0;
@@ -189,10 +184,12 @@ esp_err_t parse(char *nmea) {
 			sum ^= nmea[i];
 		}
 		if (sum != 0) {
-		  // bad checksum :(
-		  return false;
+		  return ESP_FAIL;
 		}
 	}
+
+	printf("%s", nmea);
+
 	int32_t degree;
 	long minutes;
 	char degreebuff[10];
@@ -207,8 +204,6 @@ esp_err_t parse(char *nmea) {
 		minute = (time % 10000) / 100;
 		seconds = (time % 100);
 		milliseconds = (uint16_t)(fmod(timef, 1.0) * 1000);
-
-		ESP_LOGI(TAG, "GPGGA: %d:%d:%d", hour, minute, seconds);
 
 		// parse out latitude
 		p = strchr(p, ',')+1;
@@ -234,7 +229,9 @@ esp_err_t parse(char *nmea) {
 			if (p[0] == 'N') lat = 'N';
 			else if (p[0] == 'S') lat = 'S';
 			else if (p[0] == ',') lat = 0;
-			else return ESP_FAIL;
+			else {
+				return ESP_FAIL;
+			}
 		}
 
 		// parse out longitude
@@ -261,7 +258,9 @@ esp_err_t parse(char *nmea) {
 			if (p[0] == 'W') lon = 'W';
 			else if (p[0] == 'E') lon = 'E';
 			else if (p[0] == ',') lon = 0;
-			else return ESP_FAIL;
+			else {
+				return ESP_FAIL;
+			}
 		}
 
 		p = strchr(p, ',')+1;
@@ -279,9 +278,9 @@ esp_err_t parse(char *nmea) {
 		esp_gps.alt 	= altitude;
 		esp_gps.lat 	= latitudeDegrees;
 		esp_gps.lon 	= longitudeDegrees;
-		esp_gps.hour 	= hour;
-		esp_gps.min 	= minute;
-		esp_gps.sec 	= seconds;
+		esp_gps.timeinfo.tm_hour = hour;
+		esp_gps.timeinfo.tm_min = minute;
+		esp_gps.timeinfo.tm_sec = seconds;
 
 		return ESP_OK;
 	}
@@ -328,7 +327,9 @@ esp_err_t parse(char *nmea) {
 		  if (p[0] == 'N') lat = 'N';
 		  else if (p[0] == 'S') lat = 'S';
 		  else if (p[0] == ',') lat = 0;
-		  else return ESP_FAIL;
+		  else {
+			  return ESP_FAIL;
+		  }
 		}
 
 		// parse out longitude
@@ -373,17 +374,20 @@ esp_err_t parse(char *nmea) {
 		  year = (fulldate % 100);
 		}
 
-		esp_gps.day   = day;
-		esp_gps.month = month;
-		esp_gps.year  = year;
-		esp_gps.hour  = hour;
-		esp_gps.min   = minute;
-		esp_gps.sec   = seconds;
-
-		ESP_LOGI(TAG, "GPGGA: %d-%d-%d %d:%d:%d", year, month, day, hour, minute, seconds);
+		esp_gps.timeinfo.tm_year = year + 100;
+		esp_gps.timeinfo.tm_mon = month - 1;
+		esp_gps.timeinfo.tm_mday = day;
+		esp_gps.timeinfo.tm_hour = hour;
+		esp_gps.timeinfo.tm_min = minute;
+		esp_gps.timeinfo.tm_sec = seconds;
 
 		if (year < 80) {
 			LED_SetEventBit(LED_EVENT_GPS_RTC_SET_BIT);
+		}
+
+		if (setSystemTimeFromGPS) {
+			time_t now = mktime(&esp_gps.timeinfo);
+			settimeofday(&now, "UTC");
 		}
 
 		return ESP_OK;
@@ -404,15 +408,23 @@ uint8_t parseHex(char c) {
 }
 
 
+void GPS_Tx(const char* pmtk)
+{
+	uart_write_bytes(GPS_UART_NUM, pmtk, strlen(pmtk));
+	ESP_LOGI(TAG, "Wrote packet to GPS");
+}
+
+
 void GPS_Poll(esp_gps_t* gps)
 {
 	gps->alt   = esp_gps.alt;
 	gps->lat   = esp_gps.lat;
 	gps->lon   = esp_gps.lon;
-	gps->year  = esp_gps.year;
-	gps->month = esp_gps.month;
-	gps->day   = esp_gps.day;
-	gps->hour  = esp_gps.hour;
-	gps->min   = esp_gps.min;
-	gps->sec   = esp_gps.sec;
+	gps->timeinfo = esp_gps.timeinfo;
+//	gps->year  = esp_gps.year;
+//	gps->month = esp_gps.month;
+//	gps->day   = esp_gps.day;
+//	gps->hour  = esp_gps.hour;
+//	gps->min   = esp_gps.min;
+//	gps->sec   = esp_gps.sec;
 }

@@ -110,33 +110,38 @@ void happy_little_task(void *pvParameters)
 	tv.tv_sec = 1555082450;
 	tv.tv_usec = 0;
 	char strftime_buf[64];
-	tm.tm_year = 2019 - 1900;
-	tm.tm_mon = 3;
-	tm.tm_mday = 12;
-	tm.tm_hour = 16;
-	tm.tm_min = 40;
-	tm.tm_sec = 0;
-	now = mktime(&tm);
-	tv.tv_sec = now;
-	tv.tv_usec = 0;
-	settimeofday(&now, "UTC");
+//	tm.tm_year = 2019 - 1900;
+//	tm.tm_mon = 3;
+//	tm.tm_mday = 12;
+//	tm.tm_hour = 16;
+//	tm.tm_min = 40;
+//	tm.tm_sec = 0;
+//	now = mktime(&tm);
+//	tv.tv_sec = now;
+//	tv.tv_usec = 0;
+//	settimeofday(&now, "UTC");
+	GPS_SetSystemTimeFromGPS();
+	vTaskDelay(5000 / portTICK_PERIOD_MS);
+	ESP_LOGI(TAG, "About to disable all output");
+	GPS_Tx((const char*)PMTK_SET_NMEA_OUTPUT_OFF);
 
 	while(1)
 	{
-	    time(&now);
-		localtime_r(&now, &tm);
-	    strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-	    ESP_LOGI(TAG, "The current date/time in New York is: %s", strftime_buf);
-
-
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		GPS_Poll(&gps_dat);
+//	    time(&now);
+//		localtime_r(&now, &tm);
+//	    strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+////	    ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
+//
+//
+//		PMS_Poll(&pm_dat);
+//		HDC1080_Poll(&temp, &hum);
+//		GPS_Poll(&gps_dat);
 
 		// Header: time, MAC, Uptime, Alt, Lat, Lon, PM1, PM2.5, PM10, Temp, Hum
 //		sprintf(sd_pkt, DATA_FORMAT, )
 //		SD_LogData(sd_pkt, gps_dat.year, gps_dat.month, gps_dat.day);
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		GPS_Tx((const char*)PMTK_SET_NMEA_OUTPUT_OFF);
 	}
 }
 

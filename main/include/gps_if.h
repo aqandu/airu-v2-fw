@@ -49,6 +49,7 @@
 #define PMTK_ENABLE_SBAS "$PMTK313,1*2E\r\n"              ///< Enable search for SBAS satellite (only works with 1Hz output rate)
 #define PMTK_ENABLE_WAAS "$PMTK301,2*2E\r\n"              ///< Use WAAS for DGPS correction data
 
+#define PMTK_PERIODIC "$PMTK225,2,3000,12000,18000,72000*15\r\n" ///< On for 3 sec, off for 12, if need be on for 18, off for 72>
 #define PMTK_STANDBY "$PMTK161,0*28\r\n"              	  ///< standby command & boot successful message
 #define PMTK_STANDBY_SUCCESS "$PMTK001,161,3*36\r\n"  	  ///< Not needed currently
 #define PMTK_AWAKE "$PMTK010,002*2D\r\n"              	  ///< Wake up

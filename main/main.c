@@ -101,7 +101,7 @@ void happy_little_task(void *pvParameters)
 	pm_data_t pm_dat;
 	esp_gps_t gps_dat;
 	double temp, hum;
-//	uint16_t co, nox;
+	uint64_t uptime;
 	char sd_pkt[250];
 
 	time_t now;
@@ -113,23 +113,37 @@ void happy_little_task(void *pvParameters)
 	GPS_SetSystemTimeFromGPS();
 
 
+
+
 	while(1)
 	{
-	    time(&now);
+		PMS_Poll(&pm_dat);
+		HDC1080_Poll(&temp, &hum);
+		GPS_Poll(&gps_dat);
+
+		uptime = esp_timer_get_time() / 1000000;
+
+		time(&now);
 		localtime_r(&now, &tm);
 	    strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
 	    ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-//
-//
-//		PMS_Poll(&pm_dat);
-//		HDC1080_Poll(&temp, &hum);
-//		GPS_Poll(&gps_dat);
 
-		// Header: time, MAC, Uptime, Alt, Lat, Lon, PM1, PM2.5, PM10, Temp, Hum
-//		sprintf(sd_pkt, DATA_FORMAT, )
-//		SD_LogData(sd_pkt, gps_dat.year, gps_dat.month, gps_dat.day);
+		sprintf(sd_pkt, DATA_FORMAT,
+				tm.tm_hour, tm.tm_min, tm.tm_sec,	/* time */
+				DEVICE_MAC,			/* ID */
+				uptime, 			/* secActive */
+				gps_dat.alt,		/* Altitude */
+				gps_dat.lat, 		/* Latitude */
+				gps_dat.lon, 		/* Longitude */
+				pm_dat.pm1,			/* PM1 */
+				pm_dat.pm2_5,		/* PM2.5 */
+				pm_dat.pm10, 		/* PM10 */
+				temp,				/* Temperature */
+				hum);				/* Humidity */
 
+		SD_LogData(sd_pkt, &tm);
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
+
 	}
 }
 

@@ -126,7 +126,7 @@ esp_err_t SD_Deinitialize(void)
  * believe GPS is a local time. GPS should always be correct as long as there's
  * a battery, so I don't think it will be a big deal.
  */
-esp_err_t SD_LogData(char* pkt, uint8_t year, uint8_t month, uint8_t day)
+esp_err_t SD_LogData(char* pkt, struct tm *timeinfo)
 {
 	esp_err_t err = ESP_FAIL;
 //	time_t now; /* time_t == long */
@@ -141,7 +141,8 @@ esp_err_t SD_LogData(char* pkt, uint8_t year, uint8_t month, uint8_t day)
 //    localtime_r(&now, &timeinfo);
 //    strftime(filename, sizeof(filename), "/sdcard/%y-%m-%d.csv", &timeinfo);
 
-	sprintf(filename, "/sdcard/%02d-%02d-%02d.csv", year, month, day);
+    strftime(filename, sizeof(filename), "/sdcard/%Y-%m-%d.csv", timeinfo);
+//	sprintf(filename, "/sdcard/%02d-%02d-%02d.csv", year, month, day);
 
     ESP_LOGI(TAG, "Filename: %s", filename);
 

@@ -150,6 +150,7 @@ esp_err_t GPS_Initialize()
 	ESP_LOGI(TAG, "Setting GPS output to RMCGGA");
 	GPS_Tx((const char*)PMTK_SET_NMEA_OUTPUT_RMCGGA);
 	GPS_Tx((const char*)PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);
+	GPS_Tx((const char*)PMTK_PERIODIC);
 
 	return err;
 }

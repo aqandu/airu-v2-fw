@@ -187,16 +187,16 @@ void PMS_Disable()
 {
 	PMS_SET(0);
 	PMS_RESET(0);
-	rtc_gpio_hold_en(GPIO_PM_SET);
-	rtc_gpio_hold_en(GPIO_PM_RESET);
+//	rtc_gpio_hold_en(GPIO_PM_SET);
+//	rtc_gpio_hold_en(GPIO_PM_RESET);
 }
 
 void PMS_Enable()
 {
 	PMS_SET(1);
 	PMS_RESET(1);
-	rtc_gpio_hold_en(GPIO_PM_SET);
-	rtc_gpio_hold_en(GPIO_PM_RESET);
+//	rtc_gpio_hold_en(GPIO_PM_SET);
+//	rtc_gpio_hold_en(GPIO_PM_RESET);
 }
 
 esp_err_t PMS_Poll(pm_data_t *dat)
@@ -356,18 +356,23 @@ static esp_err_t get_packet_from_buffer(){
 		   * 	CONFIG_SLEEP_TIME_SEC >= 120 --> toggle RST, SET == 1
 		   */
 		  if ((CONFIG_SLEEP_TIME_SEC < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
-			  ESP_LOGI(TAG, "Valid sample threshold reached!");
+//			  ESP_LOGI(TAG, "Valid sample threshold reached!");
 			  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
 			  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
 			  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
 			  pm_accum.sample_count++;
 
+			  ESP_LOGI(TAG, "PM1: %d", (pm_buf[PKT_PM1_HIGH] << 8) | pm_buf[PKT_PM1_LOW]);
+			  ESP_LOGI(TAG, "PM1: %.2f", pm_accum.pm1);
+
 			  // Function is waiting for this to return
 			  if (pm_event_group != NULL) {
-				  ESP_LOGI(TAG, "Setting PM Valid Data flag...");
+//				  ESP_LOGI(TAG, "Setting PM Valid Data flag...");
 				  xEventGroupSetBits(pm_event_group, PM_WAIT_FOR_VALID_DATA);
 			  }
 		  }
+
+		  // Reset timer, signaling valid data was received
 		  xTimerReset(pm_timer, 0);
 		  return ESP_OK;
 	  }

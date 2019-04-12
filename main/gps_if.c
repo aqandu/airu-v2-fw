@@ -33,6 +33,8 @@ static const char* TAG = "GPS";
 static esp_err_t parse(char *nmea);
 static uint8_t parseHex(char c);
 
+static bool setSystemTimeFromGPS = false;
+
 static esp_gps_t esp_gps = {
 		.lat 	= -1,
 		.lon 	= -1,
@@ -105,6 +107,13 @@ static void uart_gps_event_mgr(void *pvParameters)
     vTaskDelete(NULL);
 }
 
+
+void GPS_SetSystemTimeFromGPS()
+{
+	setSystemTimeFromGPS = true;
+}
+
+
 esp_err_t GPS_Initialize()
 {
 	esp_err_t err = ESP_FAIL;
@@ -151,7 +160,7 @@ esp_err_t GPS_Initialize()
  */
 esp_err_t parse(char *nmea) {
 
-	printf("\n\n%s\n\n", nmea);
+	printf("%s", nmea);
 	uint8_t hour = 0;
 	uint8_t minute = 0;
 	uint8_t seconds = 0;
@@ -198,6 +207,8 @@ esp_err_t parse(char *nmea) {
 		minute = (time % 10000) / 100;
 		seconds = (time % 100);
 		milliseconds = (uint16_t)(fmod(timef, 1.0) * 1000);
+
+		ESP_LOGI(TAG, "GPGGA: %d:%d:%d", hour, minute, seconds);
 
 		// parse out latitude
 		p = strchr(p, ',')+1;
@@ -368,6 +379,8 @@ esp_err_t parse(char *nmea) {
 		esp_gps.hour  = hour;
 		esp_gps.min   = minute;
 		esp_gps.sec   = seconds;
+
+		ESP_LOGI(TAG, "GPGGA: %d-%d-%d %d:%d:%d", year, month, day, hour, minute, seconds);
 
 		if (year < 80) {
 			LED_SetEventBit(LED_EVENT_GPS_RTC_SET_BIT);

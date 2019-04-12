@@ -97,24 +97,27 @@ void led_task(void *pvParameters)
 	int ch;
 	esp_err_t err;
 	EventBits_t uxBits;
+	_push(STAT1_CH, 0);
+	_push(STAT2_CH, 0);
+	_push(STAT3_CH, 0);
 
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
-		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
-			_push(STAT1_CH, LEDC_DUTY);
-		}
-		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
-			_push(STAT1_CH, 0);
-		}
-		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
-			ESP_LOGI(TAG, "MICS ON BIT");
-			_push(STAT2_CH, LEDC_DUTY);
-		}
-		if (uxBits & LED_EVENT_MICS_HEATER_OFF_BIT) {
-			ESP_LOGI(TAG, "MICS OFF BIT");
-			_push(STAT2_CH, 0);
-		}
+//		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
+//			_push(STAT1_CH, LEDC_DUTY);
+//		}
+//		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
+//			_push(STAT1_CH, 0);
+//		}
+//		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
+//			ESP_LOGI(TAG, "MICS ON BIT");
+//			_push(STAT2_CH, LEDC_DUTY);
+//		}
+//		if (uxBits & LED_EVENT_MICS_HEATER_OFF_BIT) {
+//			ESP_LOGI(TAG, "MICS OFF BIT");
+//			_push(STAT2_CH, 0);
+//		}
 		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
 			_push(STAT3_CH, LEDC_DUTY);
 		}

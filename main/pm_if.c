@@ -187,9 +187,6 @@ void PMS_Disable()
 {
 	PMS_SET(0);
 	PMS_RESET(0);
-	for (int i=0;i<50;i++){
-		ESP_LOGI(TAG, "%d:\t%d", i, RTC_GPIO_IS_VALID_GPIO(i));
-	}
 	rtc_gpio_hold_en(GPIO_PM_SET);
 	rtc_gpio_hold_en(GPIO_PM_RESET);
 }
@@ -350,7 +347,7 @@ static esp_err_t get_packet_from_buffer(){
   if(pm_buf[0] == 'B' && pm_buf[1] == 'M'){
 	  if(pm_checksum()){
 		  valid_sample_count++;
-		  ESP_LOGI(TAG, "Valid PM Packet Received... [%llu]", valid_sample_count);
+//		  ESP_LOGI(TAG, "Valid PM Packet Received... [%llu]", valid_sample_count);
 		  /**
 		   * Don't start accumulating data until it is valid. If PM_RESET we need to wait
 		   * 15 samples before valid data, if PM_SET we need to wait 3 samples. RESET vs SET

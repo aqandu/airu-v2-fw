@@ -99,69 +99,43 @@ static const char *TAG = "AIRU";
 void happy_little_task(void *pvParameters)
 {
 	pm_data_t pm_dat;
-//	double temp, hum;
+	esp_gps_t gps_dat;
+	double temp, hum;
 //	uint16_t co, nox;
-	esp_gps_t gps;
 	char sd_pkt[250];
 
-	static RTC_DATA_ATTR struct timeval sleep_enter_time;
-	struct timeval now;
+	time_t now;
+	struct tm tm;
+	struct timeval tv;
+	tv.tv_sec = 1555082450;
+	tv.tv_usec = 0;
+	char strftime_buf[64];
+	tm.tm_year = 2019 - 1900;
+	tm.tm_mon = 3;
+	tm.tm_mday = 12;
+	tm.tm_hour = 16;
+	tm.tm_min = 40;
+	tm.tm_sec = 0;
+	now = mktime(&tm);
+	tv.tv_sec = now;
+	tv.tv_usec = 0;
+	settimeofday(&now, "UTC");
 
-// This holds GPIO pins in their state before sleepy time (light and deep)
-
-	gettimeofday(&now, NULL);
-	int sleep_time_ms = (now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (now.tv_usec - sleep_enter_time.tv_usec) / 1000;
-	switch (esp_sleep_get_wakeup_cause()) {
-		case ESP_SLEEP_WAKEUP_TIMER: {
-			ESP_LOGI(TAG, "Wake up from timer. Time spent in deep sleep: %dms", sleep_time_ms);
-			break;
-		}
-		case ESP_SLEEP_WAKEUP_UNDEFINED:
-		default:
-			ESP_LOGI(TAG, "Not a deep sleep reset");
-	}
-
-	// Collect PM Data
-	ESP_LOGI(TAG, "Waiting for PM data...");
-//	PMS_WaitForData(&pm_dat);
-	ESP_LOGI(TAG, "PM1 = %.2f", pm_dat.pm1);
-
-
-	// Collect timestamp from GPS
-
-	// Create packet
-
-	// Dump to SD card
-//	SD_LogData(char* pkt, uint8_t year, uint8_t month, uint8_t day);
-
-	/**
-	* Shutdown operation
-	*/
-
-	// Unmount SD
-	SD_Deinitialize();
+	while(1)
+	{
+	    time(&now);
+		localtime_r(&now, &tm);
+	    strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+	    ESP_LOGI(TAG, "The current date/time in New York is: %s", strftime_buf);
 
 
-	// Turn off PM Sensor
-	// 	more efficient to keep logic on if sleep time is under 120 s
-//	PMS_Sleep();
-	PMS_Disable();
-	ESP_LOGI(TAG, "PMS Disabled... Waiting 5 seconds before deep sleep...");
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
+		PMS_Poll(&pm_dat);
+		HDC1080_Poll(&temp, &hum);
+		GPS_Poll(&gps_dat);
 
-	// GPS?
-
-	// Shhhhh
-	ESP_LOGI(TAG, "Enabling timer wakeup %ds", CONFIG_SLEEP_TIME_SEC);
-	esp_sleep_enable_timer_wakeup(CONFIG_SLEEP_TIME_SEC * 1000000);
-	esp_deep_sleep_start();
-
-	while(1){
-		ESP_LOGI(TAG, "PMS Enable...");
-		PMS_Enable();
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "PMS Disable...");
-		PMS_Disable();
+		// Header: time, MAC, Uptime, Alt, Lat, Lon, PM1, PM2.5, PM10, Temp, Hum
+//		sprintf(sd_pkt, DATA_FORMAT, )
+//		SD_LogData(sd_pkt, gps_dat.year, gps_dat.month, gps_dat.day);
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 	}
 }
@@ -200,7 +174,7 @@ void app_main()
 	SD_Initialize();
 
 	/* start the led task */
-//	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 //
 //	/* start the data task */
 	xTaskCreate(&happy_little_task, "data_task", 4096, NULL, 2, NULL);

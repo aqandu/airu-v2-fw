@@ -150,6 +150,8 @@ esp_err_t GPS_Initialize()
  * 	from the Adafruit GPS library for Adafruit Industries.
  */
 esp_err_t parse(char *nmea) {
+
+	printf("\n\n%s\n\n", nmea);
 	uint8_t hour = 0;
 	uint8_t minute = 0;
 	uint8_t seconds = 0;

@@ -144,8 +144,12 @@ esp_err_t GPS_Initialize()
 
 	xTaskCreate(uart_gps_event_mgr, "uart_pms_event_task", 2048, NULL, 12, NULL);
 
-	ESP_LOGE(TAG, "Setting GPS NOT SET Bit...");
+	ESP_LOGI(TAG, "Setting GPS NOT SET Bit...");
 	LED_SetEventBit(LED_EVENT_GPS_RTC_NOT_SET_BIT);
+
+	ESP_LOGI(TAG, "Setting GPS output to RMCGGA");
+	GPS_Tx((const char*)PMTK_SET_NMEA_OUTPUT_RMCGGA);
+	GPS_Tx((const char*)PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);
 
 	return err;
 }

@@ -413,13 +413,19 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         esp_efuse_mac_get_default(tmp);
         sprintf(mac, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
         //printf("\nMAC Address: %s\n\n", DEVICE_MAC);
-        
-        rsp.attr_value.value[0] = 0x3C; // "AIRU:746C     3C:71:BF:13:74:6C
-        rsp.attr_value.value[1] = 0x71;
-        rsp.attr_value.value[2] = 0xBF;
-        rsp.attr_value.value[3] = 0x15;
-        rsp.attr_value.value[4] = 0x34;
-        rsp.attr_value.value[5] = 0x48;
+        rsp.attr_value.value[0] = mac[0];  // ALL HEX VALUES SINCE ESP_GATT_RSP_T ARE UINT8_T
+        rsp.attr_value.value[1] = mac[1];
+        rsp.attr_value.value[2] = mac[2];
+        rsp.attr_value.value[3] = mac[3];
+        rsp.attr_value.value[4] = mac[4];
+        rsp.attr_value.value[5] = mac[5];
+        rsp.attr_value.value[6] = mac[6];
+        rsp.attr_value.value[7] = mac[7];
+        rsp.attr_value.value[8] = mac[8];
+        rsp.attr_value.value[9] = mac[9];
+        rsp.attr_value.value[10] = mac[10];
+        rsp.attr_value.value[11] = mac[11];
+        rsp.attr_value.value[12] = mac[12];
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                     ESP_GATT_OK, &rsp);
         break;

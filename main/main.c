@@ -98,30 +98,18 @@ static const char *TAG = "AIRU";
  */
 void happy_little_task(void *pvParameters)
 {
+	esp_err_t ret;
 	pm_data_t pm_dat;
 	esp_gps_t gps_dat;
-	double temp, hum;
-	uint64_t uptime;
 	char sd_pkt[250];
-
 	time_t now;
 	struct tm tm;
-	struct timeval tv;
-	tv.tv_sec = 1555082450;
-	tv.tv_usec = 0;
-	char strftime_buf[64];
+	char strftime_buf[32];
 	GPS_SetSystemTimeFromGPS();
-
-
-
 
 	while(1)
 	{
 		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		GPS_Poll(&gps_dat);
-
-		uptime = esp_timer_get_time() / 1000000;
 
 		time(&now);
 		localtime_r(&now, &tm);
@@ -131,18 +119,17 @@ void happy_little_task(void *pvParameters)
 		sprintf(sd_pkt, DATA_FORMAT,
 				tm.tm_hour, tm.tm_min, tm.tm_sec,	/* time */
 				DEVICE_MAC,			/* ID */
-				uptime, 			/* secActive */
-				gps_dat.alt,		/* Altitude */
-				gps_dat.lat, 		/* Latitude */
-				gps_dat.lon, 		/* Longitude */
 				pm_dat.pm1,			/* PM1 */
 				pm_dat.pm2_5,		/* PM2.5 */
-				pm_dat.pm10, 		/* PM10 */
-				temp,				/* Temperature */
-				hum);				/* Humidity */
+				pm_dat.pm10 		/* PM10 */
+				);
 
-		SD_LogData(sd_pkt, &tm);
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		ret = SD_LogData(sd_pkt, &tm);
+		if (ret != ESP_OK) {
+			ESP_LOGI(TAG, "Error logging data!");
+			LED_SetEventBit(LED_EVENT_SD_CARD_NOT_MOUNTED_BIT);
+		}
+		vTaskDelay(15000 / portTICK_PERIOD_MS);
 
 	}
 }
@@ -151,6 +138,7 @@ void happy_little_task(void *pvParameters)
 void app_main()
 {
 
+	esp_err_t ret;
 	/* initialize flash memory */
 	nvs_flash_init();
 
@@ -170,15 +158,18 @@ void app_main()
 	PMS_Initialize();
 
 	/* Initialize the HDC1080 Driver */
-	HDC1080_Initialize();
+//	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
 //	MICS4514_Initialize();
 	MICS4514_GPIO_Init();
-	MICS4514_Disable();
 
 	/* Initialize the SD Card Driver */
-	SD_Initialize();
+	ret = SD_Initialize();
+	if (ret != ESP_OK) {
+		ESP_LOGI(TAG, "SD Initialize error!");
+		LED_SetEventBit(LED_EVENT_SD_CARD_NOT_MOUNTED_BIT);
+	}
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);

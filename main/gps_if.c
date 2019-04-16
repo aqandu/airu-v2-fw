@@ -149,8 +149,8 @@ esp_err_t GPS_Initialize()
 
 	ESP_LOGI(TAG, "Setting GPS output to RMCGGA");
 	GPS_Tx((const char*)PMTK_SET_NMEA_OUTPUT_RMCGGA);
-	GPS_Tx((const char*)PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);
-	GPS_Tx((const char*)PMTK_PERIODIC);
+	GPS_Tx((const char*)PMTK_SET_NMEA_UPDATE_10HZ);
+	GPS_Tx((const char*)PMTK_AWAKE);
 
 	return err;
 }
@@ -192,8 +192,6 @@ esp_err_t parse(char *nmea) {
 		  return ESP_FAIL;
 		}
 	}
-
-	printf("%s", nmea);
 
 	int32_t degree;
 	long minutes;

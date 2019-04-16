@@ -26,9 +26,17 @@
 #define LEDC_NUM_LEDS     	(3)
 #define LEDC_DUTY         	(0x1 << (LEDC_RESOLUTION - 2))		/* 1/4 Max Duty */
 
-static void _push(uint8_t ch, uint32_t duty);
+#define BLINK_PERIOD_MS     100
+
+static void _push(uint8_t ch, bool duty);
 
 static const char* TAG = "LED";
+static TimerHandle_t blink_timer;
+
+static bool stat1_blink = false;
+static bool stat2_blink = false;
+static bool stat3_blink = false;
+
 
 static EventGroupHandle_t led_event_group;
 static ledc_channel_config_t ledc_channel[LEDC_NUM_LEDS] = {
@@ -55,9 +63,32 @@ static ledc_channel_config_t ledc_channel[LEDC_NUM_LEDS] = {
     },
 };
 
-
-static void _push(uint8_t ch, uint32_t duty)
+/*
+ * @brief 	PM data timer callback. If no valid PM data is received
+ * 			for PM_TIMER_TIMEOUT_MS then we clear out the pm data accumulator
+ * 			to ensure we don't use old stagnant data.
+ *
+ * @param 	xTimer - the timer handle
+ *
+ * @return 	N/A
+ */
+static void vTimerCallback(TimerHandle_t xTimer)
 {
+	static bool level = false;
+
+	xTimerStop(xTimer, 0);
+
+	level = !level;
+
+	if (stat1_blink) _push(STAT1_CH, level);
+	if (stat3_blink) _push(STAT3_CH, level);
+
+	xTimerStart(xTimer, 0);
+}
+
+static void _push(uint8_t ch, bool level)
+{
+	uint32_t duty = LEDC_DUTY * (!!level);
 	ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, duty);
 	ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
 }
@@ -83,6 +114,12 @@ void LED_Initialize()
 
 	led_event_group = xEventGroupCreate();
 	xEventGroupClearBits(led_event_group, LED_EVENT_ALL_BITS);
+
+	// create the timer to determine validity of pm data
+	blink_timer = xTimerCreate("pm_timer",
+						  (BLINK_PERIOD_MS / portTICK_PERIOD_MS),
+						  pdFALSE, (void *)NULL,
+						  vTimerCallback);
 }
 
 
@@ -104,12 +141,17 @@ void led_task(void *pvParameters)
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
-//		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
+		ESP_LOGI(TAG, "LED Bits have been set! [0x%04X]", uxBits);
+
+		if (uxBits & LED_EVENT_SD_CARD_NOT_MOUNTED_BIT) {
 //			_push(STAT1_CH, LEDC_DUTY);
-//		}
-//		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
-//			_push(STAT1_CH, 0);
-//		}
+			stat1_blink = true;
+			  xTimerStart(blink_timer, 0);
+		}
+		if (uxBits & LED_EVENT_SD_CARD_MOUNTED_BIT) {
+			stat1_blink = false;
+			_push(STAT1_CH, 0);
+		}
 		if (uxBits & LED_EVENT_MICS_HEATER_ON_BIT) {
 			ESP_LOGI(TAG, "MICS ON BIT");
 			_push(STAT2_CH, LEDC_DUTY);
@@ -119,9 +161,12 @@ void led_task(void *pvParameters)
 			_push(STAT2_CH, 0);
 		}
 		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
-			_push(STAT3_CH, LEDC_DUTY);
+//			_push(STAT3_CH, LEDC_DUTY);
+			stat3_blink = true;
+			xTimerStart(blink_timer, 0);
 		}
 		if (uxBits & LED_EVENT_GPS_RTC_SET_BIT) {
+			stat3_blink = false;
 			_push(STAT3_CH, 0);
 		}
 	}

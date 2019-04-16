@@ -18,6 +18,7 @@
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
 #include "sd_if.h"
+#include "led_if.h"
 
 static const char *TAG = "SD";
 

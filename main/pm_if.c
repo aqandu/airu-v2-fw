@@ -183,6 +183,7 @@ uint8_t PMS_Active()
 	return gpio_get_level(GPIO_PM_RESET);
 }
 
+
 void PMS_Disable()
 {
 	PMS_SET(0);
@@ -347,6 +348,7 @@ static esp_err_t get_packet_from_buffer(){
   if(pm_buf[0] == 'B' && pm_buf[1] == 'M'){
 	  if(pm_checksum()){
 		  valid_sample_count++;
+
 //		  ESP_LOGI(TAG, "Valid PM Packet Received... [%llu]", valid_sample_count);
 		  /**
 		   * Don't start accumulating data until it is valid. If PM_RESET we need to wait
@@ -355,22 +357,22 @@ static esp_err_t get_packet_from_buffer(){
 		   * 	CONFIG_SLEEP_TIME_SEC < 120  --> toggle SET, RST == 1
 		   * 	CONFIG_SLEEP_TIME_SEC >= 120 --> toggle RST, SET == 1
 		   */
-		  if ((CONFIG_SLEEP_TIME_SEC < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
+//		  if ((CONFIG_SLEEP_TIME_SEC < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
 //			  ESP_LOGI(TAG, "Valid sample threshold reached!");
-			  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
-			  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
-			  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
-			  pm_accum.sample_count++;
 
-			  ESP_LOGI(TAG, "PM1: %d", (pm_buf[PKT_PM1_HIGH] << 8) | pm_buf[PKT_PM1_LOW]);
-			  ESP_LOGI(TAG, "PM1: %.2f", pm_accum.pm1);
+		  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
+		  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);
+		  pm_accum.pm10  += (float)((pm_buf[PKT_PM10_HIGH]  << 8) | pm_buf[PKT_PM10_LOW]);
+		  pm_accum.sample_count++;
+
+		  ESP_LOGI(TAG, "PM1 Accum: %.2f", pm_accum.pm1);
 
 			  // Function is waiting for this to return
-			  if (pm_event_group != NULL) {
+//			  if (pm_event_group != NULL) {
 //				  ESP_LOGI(TAG, "Setting PM Valid Data flag...");
-				  xEventGroupSetBits(pm_event_group, PM_WAIT_FOR_VALID_DATA);
-			  }
-		  }
+//				  xEventGroupSetBits(pm_event_group, PM_WAIT_FOR_VALID_DATA);
+//			  }
+//		  }
 
 		  // Reset timer, signaling valid data was received
 		  xTimerReset(pm_timer, 0);
@@ -378,50 +380,6 @@ static esp_err_t get_packet_from_buffer(){
 	  }
   }
   return ESP_FAIL;
-}
-
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*
-*/
-static esp_err_t get_data_from_packet(uint8_t *packet)
-{
-  uint16_t tmp;
-  uint8_t tmp2;
-
-    
-  if(packet == NULL)
-    return ESP_FAIL;
-
-  // PM1 data
-  tmp = packet[PKT_PM1_HIGH];
-  tmp2 = packet[PKT_PM1_LOW];
-  tmp = tmp << sizeof(uint8_t);
-  tmp = tmp | tmp2;
-  pm_accum.pm1 += tmp;
-
-  // PM2.5 data
-  tmp = packet[PKT_PM2_5_HIGH];
-  tmp2 = packet[PKT_PM2_5_LOW];
-  tmp = tmp << sizeof(uint8_t);
-  tmp = tmp | tmp2;
-  pm_accum.pm2_5 += tmp;
-
-  // PM10 data
-  tmp = packet[PKT_PM10_HIGH] << 8 ;
-  tmp2 = packet[PKT_PM10_LOW];
-  tmp = tmp << sizeof(uint8_t);
-  tmp = tmp | tmp2;
-  pm_accum.pm10 += tmp;
-
-  pm_accum.sample_count++;
-
-  return ESP_OK;
 }
 
 

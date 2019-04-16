@@ -434,7 +434,7 @@ void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         ESP_LOGI(TAG, "GATT_WRITE_EVT, conn_id %d, trans_id %d, handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
         if (!param->write.is_prep){
             ESP_LOGI(TAG, "GATT_WRITE_EVT, value len %d, value :", param->write.len);
-            esp_log_buffer_hex(TAG, param->write.value, param->write.len);
+            //esp_log_buffer_hex(TAG, param->write.value, param->write.len);
 
             // Save the SSID and Password received over BLE. Have to use memcpy for
             // some reason to save the data into arrays. Using the "=" operator doesnt 

@@ -101,7 +101,7 @@ void monitoring_task(void *pvParameter)
 
 /*
  * Data gather task
- */
+
 void data_task(void *pvParameters)
 {
 	static const char *TAG = "DATA TASK";
@@ -129,16 +129,16 @@ void data_task(void *pvParameters)
 		dtg = time(NULL);;
 
 		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
+		 "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
 		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
+
 		memset(mqtt_pkt, 0, MQTT_PKT_LEN);
 		sprintf(mqtt_pkt, "{\"DEVICE_ID\": 99, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TIMESTAMP\": %ld}", pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, dtg);
 		printf("\nMQTT PACKET %s\n", mqtt_pkt);
 
 		MQTT_Publish("TOPIC", mqtt_pkt);
 
-		/*sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		 ID
+		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		 ID
 											uptime, 		 secActive
 											gps.alt,		 Altitude
 											gps.lat, 		 Latitude
@@ -149,13 +149,13 @@ void data_task(void *pvParameters)
 											temp,			 Temperature
 											hum,			 Humidity
 											co,				 CO
-											nox				 NOx );*/
+											nox				 NOx );
 //		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
 //		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
 //		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
 //
 	}
-}
+}*/
 
 void app_main()
 {

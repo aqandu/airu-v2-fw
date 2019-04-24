@@ -3,6 +3,8 @@
  *
  *  Created on: Oct 7, 2018
  *  Author: tombo
+ *  Modified on: Apr 17, 2019
+ *  Author: SGale
  */
 
 #include <string.h>
@@ -29,6 +31,8 @@
 #include "jwt_if.h"
 
 #define WIFI_CONNECTED_BIT 	BIT0
+#define REFRESH_MILLISECONDS 100000
+#define KEEPALIVE_TIME 240						// Setting that controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
 
 static const char *TAG = "MQTT_DATA";
 static TaskHandle_t task_mqtt = NULL;
@@ -36,6 +40,8 @@ static char DEVICE_MAC[13];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern const uint8_t roots_pem_start[] asm("_binary_roots_pem_start");
 extern const uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
+//extern const uint8_t rsaprivate_pem_start[]   asm("_binary_rsaprivate_pem_start");
+
 
 
 static bool client_connected;
@@ -49,8 +55,6 @@ static const char* URI = "https://cloudiotdevice.googleapis.com";			// URI for I
 static const char* PROJECT_ID = "scottgale";
 static const int PORT = 8883;
 static const char* USER_NAME = "unused"; 									// Unused by Google IoT but supplied to ensure password is read
-static const char* TOPIC = "/devices/M3C71BF153718/events/airU";
-static char* CLIENT_ID= "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/M3C71BF14B324";
 
 static char client_ID[MQTT_CLIENTID_LEN] = {0};
 static char mqtt_topic[MQTT_TOPIC_LEN] = {0};
@@ -87,8 +91,9 @@ uint8_t rsa[] = "-----BEGIN RSA PRIVATE KEY-----\n"\
 
 static esp_mqtt_client_config_t getMQTT_Config(){
 
-	char* JWT_PASSWORD = createGCPJWT(PROJECT_ID, rsa, sizeof(rsa)+1);
-	printf("%s\n", JWT_PASSWORD);
+	//char* JWT_PASSWORD = createGCPJWT(PROJECT_ID, rsa, sizeof(rsa)+1);
+	char* JWT_PASSWORD = createGCPJWT(PROJECT_ID, rsaprivate_pem_start, strlen((char*)rsaprivate_pem_start)+1);
+	//printf("%s\n", JWT_PASSWORD);
 
 	esp_mqtt_client_config_t mqtt_cfg = {
 		.client_id = client_ID,
@@ -99,11 +104,12 @@ static esp_mqtt_client_config_t getMQTT_Config(){
 		.port = PORT,												// can be set static in make menuconfig
 		.transport = MQTT_TRANSPORT_OVER_SSL,						// This setting is what worked
 		.event_handle = mqtt_event_handler,
-		.cert_pem = (const char *)roots_pem_start					// roots_pem_start
+		.cert_pem = (const char *)roots_pem_start,					// roots_pem_start
+		.keepalive = KEEPALIVE_TIME
+		//.refresh_connection_after_ms = REFRESH_MILLISECONDS		// Seems to disconnect after the elapsed time . . . didn't reconnect
 	};
 	return mqtt_cfg;
 }
-
 
 
 /*
@@ -125,25 +131,24 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   //msg_id = esp_mqtt_client_subscribe(this_client, "v2/all", 2);							// Add function call to subscribe OR subscribe
-		   //ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);							// in the connection section
+		   msg_id = esp_mqtt_client_subscribe(this_client, "all_sensors", 1);						// Add function call to subscribe OR subscribe
+		   ESP_LOGI(TAG, "Subscribing to\"all_sensors\", msg_id=%d", msg_id);
 
-		   sprintf(tmp, "v2/%s", DEVICE_MAC);
-		   ESP_LOGI(TAG, "No subscriptions at this time - MTF");
-		   //msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
+		   sprintf(tmp, "v2/M%s", DEVICE_MAC);
+		   //msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 1);
 		   //ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
-		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   esp_mqtt_client_destroy(this_client);
+		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   client_connected = false;
-		   MQTT_Reinit();
+		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED #2");
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+		   ESP_LOGI(TAG, "Subscribe successful, msg_id=%d", msg_id);
 		   break;
 
 	   case MQTT_EVENT_UNSUBSCRIBED:
@@ -203,74 +208,79 @@ void mqtt_task(void* pvParameters){
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
 	// Generate client_ID . . . includes MAC Address as "IoT Device ID"
-	static char mqtt_client_helper[] = "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/M";
+	const char mqtt_client_helper[] = "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/M";
 	snprintf(client_ID, sizeof(client_ID), "%s%s", mqtt_client_helper, DEVICE_MAC);
 	ESP_LOGI(TAG, "Generated client_ID: %s", client_ID);
 
 	// Generate mqtt_topic
-	static char mqtt_topic_helper1[] = "/devices/M";
-	static char mqtt_topic_helper2[] = "/events/airU";
+	const char mqtt_topic_helper1[] = "/devices/M";
+	const char mqtt_topic_helper2[] = "/events/airU";
 	snprintf(mqtt_topic, sizeof(mqtt_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
 	ESP_LOGI(TAG, "Generated mqtt_topic: %s", mqtt_topic);
 
-	// Connect to Google IoT
-	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
-	client = esp_mqtt_client_init(&mqtt_cfg);
-	ESP_LOGI(TAG, "Connecting to Google IoT MQTT broker ...");
-	esp_mqtt_client_start(client);
+	static time_t dtg;								// Variables to hold sensor data
+	static pm_data_t pm_dat;
+	static double temp, hum;
+	static uint16_t co, nox;
+	static esp_gps_t gps;
+	static uint64_t uptime = 0;						// Currently not using
 
-	client_connected = false;
+	static char mqtt_pkt[MQTT_PKT_LEN] = {0};		// Empty packet char[]
 
-	// Variables to hold sensor data
-	pm_data_t pm_dat;
-	double temp, hum;
-	uint16_t co, nox;
-	esp_gps_t gps;
+	MQTT_Connect();
+	vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds to connect
 
-	char mqtt_pkt[MQTT_PKT_LEN] = {0};			// Empty packet char[]
+	/*time_t current_time;
+	time(&current_time);
+	uint32_t exp = (uint32_t)current_time + (REFRESH_MILLISECONDS/1000);	// Must be less than setting in jwt_if.c*/
 
-	uint64_t uptime = 0;
-	time_t dtg;
 
 	while(1){
-		vTaskDelay(30000 / portTICK_PERIOD_MS);
+		printf("\nclient_connected: %d\n", client_connected);
+		//time(&current_time);
+		//printf("\nCurrent time: %d\t", (uint32_t)current_time);
+		//printf("Refresh time: %d\n", exp);
 
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
-		GPS_Poll(&gps);
+		if (!client_connected){
+			esp_mqtt_client_destroy(client);
 
-		uptime = esp_timer_get_time() / 1000000;
-		dtg = time(NULL);							// Save current timestamp to include in packet
+			vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds
 
-		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
-		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
-		memset(mqtt_pkt, 0, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TIMESTAMP\": %ld}", DEVICE_MAC, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, dtg);
+			MQTT_Connect();
 
-		MQTT_Publish(mqtt_topic, mqtt_pkt);
 
-				/*sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		 ID
-													uptime, 		 secActive
-													gps.alt,		 Altitude
-													gps.lat, 		 Latitude
-													gps.lon, 		 Longitude
-													pm_dat.pm1,		 PM1
-													pm_dat.pm2_5,	 PM2.5
-													pm_dat.pm10, 	 PM10
-													temp,			 Temperature
-													hum,			 Humidity
-													co,				 CO
-													nox				 NOx );*/
-		//		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-		//		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-		//		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-		//
+			/*time(&current_time);
+			exp = (uint32_t)current_time + (REFRESH_MILLISECONDS/1000);	// Must be less than setting in jwt_if.c*/
+
+
+			/*printf("Reconnecting . . . ");
+			esp_mqtt_client_destroy(client);
+
+			//vTaskDelay(10000 / portTICK_PERIOD_MS);	// Delay 10 seconds to let destruction propogate through IoT
+
+			MQTT_Connect();
+			time(&current_time);
+			exp = (uint32_t)current_time + 60*2;	// Must be less than setting in jwt_if.c*/
+		}
+		else{
+			PMS_Poll(&pm_dat);
+			HDC1080_Poll(&temp, &hum);
+			MICS4514_Poll(&co, &nox);
+			GPS_Poll(&gps);
+
+			uptime = esp_timer_get_time() / 1000000;
+			dtg = time(NULL);						// Current timestamp to include in packet
+
+			memset(mqtt_pkt, 0, MQTT_PKT_LEN);
+			sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f}", \
+										DEVICE_MAC, dtg, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon);
+
+			MQTT_Publish(mqtt_topic, mqtt_pkt);
+		}
+
+		vTaskDelay(300000 / portTICK_PERIOD_MS);	// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
 	}
 }
-
 
 
 void MQTT_Initialize(void)
@@ -284,17 +294,39 @@ void MQTT_Initialize(void)
    xTaskCreate(&mqtt_task, "jwt", 16000, NULL, 1, task_mqtt);
 }
 
-void MQTT_Reinit()
+
+void MQTT_Connect(void)
 {
-	ESP_LOGI(TAG, "Reinitializing client...");
-	uint8_t tmp[6];
-	esp_efuse_mac_get_default(tmp);
-	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	// Connect to Google IoT
+	ESP_LOGI(TAG, "Connecting to Google IoT MQTT broker ...");
 	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
 	client = esp_mqtt_client_init(&mqtt_cfg);
 	esp_mqtt_client_start(client);
+}
 
-	client_connected = false;
+/*
+* @brief
+*
+* @param
+*
+* @return
+*/
+void MQTT_Publish(const char* topic, const char* msg)
+{
+	int msg_id = 0;
+	if(client_connected) {
+		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
+		ESP_LOGI(TAG, "Sent packet: %s\nTopic: %s\nmsg_id=%d", msg, topic, msg_id);
+	}
+	if (msg_id == -1 || !client_connected){
+		ESP_LOGI(TAG, "In MQTT_Publish - client not connected - trying to reconnect . . . ");
+		client_connected = false;
+		esp_mqtt_client_destroy(client);
+
+		vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds
+
+		MQTT_Connect();
+	}
 }
 
 /*
@@ -314,25 +346,6 @@ void MQTT_wifi_disconnected()
 	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
 	esp_mqtt_client_stop(client);
 
-}
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*/
-void MQTT_Publish(const char* topic, const char* msg)
-{
-	int msg_id;
-	if(client_connected) {
-		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
-		ESP_LOGI(TAG, "Sent packet: %s\nTopic: %s\nmsg_id=%d", msg, topic, msg_id);
-	}
-	else {
-		ESP_LOGI(TAG, "MQTT Client is not connected");
-	}
 }
 
 

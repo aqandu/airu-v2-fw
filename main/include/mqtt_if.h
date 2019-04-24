@@ -2,7 +2,9 @@
  * mqtt_if.h
  *
  *  Created on: Oct 7, 2018
- *      Author: tombo
+ *  Author: tombo
+ *  Modified on: Apr 18, 2019
+ *  Author: SGale
  */
 
 #ifndef MAIN_INCLUDE_MQTT_IF_H_
@@ -22,8 +24,9 @@
 * @return
 */
 void MQTT_Initialize(void);
-
 void MQTT_Reinit(void);
+void MQTT_Connect(void);
+
 
 /*
 * @brief

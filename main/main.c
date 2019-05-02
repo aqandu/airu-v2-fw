@@ -112,7 +112,7 @@ void data_task(void *pvParameters)
 
 //	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
+		vTaskDelay(30000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
 
 		PMS_Poll(&pm_dat);
@@ -170,7 +170,8 @@ void data_task(void *pvParameters)
 									co,				/* CO */
 									nox);			/* NO */
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
-
+		periodic_timer_callback(NULL);
+//		esp_sd_log_write("[SD card package] %s\n", sd_pkt);
 	}
 }
 

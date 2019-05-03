@@ -109,7 +109,7 @@ esp_err_t SD_Initialize(void)
     }
 
     // Card has been initialized, print its properties
-    sdmmc_card_print_info(stdout, card);
+//    sdmmc_card_print_info(stdout, card);
 
     return ret;
 }

@@ -193,8 +193,6 @@ esp_err_t parse(char *nmea) {
 		}
 	}
 
-	printf("%s", nmea);
-
 	int32_t degree;
 	long minutes;
 	char degreebuff[10];

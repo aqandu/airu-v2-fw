@@ -77,7 +77,7 @@ Notes:
 //#define STAT3_LED 18
 //#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
-static char DEVICE_MAC[13];
+static char DEVICE_MAC[18];
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
 
@@ -112,9 +112,6 @@ void happy_little_task(void *pvParameters)
 	char strftime_buf[64];
 	GPS_SetSystemTimeFromGPS();
 
-
-
-
 	while(1)
 	{
 		PMS_Poll(&pm_dat);
@@ -142,7 +139,7 @@ void happy_little_task(void *pvParameters)
 				hum);				/* Humidity */
 
 		SD_LogData(sd_pkt, &tm);
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		vTaskDelay(CONFIG_SAMPLE_RATE_MS / portTICK_PERIOD_MS);
 
 	}
 }
@@ -156,7 +153,7 @@ void app_main()
 
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
-	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	sprintf(DEVICE_MAC, "%02X:%02X:%02X:%02X:%02X:%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
 

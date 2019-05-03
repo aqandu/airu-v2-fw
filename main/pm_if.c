@@ -253,7 +253,7 @@ esp_err_t PMS_WaitForData(pm_data_t *dat)
 esp_err_t PMS_Sleep()
 {
 
-	if (CONFIG_SLEEP_TIME_SEC < 120) {
+	if (CONFIG_SAMPLE_RATE_MS < 120) {
 		PMS_SET(0);
 		PMS_RESET(1);
 		ESP_LOGI(TAG, "Sleeping PM Sensor with SET=0, RST=1");
@@ -355,7 +355,7 @@ static esp_err_t get_packet_from_buffer(){
 		   * 	CONFIG_SLEEP_TIME_SEC < 120  --> toggle SET, RST == 1
 		   * 	CONFIG_SLEEP_TIME_SEC >= 120 --> toggle RST, SET == 1
 		   */
-		  if ((CONFIG_SLEEP_TIME_SEC < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
+		  if ((CONFIG_SAMPLE_RATE_MS < 120 && valid_sample_count >= 4) || valid_sample_count >= 15) {
 //			  ESP_LOGI(TAG, "Valid sample threshold reached!");
 			  pm_accum.pm1   += (float)((pm_buf[PKT_PM1_HIGH]   << 8) | pm_buf[PKT_PM1_LOW]);
 			  pm_accum.pm2_5 += (float)((pm_buf[PKT_PM2_5_HIGH] << 8) | pm_buf[PKT_PM2_5_LOW]);

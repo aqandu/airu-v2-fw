@@ -65,6 +65,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	char tpc[25] = {0};
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
 
+	ESP_LOGI(TAG, "EVENT ID: %d", event->event_id);
+
 	switch (event->event_id) {
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");

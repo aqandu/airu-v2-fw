@@ -144,32 +144,26 @@ void data_task(void *pvParameters)
 									co,				/* CO */
 									nox				/* NOx */);
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		ESP_LOGI(TAG, "\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		ESP_LOGI(TAG, "Packet: %s\n", mqtt_pkt);
-		ESP_LOGE(TAG, "\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-		ESP_LOGI(TAG, "GPS Datetime: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-		ESP_LOGI(TAG, "GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-		ESP_LOGI(TAG, "Uptime: %llu\n", uptime);
 
 		//
 		// Save data to the SD card
 		//
-		bzero(sd_pkt, MQTT_PKT_LEN);
-		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n",
-									gps.hour, gps.min, gps.sec,	/* time */
-									DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox);			/* NO */
-		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
+//		bzero(sd_pkt, MQTT_PKT_LEN);
+//		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n",
+//									gps.hour, gps.min, gps.sec,	/* time */
+//									DEVICE_MAC,		/* ID */
+//									uptime, 		/* secActive */
+//									gps.alt,		/* Altitude */
+//									gps.lat, 		/* Latitude */
+//									gps.lon, 		/* Longitude */
+//									pm_dat.pm1,		/* PM1 */
+//									pm_dat.pm2_5,	/* PM2.5 */
+//									pm_dat.pm10, 	/* PM10 */
+//									temp,			/* Temperature */
+//									hum,			/* Humidity */
+//									co,				/* CO */
+//									nox);			/* NO */
+//		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
 //		esp_sd_log_write("[SD card package] %s\n", sd_pkt);
 	}

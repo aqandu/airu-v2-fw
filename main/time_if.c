@@ -67,10 +67,12 @@ static time_t _sntp_obtain_time(void)
 * @return	Seconds since the UNIX Epoch (January 1, 1970 00:00:00)
 */
 time_t time_gmtime(void){
+	ESP_LOGI(TAG, "time_gmtime()");
 	clock_t current_ms = clock();
 
 	// must update using SNTP if over 10 minutes
 	if ((current_ms - ms_active > MS_BETWEEN_NTP_UPDATE) || utc_time < SEC_JAN1_2018){
+		ESP_LOGI(TAG, "Calling NTP server to retreive timestamp");
 		utc_time = _sntp_obtain_time();
 		ms_active = clock();	// only update after getting ntp time so we can track it
 
@@ -131,7 +133,7 @@ void sntp_initialize(void)
 
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current GMT date/time is: %s", strftime_buf);
+    ESP_LOGI(TAG, "NTP Time Set! The current GMT date/time is: %s", strftime_buf);
 }
 
 

@@ -18,11 +18,31 @@
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
 #include "sd_if.h"
+#include "gps_if.h"
+
+#define SD_LOG_FILE_NAME "/sdcard/LOGGING-0.log"
+#define SD_LOG_FILE_MOST_RECENT_NAME "/sdcard/LOGGING-15.log"
+#define SD_LOG_FILE_FORMAT "/sdcard/LOGGING-%02d.log"
+#define FILENAME_LENGTH 25
+#define MOUNT_CONFIG_MAXFILE 20
+#define MOUNT_CONFIG_MAXLOGFILE 15
+#define MAX_FILE_SIZE_MB 0.05
+#define MAX_LOG_PKG_LENGTH 256
+
+// Maximum time to wait for the mutex in a logging statement.
+#define MAX_MUTEX_WAIT_MS 30
+#define MAX_MUTEX_WAIT_TICKS ((MAX_MUTEX_WAIT_MS + portTICK_PERIOD_MS - 1) / portTICK_PERIOD_MS)
 
 static const char *TAG = "SD";
 static const char *DATA_HEADER = "Time (GMT),MAC,Uptime (s),Altitude (m),Latitude (DD.dd),Longitude (DD.dd),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (C),Humidity,RED (x/4096),OX (x/4096)\n";
-
 static sdmmc_card_t* card = NULL;
+SemaphoreHandle_t s_log_mutex=NULL;
+// Share object, need synchronization
+static FILE *_semaphoreLogFileInstance;
+
+
+//int lineCount(char* filename);
+//int deleteLineInFile(char* filename, int deleteLine);
 
 // This example can use SDMMC and SPI peripherals to communicate with SD card.
 // By default, SDMMC peripheral is used.
@@ -86,8 +106,8 @@ esp_err_t sd_init(void)
     // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = 5,
-        .allocation_unit_size = 16 * 1024
+        .max_files = MOUNT_CONFIG_MAXFILE,
+        .allocation_unit_size = MAX_FILE_SIZE_MB * MOUNT_CONFIG_MAXFILE * 1024 * 1024
     };
 
     // Use settings defined above to initialize SD card and mount FAT filesystem.
@@ -110,7 +130,8 @@ esp_err_t sd_init(void)
 
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
-
+	esp_log_set_vprintf(esp_sd_log_write);
+	periodic_timer_callback(NULL);
     return ret;
 }
 
@@ -180,6 +201,119 @@ esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
 //        // Delete it if it exists
 //        unlink("/sdcard/foo.txt");
 //    }
+
     return ESP_OK;
 }
 
+vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
+{
+	esp_err_t err = ESP_FAIL;
+	FILE *loggingInstance;
+
+	printf("esp_sd_log_write\t");
+
+	loggingInstance = getLogFileInstance();
+    if (loggingInstance == NULL) {
+    	printf("esp_sd_log_write Failed to retrieve %s...", SD_LOG_FILE_NAME);
+        return err;
+    } else {
+		vfprintf(_semaphoreLogFileInstance, format, ap);
+		fflush(_semaphoreLogFileInstance);
+		releaseLogFileInstance();
+		err = ESP_OK;
+    }
+	return err;
+}
+
+// Call back for updating and checking log file name
+void periodic_timer_callback(void* arg)
+{
+    bool exists;
+    char SDLogfileName[FILENAME_LENGTH];
+    FILE* logFileInstance = NULL;
+    static bool firstTime = true;
+    static uint8_t logFileCounting = 0;
+    struct stat st;
+
+    printf("periodic_timer_callback ENTERRED\n");
+	/*
+		Check for current file size and existence
+		Create new file if size > 2Mb or not exist
+		New file name will be stored in loggingList.txt
+	*/
+	if(!firstTime) {
+		logFileInstance = getLogFileInstance();
+	}
+
+    exists = stat(SD_LOG_FILE_NAME, &st) == 0;
+	if (st.st_size > MAX_FILE_SIZE_MB * 1024 * 1024) {	// 2 Mb max or Not Exist
+		if (_semaphoreLogFileInstance) {
+			if(!firstTime) {
+				fclose(_semaphoreLogFileInstance);
+				_semaphoreLogFileInstance = NULL;
+				for (uint8_t i = 1; i <= MOUNT_CONFIG_MAXLOGFILE; i++) { // the bigger Logfile index, the more recently the log is
+			    	sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, i);
+			        exists = stat(SDLogfileName, &st) == 0;
+			        if (!exists) {
+						rename(SD_LOG_FILE_NAME, SDLogfileName);
+						remove(SD_LOG_FILE_NAME);
+						_semaphoreLogFileInstance = fopen(SD_LOG_FILE_NAME, "a");
+						logFileCounting++;
+						break;
+			        } // Else just continue until find 1 name that is not used
+				}
+			}
+		}
+	}
+
+	if (logFileCounting > MOUNT_CONFIG_MAXLOGFILE) {
+		char olderLogFileName[FILENAME_LENGTH];
+		for (uint8_t i = 1; i <= MOUNT_CONFIG_MAXLOGFILE-1; i++) {
+	    	sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, i);
+	    	sprintf(olderLogFileName, SD_LOG_FILE_FORMAT, i+1);
+			rename(olderLogFileName, SDLogfileName);
+		}
+		remove(SD_LOG_FILE_MOST_RECENT_NAME);
+	}
+
+    if(firstTime) {
+    	firstTime = false;
+    }
+    else {
+    	releaseLogFileInstance();
+    }
+    _semaphoreLogFileInstance = logFileInstance;
+}
+
+FILE *getLogFileInstance() {
+    if (!s_log_mutex) {
+        s_log_mutex = xSemaphoreCreateMutex();
+    }
+    if (xSemaphoreTake(s_log_mutex, MAX_MUTEX_WAIT_TICKS) == pdFALSE) {
+        return NULL;
+    }
+
+    if(_semaphoreLogFileInstance != NULL) {
+    	return _semaphoreLogFileInstance;
+    } else {
+		_semaphoreLogFileInstance = fopen(SD_LOG_FILE_NAME, "a");
+    	if (_semaphoreLogFileInstance == NULL) {
+    		printf("ERROR opening Log file %s\n", SD_LOG_FILE_NAME);
+    		releaseLogFileInstance();
+    		return NULL;
+    	} else
+    		return _semaphoreLogFileInstance;
+    }
+}
+
+void releaseLogFileInstance() {
+    if( s_log_mutex != NULL ) {
+    	if (_semaphoreLogFileInstance) {
+			fclose(_semaphoreLogFileInstance);
+			_semaphoreLogFileInstance = NULL;
+    	}
+		if(xSemaphoreGive(s_log_mutex) != pdTRUE) {
+			return;
+		}
+    }
+}

@@ -88,6 +88,7 @@ void led_task(void *pvParameters)
 	int ch;
 	esp_err_t err;
 	EventBits_t uxBits;
+	ESP_LOGI(TAG, "led_task Enterred");
 
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);

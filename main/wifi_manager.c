@@ -618,6 +618,7 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 
 void wifi_manager( void * pvParameters ){
 
+	ESP_LOGI(TAG, "wifi_manager task Started");
 	/* memory allocation of objects used by the task */
 	wifi_manager_json_mutex = xSemaphoreCreateMutex();
 	accessp_records = (wifi_ap_record_t*)malloc(sizeof(wifi_ap_record_t) * MAX_AP_NUM);

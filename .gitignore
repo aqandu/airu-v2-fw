@@ -2,3 +2,6 @@
 build/
 .DS_Store
 .settings/
+.cproject
+
+.settings/language.settings.xml

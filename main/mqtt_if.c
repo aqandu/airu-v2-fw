@@ -8,6 +8,7 @@
  */
 
 #include <string.h>
+#include <math.h>
 #include <stdio.h>
 #include "esp_err.h"
 #include "esp_system.h"
@@ -31,8 +32,9 @@
 #include "jwt_if.h"
 
 #define WIFI_CONNECTED_BIT 	BIT0
-#define RECONNECT_SECONDS 82800					// Change to 23 (82800) hours once reconnect algorithm is working
-#define KEEPALIVE_TIME 240						// Setting that controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
+#define RECONNECT_SECONDS 82800					// Setting controls how often to reconnect to Google IoT (82800 = 23 hours) JWT expires at 24 hours
+#define KEEPALIVE_TIME 240						// Setting controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
+#define PUBLISH_SECONDS 120					// Setting controls maximum time between publishing data (regardless if data changed) 3300=55 minutes
 
 static const char *TAG = "MQTT_DATA";
 static TaskHandle_t task_mqtt = NULL;
@@ -114,10 +116,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
-		   //esp_mqtt_client_destroy(this_client);
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   client_connected = false;
-		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED #2");
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -175,7 +175,21 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
-	uint8_t tmp[6];								// Save MAC address for use in client_ID and mqtt_topic
+	float pm_delta = 0.25;							// Constants that define data change thresholds
+	float minor_delta = 1.0;
+	float co_delta = 10.0;
+	float gps_delta = 0.05;
+
+	static time_t dtg;								// Variables to hold sensor data
+	static struct tm *dtg_struct;
+	static pm_data_t pub_pm_dat, pm_dat;
+	static double pub_temp, temp, pub_hum, hum;
+	static uint16_t pub_co, co, pub_nox, nox;
+	static esp_gps_t pub_gps, gps;
+
+	static char mqtt_pkt[MQTT_PKT_LEN] = {0};		// Empty packet char[]
+
+	uint8_t tmp[6];									// Save MAC address for use in client_ID and mqtt_topic
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
@@ -190,22 +204,19 @@ void mqtt_task(void* pvParameters){
 	snprintf(mqtt_topic, sizeof(mqtt_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
 	ESP_LOGI(TAG, "Generated mqtt_topic: %s", mqtt_topic);
 
-	static time_t dtg;								// Variables to hold sensor data
-	static struct tm *dtg_struct;
-	static pm_data_t pm_dat;
-	static double temp, hum;
-	static uint16_t co, nox;
-	static esp_gps_t gps;
-	//static uint64_t uptime = 0;						// Currently not using
-
-	static char mqtt_pkt[MQTT_PKT_LEN] = {0};		// Empty packet char[]
-
 	MQTT_Connect();
 	vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds to connect
 
-	time_t current_time = 0;
+	time_t current_time;
 	time(&current_time);
 	uint32_t reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;	// Must be less than setting in jwt_if.c
+	uint32_t publish_time = (uint32_t)current_time + PUBLISH_SECONDS;
+
+	PMS_Poll(&pub_pm_dat);							// Initial pull from sensors to prime the publish data variables
+	HDC1080_Poll(&pub_temp, &pub_hum);
+	MICS4514_Poll(&pub_co, &pub_nox);
+	GPS_Poll(&pub_gps);
+	int publishFlag = 1; 							// If publishFlag == 1 then publish, flag is set to 1 by time OR change in data
 
 	while(1){
 		printf("\nClient_connected: %d\n", client_connected);
@@ -213,45 +224,59 @@ void mqtt_task(void* pvParameters){
 		printf("\ncurrent_time: %d\t", (uint32_t)current_time);
 		printf("reconnect_time: %d\n", reconnect_time);
 
-		//Working new algorithm
-		if (current_time > reconnect_time){
+		if (current_time > reconnect_time || !client_connected){					// Check to see if its time to reconnect
 			esp_mqtt_client_destroy(client);				// Stop the mqtt client and free all the memory
 			MQTT_Connect();									// Reconnect
 			reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;
 		}
-
-		/*
-		if (!client_connected){								// This algorithm is NOT working . . . currently the board crashes and resets
-			esp_mqtt_client_destroy(client);
-			vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds
-			MQTT_Connect();
-		}
-		*/
 		else{												// Get and send data packet
 			PMS_Poll(&pm_dat);
 			HDC1080_Poll(&temp, &hum);
 			MICS4514_Poll(&co, &nox);
 			GPS_Poll(&gps);
-
-			//uptime = esp_timer_get_time() / 1000000;
 			dtg = time(NULL);								// Current UTC timestamp to include in packet
 
-			/*
-			printf("TIME: %ld\t", dtg);
-			dtg = mktime(localtime(&current_time));			// Current LOCAL timestamp to include in packet
-			dtg_struct = localtime(&dtg);
-			printf("isdst: %d\n", dtg_struct->tm_isdst);
-			*/
+			// Check to see if new data is different from last published data
+			if(fabs(pm_dat.pm1-pub_pm_dat.pm1) >= pm_delta)
+				publishFlag = 1;
+			else if (fabs(pm_dat.pm2_5-pub_pm_dat.pm2_5) >= pm_delta)
+				publishFlag = 1;
+			else if (fabs(pm_dat.pm10-pub_pm_dat.pm10) >= pm_delta)
+				publishFlag = 1;
+			else if (fabs(temp-pub_temp) >= minor_delta)
+				publishFlag = 1;
+			else if (fabs(hum-pub_hum) >= minor_delta)
+				publishFlag = 1;
+			else if (fabs(nox-pub_nox) >= minor_delta)
+				publishFlag = 1;
+			else if (fabs(co-pub_co >= co_delta))
+				publishFlag = 1;
+			else if (fabs(gps.lat-pub_gps.lat) >= gps_delta)
+				publishFlag = 1;
+			else if (fabs(gps.lon-pub_gps.lon) >= gps_delta)
+				publishFlag = 1;
 
-			memset(mqtt_pkt, 0, MQTT_PKT_LEN);
-			sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f}", \
-										DEVICE_MAC, dtg, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon);
+			if (current_time >= publish_time){
+				publishFlag = 1;
+				publish_time = (uint32_t)current_time + PUBLISH_SECONDS;
+			}
 
-			MQTT_Publish(mqtt_topic, mqtt_pkt);
+			if (publishFlag == 1){
+				memset(mqtt_pkt, 0, MQTT_PKT_LEN);			// Clear contents of packet
+				sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f}", \
+					DEVICE_MAC, dtg, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon);
+
+				MQTT_Publish(mqtt_topic, mqtt_pkt);
+				pub_pm_dat = pm_dat;
+				pub_temp = temp;
+				pub_hum = hum;
+				pub_co = co;
+				pub_gps = gps;
+				publishFlag = 0;
+			}
 		}
-
-		vTaskDelay(300000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
-	}
+		vTaskDelay(30000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
+	} // End while(1)
 }
 
 
@@ -260,9 +285,8 @@ void MQTT_Initialize(void)
    mqtt_event_group = xEventGroupCreate();
    xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
 
-   /* Waiting for WiFi to connect */
-   //   xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-
+   // Waiting for WiFi to connect
+   // xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
    xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
 }
 
@@ -291,13 +315,8 @@ void MQTT_Publish(const char* topic, const char* msg)
 		ESP_LOGI(TAG, "Sent packet: %s\nTopic: %s\nmsg_id=%d", msg, topic, msg_id);
 	}
 	if (msg_id == -1 || !client_connected){
-		ESP_LOGI(TAG, "In MQTT_Publish - client not connected - trying to reconnect . . . ");
+		ESP_LOGI(TAG, "In MQTT_Publish - client not connected");
 		client_connected = false;
-		esp_mqtt_client_destroy(client);
-
-		vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds
-
-		MQTT_Connect();
 	}
 }
 

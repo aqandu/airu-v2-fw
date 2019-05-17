@@ -1,0 +1,8 @@
+{
+        "recommendations": [
+            "ms-vscode.cpptools",
+            "streetsidesoftware.code-spell-checker",
+            "maziac.asm-code-lens",
+            "austin.code-gnu-global"
+        ]
+}

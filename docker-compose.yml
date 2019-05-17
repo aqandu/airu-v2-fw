@@ -1,0 +1,7 @@
+version: '2'
+services:
+  MyAiruESP:
+    image: 'tbecnel14/esp32_airu'
+    volumes:
+      - './:/root/esp/airu-v2-fw/'
+    working_dir: '/root/esp/airu-v2-fw'

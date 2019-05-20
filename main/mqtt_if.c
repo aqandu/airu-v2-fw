@@ -20,7 +20,7 @@ static const char* TAG = "MQTT";
 static char DEVICE_MAC[13];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 
-static bool client_connected;
+static volatile bool client_connected;
 static esp_mqtt_client_handle_t client;
 static EventGroupHandle_t mqtt_event_group;
 
@@ -203,6 +203,7 @@ void MQTT_wifi_disconnected()
 void MQTT_Publish(const char* topic, const char* msg)
 {
 	int msg_id;
+	ESP_LOGI(TAG, "%s ENTERRED %d", __func__, client_connected);
 	if(client_connected) {
 		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
 		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);

@@ -112,7 +112,7 @@ void data_task(void *pvParameters)
 
 //	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
-		vTaskDelay(30000 / portTICK_PERIOD_MS);
+		vTaskDelay(20000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
 
 		PMS_Poll(&pm_dat);

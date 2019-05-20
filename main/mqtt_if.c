@@ -34,7 +34,7 @@
 #define WIFI_CONNECTED_BIT 	BIT0
 #define RECONNECT_SECONDS 82800					// Setting controls how often to reconnect to Google IoT (82800 = 23 hours) JWT expires at 24 hours
 #define KEEPALIVE_TIME 240						// Setting controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
-#define PUBLISH_SECONDS 120					// Setting controls maximum time between publishing data (regardless if data changed) 3300=55 minutes
+#define PUBLISH_SECONDS 3300					// Setting controls maximum time between publishing data (regardless if data changed) 3300=55 minutes
 
 static const char *TAG = "MQTT_DATA";
 static TaskHandle_t task_mqtt = NULL;
@@ -101,14 +101,19 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
 		   free(JWT_PASSWORD);										// This frees the memory allocated in jwt_if.c
-		   // Generate mqtt_topic
-		   //memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);
-		   const char mqtt_topic_helper1[] = "/devices/M";
+		   const char mqtt_topic_helper1[] = "/devices/M";			// Helper char[]s to create subscription strings
 		   const char mqtt_topic_helper2[] = "/config";
+		   const char mqtt_topic_helper3[] = "/commands/#";
+
 		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
-		   printf("MQTT subscribe topic %s\n", mqtt_subscribe_topic);
-		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);						// Add function call to subscribe OR subscribe
-		   ESP_LOGI(TAG, "Subscribing to config, msg_id=%d", msg_id);
+		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);
+		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
+
+		   memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);
+
+		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper3);
+		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);
+		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
 
 		   sprintf(tmp, "v2/M%s", DEVICE_MAC);
 		   //msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 1);
@@ -226,7 +231,7 @@ void mqtt_task(void* pvParameters){
 
 		if (current_time > reconnect_time || !client_connected){					// Check to see if its time to reconnect
 			esp_mqtt_client_destroy(client);				// Stop the mqtt client and free all the memory
-			MQTT_Connect();									// Reconnect
+			MQTT_Connect();
 			reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;
 		}
 		else{												// Get and send data packet
@@ -275,7 +280,7 @@ void mqtt_task(void* pvParameters){
 				publishFlag = 0;
 			}
 		}
-		vTaskDelay(30000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
+		vTaskDelay(300000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
 	} // End while(1)
 }
 
@@ -283,7 +288,7 @@ void mqtt_task(void* pvParameters){
 void MQTT_Initialize(void)
 {
    mqtt_event_group = xEventGroupCreate();
-   xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
+   xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
 
    // Waiting for WiFi to connect
    // xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);

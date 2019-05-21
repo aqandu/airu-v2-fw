@@ -16,7 +16,7 @@
 #include "mqtt_client.h"
 #include "ota_if.h"
 #include "mqtt_if.h"
-//#include "wifi_manager.h"
+#include "wifi_manager.h"
 #include "hdc1080_if.h"
 #include "mics4514_if.h"
 #include "time_if.h"
@@ -42,6 +42,8 @@ static char DEVICE_MAC[13];
 //extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern const uint8_t roots_pem_start[] asm("_binary_roots_pem_start");
 extern const uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
+extern int wifiConnectedFlag;
+
 
 static bool client_connected;
 static esp_mqtt_client_handle_t client;
@@ -223,23 +225,23 @@ void mqtt_task(void* pvParameters){
 	GPS_Poll(&pub_gps);
 	int publishFlag = 1; 							// If publishFlag == 1 then publish, flag is set to 1 by time OR change in data
 
-	while(1){
-		printf("\nClient_connected: %d\n", client_connected);
+	while(wifiConnectedFlag){
+		printf("\nclient_connected: %d wifi_connected: %d\n", client_connected, wifiConnectedFlag);
 		time(&current_time);
 		printf("\ncurrent_time: %d\t", (uint32_t)current_time);
 		printf("reconnect_time: %d\n", reconnect_time);
 
-		if (current_time > reconnect_time || !client_connected){					// Check to see if its time to reconnect
-			esp_mqtt_client_destroy(client);				// Stop the mqtt client and free all the memory
+		if (current_time > reconnect_time || !client_connected){	// Check to see if its time to reconnect
+			esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
 			MQTT_Connect();
 			reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;
 		}
-		else{												// Get and send data packet
+		else{														// Get and send data packet
 			PMS_Poll(&pm_dat);
 			HDC1080_Poll(&temp, &hum);
 			MICS4514_Poll(&co, &nox);
 			GPS_Poll(&gps);
-			dtg = time(NULL);								// Current UTC timestamp to include in packet
+			dtg = time(NULL);										// Current UTC timestamp to include in packet
 
 			// Check to see if new data is different from last published data
 			if(fabs(pm_dat.pm1-pub_pm_dat.pm1) >= pm_delta)
@@ -280,8 +282,11 @@ void mqtt_task(void* pvParameters){
 				publishFlag = 0;
 			}
 		}
-		vTaskDelay(300000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
+		vTaskDelay(30000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
 	} // End while(1)
+	printf("\nDeleting mqtt_task\n");
+	esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
+	vTaskDelete(NULL);
 }
 
 
@@ -289,9 +294,6 @@ void MQTT_Initialize(void)
 {
    mqtt_event_group = xEventGroupCreate();
    xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
-
-   // Waiting for WiFi to connect
-   // xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
    xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
 }
 

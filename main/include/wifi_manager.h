@@ -37,6 +37,10 @@ Contains the freeRTOS task and all necessary support
 extern "C" {
 #endif
 
+#include "esp_wifi_types.h"
+#include "tcpip_adapter.h"
+#include "esp_event_legacy.h"
+
 /**
  * @brief If WIFI_MANAGER_DEBUG is defined, additional debug information will be sent to the standard output.
  */
@@ -142,8 +146,6 @@ extern "C" {
 #define JSON_MAP_VIS_SIZE		22
 #define JSON_MAC_ADR_SIZE		29
 #define JSON_REG_INFO_SIZE 		(JSON_REG_NAME_SIZE + JSON_REG_EMAIL_SIZE + JSON_MAP_VIS_SIZE + JSON_MAC_ADR_SIZE)
-
-
 
 typedef enum update_reason_code_t {
 	UPDATE_CONNECTION_OK = 0,

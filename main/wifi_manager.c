@@ -39,7 +39,6 @@ Contains the freeRTOS task and all necessary support
 #include "freertos/event_groups.h"
 #include "esp_event_loop.h"
 #include "esp_wifi.h"
-#include "esp_wifi_types.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "nvs_flash.h"
@@ -58,6 +57,9 @@ Contains the freeRTOS task and all necessary support
 static const char* TAG = "WMG";
 static const char* HDL = "WIFI-HANDLER";
 
+
+#define EVENT_GROUP_TIMEOUT_30S (30000 / portTICK_PERIOD_MS)
+
 SemaphoreHandle_t wifi_manager_json_mutex = NULL;
 uint16_t ap_num = MAX_AP_NUM;
 wifi_ap_record_t *accessp_records; //[MAX_AP_NUM];
@@ -65,6 +67,7 @@ char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
+int wifiConnectedFlag = 0;			// flag to indicate whether wifi is connected or not - used in mqtt_if.c
 
 
 /**
@@ -496,11 +499,13 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 
 	case SYSTEM_EVENT_STA_GOT_IP:
         xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
+        wifiConnectedFlag = 1;
         break;
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
+		wifiConnectedFlag = 0;
         break;
 
 	default:
@@ -619,6 +624,8 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 void wifi_manager( void * pvParameters ){
 
 	/* memory allocation of objects used by the task */
+	static bool initializeTNTPAndMQTT = false;
+
 	wifi_manager_json_mutex = xSemaphoreCreateMutex();
 	accessp_records = (wifi_ap_record_t*)malloc(sizeof(wifi_ap_record_t) * MAX_AP_NUM);
 	accessp_json = (char*)malloc(MAX_AP_NUM * JSON_ONE_APP_SIZE + 4); /* 4 bytes for json encapsulation of "[\n" and "]\0" */
@@ -749,7 +756,7 @@ void wifi_manager( void * pvParameters ){
 	for(;;){
 
 		/* actions that can trigger: request a connection, a scan, or a disconnection */
-		uxBits = xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT | WIFI_MANAGER_REQUEST_WIFI_SCAN | WIFI_MANAGER_REQUEST_WIFI_DISCONNECT, pdFALSE, pdFALSE, portMAX_DELAY );
+		uxBits = xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT | WIFI_MANAGER_REQUEST_WIFI_SCAN | WIFI_MANAGER_REQUEST_WIFI_DISCONNECT, pdFALSE, pdFALSE, EVENT_GROUP_TIMEOUT_30S );
 
 		if(uxBits & WIFI_MANAGER_REQUEST_WIFI_DISCONNECT){
 			/* user requested a disconnect, this will in effect disconnect the wifi but also erase NVS memory*/
@@ -804,7 +811,7 @@ void wifi_manager( void * pvParameters ){
 				ESP_ERROR_CHECK(esp_wifi_disconnect());
 
 				/* wait until wifi disconnects. From experiments, it seems to take about 150ms to disconnect */
-				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, EVENT_GROUP_TIMEOUT_30S );
 			}
 
 			/* set the new config and connect - reset the disconnect bit first as it is later tested */
@@ -816,7 +823,7 @@ void wifi_manager( void * pvParameters ){
 			 * or it's a failure and we get a SYSTEM_EVENT_STA_DISCONNECTED with a reason code.
 			 * Note that the reason code is not exploited. For all intent and purposes a failure is a failure.
 			 */
-			uxBits = xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdFALSE, portMAX_DELAY );
+			uxBits = xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdFALSE, EVENT_GROUP_TIMEOUT_30S );
 
 			if(uxBits & (WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT)){
 
@@ -841,8 +848,11 @@ void wifi_manager( void * pvParameters ){
 						/* update the LED */
 						LED_SetWifiConn(LED_WIFI_CONNECTED);
 
-						/* Start SNTP */
-						sntp_initialize();
+						if (!initializeTNTPAndMQTT) {
+							/* Start SNTP */
+							sntp_initialize();
+							initializeTNTPAndMQTT = true;
+						}
 
 						/* Start MQTT */
 						MQTT_Initialize();
@@ -905,6 +915,24 @@ void wifi_manager( void * pvParameters ){
 
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
+		}
+		else if (uxBits & SYSTEM_EVENT_STA_DISCONNECTED)
+			{
+				// Check for wifi status
+				// Why SYSTEM_EVENT_STA_DISCONNECTED is on all the time??
+				if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
+					ESP_LOGI(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
+					ESP_LOGW(TAG, "AirU is still disconnected... retry connecting");
+					ESP_LOGI(TAG, "About to fetch wifi sta config");
+					if(wifi_manager_fetch_wifi_sta_config()){
+						/* request a connection */
+						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+					}
+		//	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+				}
+			}
+		else {
+			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
 		}
 	} /* for(;;) */
 	vTaskDelay( (TickType_t)10);

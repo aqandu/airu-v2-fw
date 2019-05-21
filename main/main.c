@@ -198,11 +198,6 @@ void app_main()
 	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
 
-	/* start the data task */
-	//xTaskCreate(&data_task, "data_task", 16000, NULL, 2, &task_data);					//Notifies MQTT that a packet is ready   Changed 4096 to 8192
-
-
-
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

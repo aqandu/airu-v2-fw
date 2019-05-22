@@ -52,7 +52,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 
 ////Google IoT constants / connection parameters-------------------------------------------
 static const char* HOST = "mqtt.googleapis.com";							// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
-static const char* URI = "https://cloudiotdevice.googleapis.com";			// URI for IoT - I don't think this is used
+static const char* URI = "mqtts://mqtt.googleapis.com:8883";			// URI for IoT - I don't think this is used
 static const char* PROJECT_ID = "scottgale";
 static const int PORT = 8883;
 static const char* USER_NAME = "unused"; 									// Unused by Google IoT but supplied to ensure password is read

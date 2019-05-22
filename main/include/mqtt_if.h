@@ -21,7 +21,7 @@
 */
 void MQTT_Initialize(void);
 
-void MQTT_Reinit(void);
+void MQTT_Connect(void);
 
 /*
 * @brief

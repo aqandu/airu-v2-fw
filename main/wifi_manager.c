@@ -68,7 +68,7 @@ char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
-
+bool MQTT_Wifi_Connection = false;
 
 /**
  * The actual WiFi settings in use
@@ -487,12 +487,10 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 		break;
 
     case SYSTEM_EVENT_AP_STACONNECTED:
-		printf("QQQ free heap: %d\n",esp_get_free_heap_size());
-		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_AP_STA_CONNECTED_BIT);
+    	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_AP_STA_CONNECTED_BIT);
 		break;
 
     case SYSTEM_EVENT_AP_STADISCONNECTED:
-		printf("QQQ free heap: %d\n",esp_get_free_heap_size());
     	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_AP_STA_CONNECTED_BIT);
 		break;
 
@@ -500,13 +498,14 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
         break;
 
 	case SYSTEM_EVENT_STA_GOT_IP:
+    	MQTT_Wifi_Connection = true;
         xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
         break;
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
-		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
+    	MQTT_Wifi_Connection = false;
+    	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
-//		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
         break;
 
 	default:
@@ -884,8 +883,8 @@ void wifi_manager( void * pvParameters ){
 							initializeTNTPAndMQTT = true;
 						}
 						else {
-							ESP_LOGI(TAG, "%s: MQTT_Reinit", __func__);
-							MQTT_Reinit();
+							ESP_LOGI(TAG, "%s: Reconnect MQTT attempt", __func__);
+							MQTT_Connect();
 						}
 					}
 					else{
@@ -956,7 +955,6 @@ void wifi_manager( void * pvParameters ){
 		else if (uxBits & SYSTEM_EVENT_STA_DISCONNECTED)
 		{
 			// Check for wifi status
-			// Why SYSTEM_EVENT_STA_DISCONNECTED is on all the time??
 			if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
 				ESP_LOGI(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
 				ESP_LOGW(TAG, "AirU is still disconnected... retry connecting");
@@ -967,7 +965,6 @@ void wifi_manager( void * pvParameters ){
 					ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 				}
-//				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 			}
 		}
 		else {

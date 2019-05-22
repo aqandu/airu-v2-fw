@@ -21,7 +21,7 @@ static char DEVICE_MAC[13];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 
 static volatile bool client_connected;
-static esp_mqtt_client_handle_t client;
+static esp_mqtt_client_handle_t client = NULL;
 static EventGroupHandle_t mqtt_event_group;
 
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
@@ -82,9 +82,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-		   esp_mqtt_client_destroy(this_client);
 		   client_connected = false;
-		   MQTT_Reinit();
+		   esp_mqtt_client_destroy(client);
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -151,20 +150,12 @@ void MQTT_Initialize(void)
    /* Waiting for WiFi to connect */
 //   xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
 
-   ESP_LOGI(TAG, "Initializing client...");
-
-   uint8_t tmp[6];
-   esp_efuse_mac_get_default(tmp);
-   sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-   client = esp_mqtt_client_init(&mqtt_cfg);
-   esp_mqtt_client_start(client);
-
-   client_connected = false;
+   MQTT_Reinit();
 }
 
 void MQTT_Reinit()
 {
-	ESP_LOGI(TAG, "Reinitializing client...");
+	ESP_LOGI(TAG, "Initializing client...");
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);

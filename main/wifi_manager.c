@@ -67,7 +67,7 @@ wifi_ap_record_t *accessp_records; //[MAX_AP_NUM];
 char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
-volatile wifi_config_t* wifi_manager_config_sta = NULL;
+wifi_config_t* wifi_manager_config_sta = NULL;
 
 
 /**
@@ -487,10 +487,12 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 		break;
 
     case SYSTEM_EVENT_AP_STACONNECTED:
+		printf("QQQ free heap: %d\n",esp_get_free_heap_size());
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_AP_STA_CONNECTED_BIT);
 		break;
 
     case SYSTEM_EVENT_AP_STADISCONNECTED:
+		printf("QQQ free heap: %d\n",esp_get_free_heap_size());
     	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_AP_STA_CONNECTED_BIT);
 		break;
 
@@ -626,13 +628,16 @@ void wifi_manager( void * pvParameters ){
 	/* memory allocation of objects used by the task */
 	wifi_manager_json_mutex = xSemaphoreCreateMutex();
 	accessp_records = (wifi_ap_record_t*)malloc(sizeof(wifi_ap_record_t) * MAX_AP_NUM);
+
 	accessp_json = (char*)malloc(MAX_AP_NUM * JSON_ONE_APP_SIZE + 4); /* 4 bytes for json encapsulation of "[\n" and "]\0" */
+
 	wifi_manager_clear_access_points_json();
-	ip_info_json = (char*)malloc(sizeof(char) * JSON_IP_INFO_SIZE);
-	reg_info_json = (char*)malloc(sizeof(char) * JSON_REG_INFO_SIZE);
+		ip_info_json = (char*)malloc(sizeof(char) * JSON_IP_INFO_SIZE);
+		reg_info_json = (char*)malloc(sizeof(char) * JSON_REG_INFO_SIZE);
 	wifi_manager_clear_ip_info_json();
 	wifi_manager_clear_reg_info_json();
-	wifi_manager_config_sta = (wifi_config_t*)malloc(sizeof(wifi_config_t));
+		wifi_manager_config_sta = (wifi_config_t*)malloc(sizeof(wifi_config_t));
+
 	memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
 	memset(&wifi_settings.sta_static_ip_config, 0x00, sizeof(tcpip_adapter_ip_info_t));
 	IP4_ADDR(&wifi_settings.sta_static_ip_config.ip, 192, 168, 0, 10);
@@ -662,6 +667,8 @@ void wifi_manager( void * pvParameters ){
 	};
 
 	/* try to get access to previously saved wifi */
+	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
+
 	ESP_LOGI(TAG, "About to fetch wifi sta config");
 	if(wifi_manager_fetch_wifi_sta_config()){
 
@@ -670,6 +677,7 @@ void wifi_manager( void * pvParameters ){
 		/* request a connection */
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 	}
+	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 
 
 	/* start the softAP access point */
@@ -749,6 +757,7 @@ void wifi_manager( void * pvParameters ){
 	ESP_LOGI(TAG, "softAP started, starting http_server\n");
 
 	http_server_set_event_start();
+	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 
 	EventBits_t uxBits;
 	for(;;){
@@ -875,13 +884,9 @@ void wifi_manager( void * pvParameters ){
 							initializeTNTPAndMQTT = true;
 						}
 						else {
-//							   esp_mqtt_client_destroy(this_client);
-//							   client_connected = false;
-							   MQTT_Reinit();
+							ESP_LOGI(TAG, "%s: MQTT_Reinit", __func__);
+							MQTT_Reinit();
 						}
-
-						// Clear REQ_CONNECT_BIT when connected
-//						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 					}
 					else{
 						ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
@@ -896,7 +901,6 @@ void wifi_manager( void * pvParameters ){
 						LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 						/* Shut down the MQTT socket - It'll come back up when we reconnect */
-//						MQTT_wifi_disconnected();
 						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 					}
 					wifi_manager_unlock_json_buffer();
@@ -914,7 +918,6 @@ void wifi_manager( void * pvParameters ){
 				/* hit portMAX_DELAY limit ? Guess it would never happen
 				 * leave the WIFI_MANAGER_REQUEST_STA_CONNECT_BIT = 1. So that we retry the next circle
 				 * */
-//				abort();
 				ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
 				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 			}
@@ -958,8 +961,10 @@ void wifi_manager( void * pvParameters ){
 				ESP_LOGI(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
 				ESP_LOGW(TAG, "AirU is still disconnected... retry connecting");
 				ESP_LOGI(TAG, "About to fetch wifi sta config");
+				ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 				if(wifi_manager_fetch_wifi_sta_config()){
 					/* request a connection */
+					ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 				}
 //				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);

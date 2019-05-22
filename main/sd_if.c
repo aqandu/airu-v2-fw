@@ -213,18 +213,14 @@ vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
 	esp_err_t err = ESP_FAIL;
 	FILE *loggingInstance;
 
-//	printf("esp_sd_log_write\t");
-
 	loggingInstance = getLogFileInstance();
     if (loggingInstance == NULL) {
     	printf("esp_sd_log_write Failed to retrieve %s...", SD_LOG_FILE_NAME);
         return err;
     } else {
 
-//    	vprintf(format, ap);
 		vfprintf(_semaphoreLogFileInstance, format, ap);
 		fflush(_semaphoreLogFileInstance);
-//
 		releaseLogFileInstance();
 		err = ESP_OK;
     }
@@ -234,6 +230,7 @@ vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
 // Call back for updating and checking log file name
 void periodic_timer_callback(void* arg)
 {
+#if SD_LOG == 1
     bool exists;
     char SDLogfileName[FILENAME_LENGTH];
     FILE* logFileInstance = NULL;
@@ -289,6 +286,7 @@ void periodic_timer_callback(void* arg)
     	releaseLogFileInstance();
     }
     _semaphoreLogFileInstance = logFileInstance;
+#endif
 }
 
 FILE *getLogFileInstance() {

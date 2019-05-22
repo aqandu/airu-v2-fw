@@ -28,6 +28,7 @@
 #define MOUNT_CONFIG_MAXLOGFILE 15
 #define MAX_FILE_SIZE_MB 0.05
 #define MAX_LOG_PKG_LENGTH 256
+#define SD_LOG 0
 
 // Maximum time to wait for the mutex in a logging statement.
 #define MAX_MUTEX_WAIT_MS 30
@@ -130,8 +131,10 @@ esp_err_t sd_init(void)
 
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
-	esp_log_set_vprintf(esp_sd_log_write);
-	periodic_timer_callback(NULL);
+    if(SD_LOG) {
+		esp_log_set_vprintf(esp_sd_log_write);
+		periodic_timer_callback(NULL);
+    }
     return ret;
 }
 
@@ -210,13 +213,12 @@ vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
 	esp_err_t err = ESP_FAIL;
 	FILE *loggingInstance;
 
-	printf("esp_sd_log_write\t");
-
 	loggingInstance = getLogFileInstance();
     if (loggingInstance == NULL) {
     	printf("esp_sd_log_write Failed to retrieve %s...", SD_LOG_FILE_NAME);
         return err;
     } else {
+
 		vfprintf(_semaphoreLogFileInstance, format, ap);
 		fflush(_semaphoreLogFileInstance);
 		releaseLogFileInstance();
@@ -228,6 +230,7 @@ vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
 // Call back for updating and checking log file name
 void periodic_timer_callback(void* arg)
 {
+#if SD_LOG == 1
     bool exists;
     char SDLogfileName[FILENAME_LENGTH];
     FILE* logFileInstance = NULL;
@@ -283,6 +286,7 @@ void periodic_timer_callback(void* arg)
     	releaseLogFileInstance();
     }
     _semaphoreLogFileInstance = logFileInstance;
+#endif
 }
 
 FILE *getLogFileInstance() {

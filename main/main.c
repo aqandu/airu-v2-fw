@@ -112,7 +112,7 @@ void data_task(void *pvParameters)
 
 //	vTaskDelay(5000 / portTICK_PERIOD_MS);
 	for(;;){
-		vTaskDelay(30000 / portTICK_PERIOD_MS);
+		vTaskDelay(20000 / portTICK_PERIOD_MS);
 		ESP_LOGI(TAG, "Data Task...");
 
 		PMS_Poll(&pm_dat);
@@ -144,34 +144,12 @@ void data_task(void *pvParameters)
 									co,				/* CO */
 									nox				/* NOx */);
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-
-		//
-		// Save data to the SD card
-		//
-//		bzero(sd_pkt, MQTT_PKT_LEN);
-//		sprintf(sd_pkt, "%02d:%02d:%02d,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n",
-//									gps.hour, gps.min, gps.sec,	/* time */
-//									DEVICE_MAC,		/* ID */
-//									uptime, 		/* secActive */
-//									gps.alt,		/* Altitude */
-//									gps.lat, 		/* Latitude */
-//									gps.lon, 		/* Longitude */
-//									pm_dat.pm1,		/* PM1 */
-//									pm_dat.pm2_5,	/* PM2.5 */
-//									pm_dat.pm10, 	/* PM10 */
-//									temp,			/* Temperature */
-//									hum,			/* Humidity */
-//									co,				/* CO */
-//									nox);			/* NO */
-//		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-//		esp_sd_log_write("[SD card package] %s\n", sd_pkt);
 	}
 }
 
 void app_main()
 {
-
 	/* initialize flash memory */
 	nvs_flash_init();
 
@@ -180,6 +158,8 @@ void app_main()
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+    ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "IDF version: %s", esp_get_idf_version());
 
 	/* Initialize the LED Driver */
 	LED_Initialize();

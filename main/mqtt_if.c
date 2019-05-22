@@ -19,9 +19,9 @@
 static const char* TAG = "MQTT";
 static char DEVICE_MAC[13];
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
-
-static bool client_connected;
-static esp_mqtt_client_handle_t client;
+extern bool MQTT_Wifi_Connection;
+static volatile bool client_connected;
+static esp_mqtt_client_handle_t client = NULL;
 static EventGroupHandle_t mqtt_event_group;
 
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
@@ -39,16 +39,20 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
  * Must also define the name in the component.mk file under main
  * 	so that it gets loaded into the .data section of memory
  */
-static const esp_mqtt_client_config_t mqtt_cfg = {
-	.host = CONFIG_MQTT_HOST,
-	.username = CONFIG_MQTT_USERNAME,
-	.password = CONFIG_MQTT_PASSWORD,
-	.port = MQTT_SSL_DEFAULT_PORT,
-	.transport = MQTT_TRANSPORT_OVER_SSL,
-	.event_handle = mqtt_event_handler,
-	.cert_pem = (const char *)ca_pem_start,
-};
+esp_mqtt_client_config_t getMQTT_Config(){
 
+
+	esp_mqtt_client_config_t mqtt_cfg = {
+			.host = CONFIG_MQTT_HOST,
+			.username = CONFIG_MQTT_USERNAME,
+			.password = CONFIG_MQTT_PASSWORD,
+			.port = MQTT_SSL_DEFAULT_PORT,
+			.transport = MQTT_TRANSPORT_OVER_SSL,
+			.event_handle = mqtt_event_handler,
+			.cert_pem = (const char *)ca_pem_start,
+	};
+	return mqtt_cfg;
+}
 
 /*
 * @brief
@@ -82,9 +86,11 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-		   esp_mqtt_client_destroy(this_client);
 		   client_connected = false;
-		   MQTT_Reinit();
+//		   esp_err_t ret = esp_mqtt_client_destroy(client);
+//		   if (ret != ESP_OK) {
+//			   ret = esp_mqtt_client_destroy(client);
+//		   }
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -145,32 +151,23 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 */
 void MQTT_Initialize(void)
 {
-   mqtt_event_group = xEventGroupCreate();
-   xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
-
-   /* Waiting for WiFi to connect */
-//   xEventGroupWaitBits(mqtt_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-
-   ESP_LOGI(TAG, "Initializing client...");
-
-   uint8_t tmp[6];
-   esp_efuse_mac_get_default(tmp);
-   sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-   client = esp_mqtt_client_init(&mqtt_cfg);
-   esp_mqtt_client_start(client);
-
-   client_connected = false;
-}
-
-void MQTT_Reinit()
-{
-	ESP_LOGI(TAG, "Reinitializing client...");
+	ESP_LOGI(TAG, "Initializing client...");
+	mqtt_event_group = xEventGroupCreate();
+	xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+
+	MQTT_Connect();
+}
+
+void MQTT_Connect()
+{
+	ESP_LOGI(TAG, "%s enter", __func__);
+
+	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
 	client = esp_mqtt_client_init(&mqtt_cfg);
 	esp_mqtt_client_start(client);
-
 	client_connected = false;
 }
 
@@ -188,9 +185,13 @@ void MQTT_wifi_connected()
 
 void MQTT_wifi_disconnected()
 {
-	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
-	esp_mqtt_client_stop(client);
-
+//	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
+	printf("Free the memory...\n");
+	esp_err_t ret = esp_mqtt_client_destroy(client);
+	if (ret != ESP_OK) {
+	   ret = esp_mqtt_client_destroy(client);
+	}
+	printf("Memory freed... %d\n", ret);
 }
 
 /*
@@ -203,12 +204,14 @@ void MQTT_wifi_disconnected()
 void MQTT_Publish(const char* topic, const char* msg)
 {
 	int msg_id;
-	if(client_connected) {
+	ESP_LOGI(TAG, "%s ENTERRED client_connected %d", __func__, client_connected);
+	if(client_connected && MQTT_Wifi_Connection) {
 		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
 		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 	}
-	else {
-		ESP_LOGI(TAG, "MQTT Client is not connected");
+	else if (!MQTT_Wifi_Connection){
+		ESP_LOGI(TAG, "Wifi is not connected");
+		MQTT_wifi_disconnected();
 	}
 }
 

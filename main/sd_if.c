@@ -282,7 +282,7 @@ void periodic_timer_callback(void* arg)
     if(firstTime) {
     	firstTime = false;
     }
-    else {
+    else if (logFileInstance != NULL) {
     	releaseLogFileInstance();
     }
     _semaphoreLogFileInstance = logFileInstance;

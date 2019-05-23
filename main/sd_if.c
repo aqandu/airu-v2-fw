@@ -26,7 +26,7 @@
 #define FILENAME_LENGTH 25
 #define MOUNT_CONFIG_MAXFILE 20
 #define MOUNT_CONFIG_MAXLOGFILE 15
-#define MAX_FILE_SIZE_MB 0.05
+#define MAX_FILE_SIZE_MB 1
 #define MAX_LOG_PKG_LENGTH 256
 #define SD_LOG 0
 
@@ -187,24 +187,6 @@ esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
     // Write the data
     fprintf(f, "%s", pkt);
     fclose(f);
-
-//    ESP_LOGI(TAG, "Opening file");
-//    FILE* f = fopen("/sdcard/hello.txt", "w");
-//    if (f == NULL) {
-//        ESP_LOGE(TAG, "Failed to open file for writing");
-//        return;
-//    }
-//    fprintf(f, "Hello %s!\n", card->cid.name);
-//    fclose(f);
-//    ESP_LOGI(TAG, "File written");
-//
-//    // Check if destination file exists before renaming
-//    struct stat st;
-//    if (stat("/sdcard/foo.txt", &st) == 0) {
-//        // Delete it if it exists
-//        unlink("/sdcard/foo.txt");
-//    }
-
     return ESP_OK;
 }
 
@@ -235,8 +217,9 @@ void periodic_timer_callback(void* arg)
     char SDLogfileName[FILENAME_LENGTH];
     FILE* logFileInstance = NULL;
     static bool firstTime = true;
-    static uint8_t logFileCounting = 0;
+    static uint8_t logFileCounting = 1;
     struct stat st;
+    int ret =0 ;
 
     printf("periodic_timer_callback ENTERRED\n");
 	/*
@@ -254,29 +237,36 @@ void periodic_timer_callback(void* arg)
 			if(!firstTime) {
 				fclose(_semaphoreLogFileInstance);
 				_semaphoreLogFileInstance = NULL;
-				for (uint8_t i = 1; i <= MOUNT_CONFIG_MAXLOGFILE; i++) { // the bigger Logfile index, the more recently the log is
-			    	sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, i);
-			        exists = stat(SDLogfileName, &st) == 0;
-			        if (!exists) {
-						rename(SD_LOG_FILE_NAME, SDLogfileName);
-						remove(SD_LOG_FILE_NAME);
-						_semaphoreLogFileInstance = fopen(SD_LOG_FILE_NAME, "a");
-						logFileCounting++;
-						break;
-			        } // Else just continue until find 1 name that is not used
+				sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, logFileCounting);
+				logFileCounting++;
+				if ((ret = remove(SDLogfileName)) != 0) {
+					printf("%s: ERR cannot REMOVE file [%s]\n", __func__, SDLogfileName);
+				}
+				if ((ret = rename(SD_LOG_FILE_NAME, SDLogfileName)) != 0) {
+					printf("%s: ERR cannot RENAME file [%s]\n", __func__, SDLogfileName);
 				}
 			}
 		}
 	}
 
 	if (logFileCounting > MOUNT_CONFIG_MAXLOGFILE) {
-		char olderLogFileName[FILENAME_LENGTH];
-		for (uint8_t i = 1; i <= MOUNT_CONFIG_MAXLOGFILE-1; i++) {
+		char oldLogFileName[FILENAME_LENGTH];
+		for (uint8_t i = 1; i > MOUNT_CONFIG_MAXLOGFILE-1; i++) {
 	    	sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, i);
-	    	sprintf(olderLogFileName, SD_LOG_FILE_FORMAT, i+1);
-			rename(olderLogFileName, SDLogfileName);
+	    	// Make sure the furthest file get removed
+			if ((ret = remove(SDLogfileName)) != 0) {
+				printf("%s: ERR cannot REMOVE file [%s]\n", __func__, SDLogfileName);
+			}
+	    	sprintf(oldLogFileName, SD_LOG_FILE_FORMAT, i+1);
+	    	// Rename file_i+1 into file_i
+			rename(oldLogFileName, SDLogfileName);
+			if ((ret = rename(SD_LOG_FILE_NAME, SDLogfileName)) != 0) {
+				printf("%s: ERR cannot RENAME file [%s]\n", __func__, SDLogfileName);
+			}
 		}
+		// Remove the LOGGING-15.log since its content is copied into LOGGING-14.log previously
 		remove(SD_LOG_FILE_MOST_RECENT_NAME);
+		logFileCounting = 15;
 	}
 
     if(firstTime) {

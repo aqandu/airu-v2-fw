@@ -156,7 +156,7 @@ void mqtt_task(void* pvParameters){
 	MQTT_Connect();
 	vTaskDelay(ONE_SECOND_DELAY);
 	while(MQTT_Wifi_Connection) {
-		if (thirtySecCounter >= THIRTY_SECONDS_COUNT) {	//	30 seconds count
+		if (thirtySecCounter >= THIRTY_SECONDS_COUNT*2) {
 			thirtySecCounter = 0;
 			data_task();
 		}
@@ -251,11 +251,11 @@ void MQTT_wifi_connected()
 
 void MQTT_wifi_disconnected()
 {
-	ESP_LOGI(TAG, "free heap: %d\n",esp_get_free_heap_size());
+	ESP_LOGI(TAG, "%s: free heap: %d\n", __func__, esp_get_free_heap_size());
 	printf("Going to free MQTT memory...\n");
 	esp_err_t ret = esp_mqtt_client_destroy(client);
 	printf("Memory freed... %d\n", ret);
-	ESP_LOGI(TAG, "free heap: %d\n",esp_get_free_heap_size());
+	ESP_LOGI(TAG, "after free heap: %d\n",esp_get_free_heap_size());
 }
 
 /*

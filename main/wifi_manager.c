@@ -55,9 +55,9 @@ Contains the freeRTOS task and all necessary support
 #include "time_if.h"
 #include "mqtt_if.h"
 
-#define EVENT_GROUP_TIMEOUT_30S (30000 / portTICK_PERIOD_MS)
+#define THIRTY_SECONDS_TIMEOUT (30000 / portTICK_PERIOD_MS)
 
-static const char* TAG = "WMG";
+static const char* TAG = "WIFI_MANAGER";
 static bool initializeTNTPAndMQTT = false;
 //static const char* HDL = "WIFI-HANDLER";
 
@@ -666,8 +666,6 @@ void wifi_manager( void * pvParameters ){
 	};
 
 	/* try to get access to previously saved wifi */
-	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
-
 	ESP_LOGI(TAG, "About to fetch wifi sta config");
 	if(wifi_manager_fetch_wifi_sta_config()){
 
@@ -676,8 +674,6 @@ void wifi_manager( void * pvParameters ){
 		/* request a connection */
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 	}
-	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
-
 
 	/* start the softAP access point */
 	/* stop DHCP server */
@@ -764,7 +760,7 @@ void wifi_manager( void * pvParameters ){
 		/* actions that can trigger: request a connection, a scan, or a disconnection */
 		uxBits = xEventGroupWaitBits(wifi_manager_event_group,
 				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT | WIFI_MANAGER_REQUEST_WIFI_SCAN | WIFI_MANAGER_REQUEST_WIFI_DISCONNECT,
-				pdFALSE, pdFALSE, EVENT_GROUP_TIMEOUT_30S );
+				pdFALSE, pdFALSE, THIRTY_SECONDS_TIMEOUT );
 
 		if(uxBits & WIFI_MANAGER_REQUEST_WIFI_DISCONNECT){
 			/* user requested a disconnect, this will in effect disconnect the wifi but also erase NVS memory*/
@@ -839,9 +835,6 @@ void wifi_manager( void * pvParameters ){
 			{
 				ESP_LOGE(TAG, "esp_wifi_connect: %d", ret);
 			}
-//			ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, wifi_manager_get_wifi_sta_config()));
-//			ESP_ERROR_CHECK(esp_wifi_connect());
-
 			/* 2 scenarios here: connection is successful and SYSTEM_EVENT_STA_GOT_IP will be posted
 			 * or it's a failure and we get a SYSTEM_EVENT_STA_DISCONNECTED with a reason code.
 			 * Note that the reason code is not exploited. For all intent and purposes a failure is a failure.
@@ -849,7 +842,7 @@ void wifi_manager( void * pvParameters ){
 			ESP_LOGI(TAG, "xEventGroupWaitBits %d", __LINE__);
 			uxBits = xEventGroupWaitBits(wifi_manager_event_group,
 					WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT,
-					pdFALSE, pdFALSE, EVENT_GROUP_TIMEOUT_30S );
+					pdFALSE, pdFALSE, THIRTY_SECONDS_TIMEOUT );
 
 			if(uxBits & (WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT)){
 
@@ -874,17 +867,13 @@ void wifi_manager( void * pvParameters ){
 						/* update the LED */
 						LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 
+						/* Start MQTT */
+						MQTT_Initialize();
 						if (!initializeTNTPAndMQTT) {
 							/* Start SNTP */
 							sntp_initialize();
 
-							/* Start MQTT */
-							MQTT_Initialize();
 							initializeTNTPAndMQTT = true;
-						}
-						else {
-							ESP_LOGI(TAG, "%s: Reconnect MQTT attempt", __func__);
-							MQTT_Connect();
 						}
 					}
 					else{
@@ -940,7 +929,7 @@ void wifi_manager( void * pvParameters ){
 					wifi_manager_unlock_json_buffer();
 				}
 				else{
-					ESP_LOGI(TAG, "could not get access to json mutex in wifi_scan\n");
+					ESP_LOGW(TAG, "could not get access to json mutex in wifi_scan\n");
 				}
 			}
 			/* STA is actively trying to connect to an AP that isn't present. Terminate this.
@@ -956,13 +945,11 @@ void wifi_manager( void * pvParameters ){
 		{
 			// Check for wifi status
 			if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
-				ESP_LOGI(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
+				ESP_LOGW(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
 				ESP_LOGW(TAG, "AirU is still disconnected... retry connecting");
 				ESP_LOGI(TAG, "About to fetch wifi sta config");
-				ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 				if(wifi_manager_fetch_wifi_sta_config()){
 					/* request a connection */
-					ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 				}
 			}

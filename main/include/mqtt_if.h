@@ -23,6 +23,7 @@ void MQTT_Initialize(void);
 
 void MQTT_Connect(void);
 
+void mqtt_task(void*);
 /*
 * @brief
 *

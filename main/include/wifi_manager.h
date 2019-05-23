@@ -37,6 +37,9 @@ Contains the freeRTOS task and all necessary support
 extern "C" {
 #endif
 
+#include "esp_wifi_types.h"
+#include "tcpip_adapter.h"
+#include "esp_event_legacy.h"
 /**
  * @brief If WIFI_MANAGER_DEBUG is defined, additional debug information will be sent to the standard output.
  */

@@ -79,11 +79,10 @@ Notes:
 static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
-static TaskHandle_t task_data = NULL;
+static TaskHandle_t task_mqtt = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -94,57 +93,6 @@ void monitoring_task(void *pvParameter)
 	while(1){
 		printf("free heap: %d\n",esp_get_free_heap_size());
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
-	}
-}
-
-/*
- * Data gather task
- */
-void data_task(void *pvParameters)
-{
-	pm_data_t pm_dat;
-	double temp, hum;
-	uint16_t co, nox;
-	esp_gps_t gps;
-	char mqtt_pkt[MQTT_PKT_LEN];
-	char sd_pkt[MQTT_PKT_LEN];
-	uint64_t uptime = 0;
-
-//	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	for(;;){
-		vTaskDelay(20000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Data Task...");
-
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
-		GPS_Poll(&gps);
-
-		uptime = esp_timer_get_time() / 1000000;
-
-		//
-		// Send data over MQTT
-		//
-
-		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
-		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
-		bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox				/* NOx */);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		periodic_timer_callback(NULL);
 	}
 }
 
@@ -187,9 +135,6 @@ void app_main()
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
-
-	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
 
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);

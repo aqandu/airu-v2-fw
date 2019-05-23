@@ -29,7 +29,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.1985091048" name="Default" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+                <configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.1985091048" name="Default" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
                     					
                     <folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.1985091048.1178207970" name="/" resourcePath="">
                         						
@@ -78,6 +78,16 @@
                                     <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/mqtt/esp-mqtt/include&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/mbedtls/mbedtls/include/&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/fatfs/src&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/sdmmc/include&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_client/include&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/app_update/include&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/bootloader_support/include&quot;"/>
                                     								
                                 </option>
                                 								
@@ -186,5 +196,7 @@
         </buildTargets>
         	
     </storageModule>
+    	
+    <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
     
 </cproject>

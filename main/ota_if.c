@@ -108,7 +108,7 @@ static esp_err_t _ota_commence()
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
              running->type, running->subtype, running->address);
 
-    sprintf(fn_path, "http://air.eng.utah.edu:80/files/v2_updates/%s", ota_file_basename);
+    sprintf(fn_path, "http://air.eng.utah.edu:80/files/updates/%s", ota_file_basename);
     ESP_LOGI(TAG, "OTA: %s", fn_path);
 
     esp_http_client_config_t config = {
@@ -180,7 +180,6 @@ static esp_err_t _ota_commence()
 
     if (esp_partition_check_identity(esp_ota_get_running_partition(), update_partition) == true) {
         ESP_LOGI(TAG, "The current running firmware is same as the firmware just downloaded");
-        int i = 0;
         ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button to download it");
         return ESP_FAIL;
 //        while(1) {

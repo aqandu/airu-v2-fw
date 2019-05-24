@@ -99,7 +99,7 @@ CONFIG_WIFI_MODE_AP="1"
 CONFIG_MQTT_HOST="air.eng.utah.edu"
 CONFIG_MQTT_USERNAME="sensor"
 CONFIG_MQTT_PASSWORD="PaG06pSo43oM4Cx"
-CONFIG_FIRMWARE_UPG_URL="air.eng.utah.edu:80/files/updates/hello-world.bin"
+CONFIG_FIRMWARE_UPG_URL="http://air.eng.utah.edu:80/files/updates/airu-firmware-2.0.bin"
 
 #
 # Partition Table

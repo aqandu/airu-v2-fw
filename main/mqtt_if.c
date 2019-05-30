@@ -52,7 +52,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 
 ////Google IoT constants / connection parameters-------------------------------------------
 static const char* HOST = "mqtt.googleapis.com";							// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
-static const char* URI = "mqtts://mqtt.googleapis.com:8883";			// URI for IoT - I don't think this is used
+static const char* URI = "mqtts://mqtt.googleapis.com:8883";				// URI for IoT
 static const char* PROJECT_ID = "scottgale";
 static const int PORT = 8883;
 static const char* USER_NAME = "unused"; 									// Unused by Google IoT but supplied to ensure password is read
@@ -142,8 +142,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_DATA:
 		   strncpy(tpc, event->topic, event->topic_len);
 		   strncpy(pld, event->data, event->data_len);
-		   ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-		   const char s[2] = " ";
+		   ESP_LOGI(TAG, "MQTT_EVENT_DATA, tpc: %s, pld: %s", tpc, pld);
+		   const char s[2] = " ";			// Use a space a the delimiter for the strtok
 		   char *tok;
 
 		   /* get the first token */

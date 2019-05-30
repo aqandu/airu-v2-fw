@@ -64,7 +64,8 @@ void ota_task(void *pvParameters)
 {
 	esp_err_t err;
 	ota_event_group = xEventGroupCreate();
-	bzero(ota_file_basename, OTA_FILE_BN_LEN);
+	memset (ota_file_basename, 0, OTA_FILE_BN_LEN);						// Clear the array
+	//bzero(ota_file_basename, OTA_FILE_BN_LEN);
 	xEventGroupClearBits(ota_event_group, OTA_TRIGGER_OTA_BIT);
 	ESP_LOGI(TAG, "Waiting for MQTT to trigger OTA...");
 
@@ -75,7 +76,6 @@ void ota_task(void *pvParameters)
 		err = _ota_commence();
 
 	}
-
 }
 
 
@@ -84,8 +84,6 @@ void ota_task(void *pvParameters)
  */
 static esp_err_t _ota_commence()
 {
-    
-
     esp_err_t err;
     char fn_path[64 + OTA_FILE_BN_LEN] = { 0 };
 
@@ -111,13 +109,14 @@ static esp_err_t _ota_commence()
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
              running->type, running->subtype, running->address);
 
-    sprintf(fn_path, "http://air.eng.utah.edu:80/files/updates/%s", ota_file_basename);
-    ESP_LOGI(TAG, "OTA: %s", fn_path);
+    sprintf(fn_path, "http://storage.googleapis.com/ota_firmware_updates/%s", ota_file_basename); //sprintf(fn_path, "http://air.eng.utah.edu:80/files/updates/%s", ota_file_basename);
 
-    esp_http_client_config_t config = {
-        .url = fn_path,
-        .cert_pem = (char *)server_cert_pem_start,
+    ESP_LOGI(TAG, "URL: %s", fn_path);
+
+    esp_http_client_config_t config = {		// Deleted .cert_pem = (char *)server_cert_pem_start from config
+        .url = fn_path
     };
+
     esp_http_client_handle_t client = esp_http_client_init(&config);
     if (client == NULL) {
         ESP_LOGE(TAG, "Failed to initialize HTTP connection");
@@ -131,8 +130,8 @@ static esp_err_t _ota_commence()
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
-    esp_http_client_fetch_headers(client);
 
+    esp_http_client_fetch_headers(client);
     update_partition = esp_ota_get_next_update_partition(NULL);
     ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
              update_partition->subtype, update_partition->address);

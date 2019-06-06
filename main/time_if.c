@@ -117,8 +117,8 @@ void sntp_initialize(void)
     sntp_setservername(2, "us.pool.ntp.org");
     sntp_init();
 
-    // Set timezone to Eastern Standard Time and print local time
-    setenv("TZ", "Etc/GMT", 1);
+    // Set timezone to Central Standard Time and print local time
+    setenv("TZ", "MST+7MDT,M3.2.0/2,M11.1.0/2", 1);								//setenv("TZ", "Etc/GMT+6", 1);
     tzset();
 
     time(&now);
@@ -131,7 +131,7 @@ void sntp_initialize(void)
 
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current GMT date/time is: %s", strftime_buf);
+    ESP_LOGI(TAG, "The current MST/MDT date/time is: %s", strftime_buf);
 }
 
 

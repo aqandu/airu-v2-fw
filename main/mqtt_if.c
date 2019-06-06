@@ -110,7 +110,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   const char mqtt_topic_helper3[] = "/commands/#";
 
 		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
-		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);
+		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);		// QOS 1 sends every time a device restarts
 		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
 
 		   memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);			// This is to subscribe to the command topic - currently not needed.

@@ -81,7 +81,6 @@ Notes:
 static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
-//static TaskHandle_t task_data = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 
@@ -137,9 +136,10 @@ void app_main()
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
+	//vTaskDelay(5000 / portTICK_PERIOD_MS);
+
 	/* start the OTA task */
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	xTaskCreate(&ota_task, "ota_task", 10000, NULL, 6, NULL);							// Changed stack from 2048 to 4096 to 10000
+	xTaskCreate(&ota_task, "ota_task", 10000, NULL, 6, &task_ota);							// Changed stack from 2048 to 4096 to 10000
 
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */

@@ -22,6 +22,8 @@
 #include "time_if.h"
 #include "gps_if.h"
 #include "pm_if.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #include <time.h>
 #include <mbedtls/pk.h>
@@ -43,12 +45,12 @@ static char DEVICE_MAC[13];
 extern const uint8_t roots_pem_start[] asm("_binary_roots_pem_start");
 extern const uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
 extern int wifiConnectedFlag;
-
-
+int otaInProgressFlag = 0;
 static bool client_connected;
 static esp_mqtt_client_handle_t client;
 static EventGroupHandle_t mqtt_event_group;
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
+char firmware_version[OTA_FILE_BN_LEN];
 
 ////Google IoT constants / connection parameters-------------------------------------------
 static const char* HOST = "mqtt.googleapis.com";							// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
@@ -60,6 +62,7 @@ char* JWT_PASSWORD;
 
 static char client_ID[MQTT_CLIENTID_LEN] = {0};
 static char mqtt_topic[MQTT_TOPIC_LEN] = {0};
+static char mqtt_state_topic[MQTT_TOPIC_LEN] = {0};
 
 static esp_mqtt_client_config_t getMQTT_Config(){
 
@@ -93,9 +96,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
 	esp_mqtt_client_handle_t this_client = event->client;
 	int msg_id = 0;
-	char tmp[25] = {0};
-	char tpc[25] = {0};
-	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
+	char topic[MQTT_TOPIC_LEN] = {0};
+	char payload[MQTT_TOPIC_LEN] = {0};
 	char mqtt_subscribe_topic[MQTT_TOPIC_LEN] = {0};
 
 	switch (event->event_id) {
@@ -108,18 +110,14 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   const char mqtt_topic_helper3[] = "/commands/#";
 
 		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
-		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);
+		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);
 		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
 
-		   memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);
+		   memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);			// This is to subscribe to the command topic - currently not needed.
 
 		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper3);
-		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);
+		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);
 		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
-
-		   sprintf(tmp, "v2/M%s", DEVICE_MAC);
-		   //msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 1);
-		   //ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -140,24 +138,30 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   break;
 
 	   case MQTT_EVENT_DATA:
-		   strncpy(tpc, event->topic, event->topic_len);
-		   strncpy(pld, event->data, event->data_len);
-		   ESP_LOGI(TAG, "MQTT_EVENT_DATA, tpc: %s, pld: %s", tpc, pld);
-		   const char s[2] = " ";			// Use a space a the delimiter for the strtok
-		   char *tok;
+		   strncpy(topic, event->topic, event->topic_len);
+		   strncpy(payload, event->data, event->data_len);
+		   ESP_LOGI(TAG, "MQTT_EVENT_DATA, topic: %s, payload: %s", topic, payload);
+		   if (strcmp(payload, "restart")==0){
+			   esp_restart();
+		   }
+		   else{
+			   const char space[2] = " ";				// Use a space a the delimiter for the strtok
+			   char *tok;
 
-		   /* get the first token */
-		   tok = strtok(pld, s);
+			   tok = strtok(payload, space);			// Get the first token
 
-		   if(tok != NULL && strcmp(tok, "ota") == 0){
-		        tok = strtok(NULL, s);
-		        if(tok != NULL && strstr(tok, ".bin")){
-		        	ota_set_filename(tok);
-		        	ota_trigger();
-		        }
-		        else{
-		        	ESP_LOGI(TAG,"No binary file");
-		        }
+			   if(tok != NULL && strcmp(tok, "ota") == 0 && otaInProgressFlag == 0){
+				   tok = strtok(NULL, space);
+				   if(tok != NULL && strstr(tok, ".bin")){
+					   otaInProgressFlag = 1;			// Set flag to prevent multiple OTA updates occurring simultaneously
+					   ota_set_filename(tok);
+					   ota_trigger();					// Comment out to avoid doing OTA updates during development
+				   }
+				   else{
+					   ESP_LOGI(TAG,"No binary file");
+					   otaInProgressFlag = 0;
+				   }
+			   }
 		   }
 		   break;
 	   case MQTT_EVENT_ERROR:
@@ -178,11 +182,10 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 *
 * @return
 */
-
 void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
-	float pm_delta = 0.25;							// Constants that define data change thresholds
+	float pm_delta = 0.25;							// Constants that define data change thresholds for publishing a packet
 	float minor_delta = 1.0;
 	float co_delta = 10.0;
 	float gps_delta = 0.05;
@@ -208,8 +211,12 @@ void mqtt_task(void* pvParameters){
 	// Generate mqtt_topic
 	const char mqtt_topic_helper1[] = "/devices/M";
 	const char mqtt_topic_helper2[] = "/events/airU";
+	const char mqtt_topic_helper3[] = "/state";
 	snprintf(mqtt_topic, sizeof(mqtt_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
 	ESP_LOGI(TAG, "Generated mqtt_topic: %s", mqtt_topic);
+
+	// Generate mqtt state topic
+	snprintf(mqtt_state_topic, sizeof(mqtt_state_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper3);
 
 	MQTT_Connect();
 	vTaskDelay(10000 / portTICK_PERIOD_MS);			// Delay 10 seconds to connect
@@ -226,12 +233,12 @@ void mqtt_task(void* pvParameters){
 	int publishFlag = 1; 							// If publishFlag == 1 then publish, flag is set to 1 by time OR change in data
 
 	while(wifiConnectedFlag){
-		printf("\nclient_connected: %d wifi_connected: %d\n", client_connected, wifiConnectedFlag);
+		printf("\nclient_connected: %d wifi_connected: %d otaInProgressFlag: %d\n", client_connected, wifiConnectedFlag, otaInProgressFlag);
 		time(&current_time);
 		printf("\ncurrent_time: %d\t", (uint32_t)current_time);
 		printf("reconnect_time: %d\n", reconnect_time);
 
-		if (current_time > reconnect_time || !client_connected){	// Check to see if its time to reconnect
+		if (current_time > reconnect_time || !client_connected){	// Check to see if it's time to reconnect
 			esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
 			MQTT_Connect();
 			reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;
@@ -268,7 +275,7 @@ void mqtt_task(void* pvParameters){
 				publish_time = (uint32_t)current_time + PUBLISH_SECONDS;
 			}
 
-			if (publishFlag == 1){
+			if (publishFlag == 1 && !otaInProgressFlag){	// Don't publish if OTA is in progress
 				memset(mqtt_pkt, 0, MQTT_PKT_LEN);			// Clear contents of packet
 				sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f}", \
 					DEVICE_MAC, dtg, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon);
@@ -280,13 +287,52 @@ void mqtt_task(void* pvParameters){
 				pub_co = co;
 				pub_gps = gps;
 				publishFlag = 0;
+
+				// Publish state - consists of DTG of last firmware update
+				get_firmware_version();
+				MQTT_Publish(mqtt_state_topic, firmware_version);
 			}
 		}
-		vTaskDelay(30000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
+		vTaskDelay(300000 / portTICK_PERIOD_MS);			// Time in milliseconds - 300000 = 5 minutes, 600000 = 10 minutes
 	} // End while(1)
 	printf("\nDeleting mqtt_task\n");
 	esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
 	vTaskDelete(NULL);
+}
+
+/*
+* @brief Reads the current firmware version from non volatile storage (nvs) and save the value in "firmware_version"
+*
+* @param None
+*
+* @return None
+*/
+void get_firmware_version(void)
+{
+	printf("Opening NVS...");
+	esp_err_t err;
+	nvs_handle nvs_handle;
+	err = nvs_open("storage", NVS_READONLY, &nvs_handle);
+	if (err != ESP_OK) {
+	    printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+	}
+	else {
+		size_t firmware_length = (size_t)64;
+		printf("Reading firmware_version...");
+		err = nvs_get_str(nvs_handle, "firmware", firmware_version, &firmware_length);	//14 bytes is the length
+		switch (err) {
+			case ESP_OK:
+				printf("Firmware version %s current\n", firmware_version);
+				break;
+			case ESP_ERR_NVS_NOT_FOUND:
+				printf("The value is not initialized yet!\n");
+				strcpy (firmware_version, "Unknown");
+				break;
+			default :
+				printf("Error (%s) reading!\n", esp_err_to_name(err));
+		}
+	}
+	nvs_close(nvs_handle);		// Close
 }
 
 
@@ -326,6 +372,7 @@ void MQTT_Publish(const char* topic, const char* msg)
 		client_connected = false;
 	}
 }
+
 
 /*
 * @brief Signals MQTT to initialize.

@@ -37,10 +37,37 @@ static const char *TAG = "OTA";
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
+extern int otaInProgressFlag;
 
 static void _http_cleanup(esp_http_client_handle_t client);
 static esp_err_t _ota_commence( void );
+void save_firmware_version(void);
 
+
+void save_firmware_version(){
+	printf("Opening NVS...");
+	esp_err_t err;
+	nvs_handle nvs_handle;
+	err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+	if (err != ESP_OK) {
+	    printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+	}
+	else {
+		// Write
+	    printf("Updating firmware: %s...", ota_file_basename);
+	    err = nvs_set_str(nvs_handle, "firmware", ota_file_basename);
+	    printf((err != ESP_OK) ? "Failed!\t" : "Done\t");
+        // Commit written value.
+        // After setting any values, nvs_commit() must be called to ensure changes are written
+        // to flash storage. Implementations may write to storage at other times,
+        // but this is not guaranteed.
+	    printf("Committing updates...");
+	    err = nvs_commit(nvs_handle);
+	    printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+	    // Close
+	    nvs_close(nvs_handle);
+	}
+}
 
 static void _http_cleanup(esp_http_client_handle_t client)
 {
@@ -65,8 +92,8 @@ void ota_task(void *pvParameters)
 	esp_err_t err;
 	ota_event_group = xEventGroupCreate();
 	memset (ota_file_basename, 0, OTA_FILE_BN_LEN);						// Clear the array
-	//bzero(ota_file_basename, OTA_FILE_BN_LEN);
 	xEventGroupClearBits(ota_event_group, OTA_TRIGGER_OTA_BIT);
+
 	ESP_LOGI(TAG, "Waiting for MQTT to trigger OTA...");
 
 	for(;;) {
@@ -74,7 +101,6 @@ void ota_task(void *pvParameters)
 		xEventGroupWaitBits(ota_event_group, OTA_TRIGGER_OTA_BIT, pdTRUE, pdTRUE, portMAX_DELAY );
 		ESP_LOGI(TAG, "MQTT triggered OTA...");
 		err = _ota_commence();
-
 	}
 }
 
@@ -164,7 +190,7 @@ static esp_err_t _ota_commence()
 //                task_fatal_error(TAG);
             }
             binary_file_length += data_read;
-            ESP_LOGI(TAG, "Written image length: %d", binary_file_length);
+            printf("%d ", binary_file_length);
         }
         else if (data_read == 0) {
             ESP_LOGI(TAG, "Connection closed,all data received");
@@ -180,25 +206,23 @@ static esp_err_t _ota_commence()
 //        task_fatal_error(TAG);
     }
 
+    save_firmware_version();		// Firmware successfully saved in a partition
+
     if (esp_partition_check_identity(esp_ota_get_running_partition(), update_partition) == true) {
-        ESP_LOGI(TAG, "The current running firmware is same as the firmware just downloaded");
-        int i = 0;
-        ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button to download it");
-        return ESP_FAIL;
-//        while(1) {
-//            ESP_LOGI(TAG, "Waiting for a new firmware ... %d", ++i);
-//            vTaskDelay(2000 / portTICK_PERIOD_MS);
-//        }
+        ESP_LOGI(TAG, "The current running firmware is same as the update firmware");
+        otaInProgressFlag = 0;
+        return ESP_OK;
     }
 
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         _http_cleanup(client);
+        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
-    ESP_LOGI(TAG, "Prepare to restart system!");
+    ESP_LOGI(TAG, "Restarting the System!");
     esp_restart();
     return ESP_OK;
 }

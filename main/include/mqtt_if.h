@@ -51,4 +51,13 @@ void MQTT_wifi_disconnected(void);
 */
 void MQTT_Publish(const char* topic, const char* msg);
 
+/*
+* @brief: Prepare data in MQTT format
+*
+* @param
+*
+* @return
+*/
+void data_task();
+
 #endif /* MAIN_INCLUDE_MQTT_IF_H_ */

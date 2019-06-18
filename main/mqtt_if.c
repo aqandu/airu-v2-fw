@@ -27,6 +27,7 @@
 #define WIFI_CONNECTED_BIT 		BIT0
 #define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
 #define THIRTY_SECONDS_COUNT 30
+#define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern bool MQTT_Wifi_Connection;
@@ -40,7 +41,6 @@ static TaskHandle_t task_mqtt = NULL;
 static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
-void data_task();
  /*
  * This exact configuration was what works. Won't work
  * without the "transport" parameter set.
@@ -150,26 +150,16 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 }
 
 void mqtt_task(void* pvParameters){
-	uint8_t thirtySecCounter = THIRTY_SECONDS_COUNT;
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
 	MQTT_Connect();
-	vTaskDelay(ONE_SECOND_DELAY);
 	while(MQTT_Wifi_Connection) {
-		if (thirtySecCounter >= THIRTY_SECONDS_COUNT*2) {
-			thirtySecCounter = 0;
-			data_task();
-		}
-		// Only 1s delay to check for wifi connection status every one second
-		thirtySecCounter++;
-		vTaskDelay(ONE_SECOND_DELAY);
+		vTaskDelay(ONE_SECOND_DELAY*2);
 	}
 	printf("\nDeleting mqtt_task\n");
 	MQTT_wifi_disconnected();								// Stop the mqtt client and free all the memory
-	vEventGroupDelete(mqtt_event_group);					// Delete the event group handler
 	vTaskDelete(NULL);
 }
-
 /*
  * Data gather task
  */
@@ -182,32 +172,39 @@ void data_task()
 	char mqtt_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
 
-	PMS_Poll(&pm_dat);
-	HDC1080_Poll(&temp, &hum);
-	MICS4514_Poll(&co, &nox);
-	GPS_Poll(&gps);
+	while (1) {
+		PMS_Poll(&pm_dat);
+		HDC1080_Poll(&temp, &hum);
+		MICS4514_Poll(&co, &nox);
+		GPS_Poll(&gps);
 
-	uptime = esp_timer_get_time() / 1000000;
+		uptime = esp_timer_get_time() / 1000000;
 
-	//
-	// Send data over MQTT
-	//
-	bzero(mqtt_pkt, MQTT_PKT_LEN);
-	sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-								uptime, 		/* secActive */
-								gps.alt,		/* Altitude */
-								gps.lat, 		/* Latitude */
-								gps.lon, 		/* Longitude */
-								pm_dat.pm1,		/* PM1 */
-								pm_dat.pm2_5,	/* PM2.5 */
-								pm_dat.pm10, 	/* PM10 */
-								temp,			/* Temperature */
-								hum,			/* Humidity */
-								co,				/* CO */
-								nox				/* NOx */);
-	ESP_LOGI(TAG, "%s", mqtt_pkt);
-	MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-	periodic_timer_callback(NULL);
+		//
+		// Send data over MQTT
+		//
+		bzero(mqtt_pkt, MQTT_PKT_LEN);
+		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
+									uptime, 		/* secActive */
+									gps.alt,		/* Altitude */
+									gps.lat, 		/* Latitude */
+									gps.lon, 		/* Longitude */
+									pm_dat.pm1,		/* PM1 */
+									pm_dat.pm2_5,	/* PM2.5 */
+									pm_dat.pm10, 	/* PM10 */
+									temp,			/* Temperature */
+									hum,			/* Humidity */
+									co,				/* CO */
+									nox				/* NOx */);
+		ESP_LOGI(TAG, "%s", mqtt_pkt);
+		if (MQTT_Wifi_Connection) {
+			MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
+		} else {
+			sd_write_data(mqtt_pkt, gps.year, gps.month, gps.day);
+		}
+		periodic_timer_callback(NULL);
+		vTaskDelay(ONE_SECOND_DELAY*10);
+	}
 }
 /*
 * @brief
@@ -224,7 +221,7 @@ void MQTT_Initialize(void)
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
+	xTaskCreate(&mqtt_task, "task_mqtt", 2048, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()
@@ -232,7 +229,9 @@ void MQTT_Connect()
 	ESP_LOGI(TAG, "%s enter", __func__);
 
 	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
+	ESP_LOGI(TAG, "%s esp_mqtt_client_init", __func__);
 	client = esp_mqtt_client_init(&mqtt_cfg);
+	ESP_LOGI(TAG, "%s esp_mqtt_client_start", __func__);
 	esp_mqtt_client_start(client);
 	client_connected = false;
 }
@@ -251,11 +250,19 @@ void MQTT_wifi_connected()
 
 void MQTT_wifi_disconnected()
 {
-	ESP_LOGI(TAG, "%s: free heap: %d\n", __func__, esp_get_free_heap_size());
-	printf("Going to free MQTT memory...\n");
-	esp_err_t ret = esp_mqtt_client_destroy(client);
-	printf("Memory freed... %d\n", ret);
-	ESP_LOGI(TAG, "after free heap: %d\n",esp_get_free_heap_size());
+	ESP_LOGI(TAG, "%s: ENTERRED\n", __func__);
+	if (client) {
+		ESP_LOGD(TAG, "%s: Going to free some heap: %d\n", __func__, esp_get_free_heap_size());
+		esp_err_t ret = esp_mqtt_client_destroy(client);
+		client = NULL;
+		printf("Memory freed, returning %d\n", ret);
+		ESP_LOGI(TAG, "After freeing some heap: %d\n",esp_get_free_heap_size());
+	}
+	if (mqtt_event_group) {
+		ESP_LOGD(TAG, "%s: Going to vEventGroupDelete\n", __func__);
+		vEventGroupDelete(mqtt_event_group);					// Delete the event group handler
+		mqtt_event_group = NULL;
+	}
 }
 
 /*
@@ -274,7 +281,7 @@ void MQTT_Publish(const char* topic, const char* msg)
 		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 	}
 	else {
-		ESP_LOGW(TAG, "Client is not connected");
+		ESP_LOGW(TAG, "Client has not connected yet");
 	}
 }
 

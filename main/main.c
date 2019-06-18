@@ -79,7 +79,7 @@ Notes:
 static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
-static TaskHandle_t task_mqtt = NULL;
+static TaskHandle_t data_task_handle = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
@@ -138,6 +138,8 @@ void app_main()
 
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+
+	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

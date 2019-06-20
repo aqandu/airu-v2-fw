@@ -171,6 +171,8 @@ void data_task()
 	esp_gps_t gps;
 	char mqtt_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
+	const char* SD_PKT = "%s,%s,%lu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n";
+	char sd_pkt[250] = {0};
 
 	while (1) {
 		PMS_Poll(&pm_dat);
@@ -196,14 +198,34 @@ void data_task()
 									hum,			/* Humidity */
 									co,				/* CO */
 									nox				/* NOx */);
+
+		time_t now;
+		struct tm tm;
+		char strftime_buf[64];
+		time(&now);
+		localtime_r(&now, &tm);
+		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
+		sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
+		sprintf(sd_pkt, SD_PKT,     strftime_buf,
+		                            DEVICE_MAC,
+		                            uptime,
+		                            gps.alt,
+		                            gps.lat,
+		                            gps.lon,
+		                            pm_dat.pm1,
+		                            pm_dat.pm2_5,
+		                            pm_dat.pm10,
+		                            temp,
+		                            hum,
+		                            co,
+		                            nox);
+
 		ESP_LOGI(TAG, "%s", mqtt_pkt);
-		if (MQTT_Wifi_Connection) {
-			MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		} else {
-			sd_write_data(mqtt_pkt, gps.year, gps.month, gps.day);
-		}
+		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
+		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*10);
+		vTaskDelay(ONE_SECOND_DELAY*60);
 	}
 }
 /*
@@ -221,7 +243,7 @@ void MQTT_Initialize(void)
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-	xTaskCreate(&mqtt_task, "task_mqtt", 2048, NULL, 1, task_mqtt);
+	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()

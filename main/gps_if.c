@@ -145,6 +145,8 @@ esp_err_t GPS_Initialize()
 	return err;
 }
 
+
+
 /*
  *	This function was taken from Limor Fried/Ladyada,
  * 	from the Adafruit GPS library for Adafruit Industries.
@@ -376,6 +378,8 @@ esp_err_t parse(char *nmea) {
 
 	return ESP_FAIL;
 }
+
+
 
 /*
  * Read a Hex value and return the decimal equivalent

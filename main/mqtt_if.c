@@ -243,7 +243,7 @@ void MQTT_Initialize(void)
 	uint8_t tmp[6];
 	esp_efuse_mac_get_default(tmp);
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
+	xTaskCreate(&mqtt_task, "task_mqtt", 2048, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()
@@ -251,7 +251,6 @@ void MQTT_Connect()
 	ESP_LOGI(TAG, "%s enter", __func__);
 
 	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
-	ESP_LOGI(TAG, "%s esp_mqtt_client_init", __func__);
 	client = esp_mqtt_client_init(&mqtt_cfg);
 	ESP_LOGI(TAG, "%s esp_mqtt_client_start", __func__);
 	esp_mqtt_client_start(client);

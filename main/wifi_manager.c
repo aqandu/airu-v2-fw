@@ -47,6 +47,9 @@ Contains the freeRTOS task and all necessary support
 #include "lwip/api.h"
 #include "lwip/err.h"
 #include "lwip/netdb.h"
+#include "lwip/inet.h"
+#include "lwip/ip4_addr.h"
+#include "lwip/dns.h"
 
 #include "json.h"
 #include "wifi_manager.h"
@@ -118,7 +121,6 @@ const int WIFI_MANAGER_REQUEST_WIFI_SCAN = BIT5;
 
 /* @brief When set, means a client requested to disconnect from currently connected AP. */
 const int WIFI_MANAGER_REQUEST_WIFI_DISCONNECT = BIT6;
-
 
 void wifi_manager_scan_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
@@ -224,8 +226,7 @@ esp_err_t wifi_manager_save_sta_config(){
 		ESP_LOGI(TAG, "wifi_manager_wrote wifi_settings: sta_static_ip (0 = dhcp client, 1 = static ip): %i",wifi_settings.sta_static_ip);
 		ESP_LOGI(TAG, "wifi_manager_wrote wifi_settings: sta_ip_addr: %s", ip4addr_ntoa(&wifi_settings.sta_static_ip_config.ip));
 		ESP_LOGI(TAG, "wifi_manager_wrote wifi_settings: sta_gw_addr: %s", ip4addr_ntoa(&wifi_settings.sta_static_ip_config.gw));
-		ESP_LOGI(TAG, "wifi_manager_wrote wifi_settings: sta_netmask: %s", ip4addr_ntoa(&wifi_settings.sta_static_ip_config.netmask));
-
+		ESP_LOGI(TAG, "wifi_manager_wrote wifi_settings: sta_netmask: %s\n\r", ip4addr_ntoa(&wifi_settings.sta_static_ip_config.netmask));
 	}
 
 	return ESP_OK;
@@ -866,15 +867,29 @@ void wifi_manager( void * pvParameters ){
 
 						/* update the LED */
 						LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
+						ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
 
-						/* Start MQTT */
-						MQTT_Initialize();
+						struct hostent *hp = gethostbyname("google.com");
+					    if (hp == NULL) {
+					    	ESP_LOGE(TAG, "gethostbyname() failed\n");
+					    } else {
+					    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
+					       unsigned int i=0;
+					       while ( hp -> h_addr_list[i] != NULL) {
+					    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
+					          i++;
+					       }
+					       printf("\n");
+					    }
+
 						if (!initializeTNTPAndMQTT) {
 							/* Start SNTP */
 							sntp_initialize();
-
 							initializeTNTPAndMQTT = true;
 						}
+						vTaskDelay( 10*(1000 / portTICK_PERIOD_MS));
+						/* Start MQTT */
+						MQTT_Initialize();
 					}
 					else{
 						ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");

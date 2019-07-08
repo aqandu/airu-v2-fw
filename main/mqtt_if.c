@@ -35,7 +35,7 @@
 
 #define WIFI_CONNECTED_BIT 	BIT0
 #define RECONNECT_SECONDS 82800					// Setting controls how often to reconnect to Google IoT (82800 = 23 hours) JWT expires at 24 hours
-#define KEEPALIVE_TIME 240						// Setting controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
+#define KEEPALIVE_TIME 120						// Setting controls how often a pingreq is sent to IoT (240 will send a ping every 120 seconds)
 #define PUBLISH_SECONDS 3300					// Setting controls maximum time between publishing data (regardless if data changed) 3300=55 minutes
 
 static const char *TAG = "MQTT_DATA";
@@ -55,10 +55,12 @@ char firmware_version[OTA_FILE_BN_LEN];
 ////Google IoT constants / connection parameters-------------------------------------------
 static const char* HOST = "mqtt.googleapis.com";							// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
 static const char* URI = "mqtts://mqtt.googleapis.com:8883";				// URI for IoT
-static const char* PROJECT_ID = "scottgale";
 static const int PORT = 8883;
 static const char* USER_NAME = "unused"; 									// Unused by Google IoT but supplied to ensure password is read
 char* JWT_PASSWORD;
+//*******ENSURE THIS IS CORRECT********************************************************************
+static const char* PROJECT_ID = "scottgale";
+//*************************************************************************************************
 
 static char client_ID[MQTT_CLIENTID_LEN] = {0};
 static char mqtt_topic[MQTT_TOPIC_LEN] = {0};
@@ -115,9 +117,9 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   memset(mqtt_subscribe_topic, 0, MQTT_TOPIC_LEN);			// This is to subscribe to the command topic - currently not needed.
 
-		   snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper3);
-		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);
-		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
+		   //snprintf(mqtt_subscribe_topic, sizeof(mqtt_subscribe_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper3);
+		   //msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 1);
+		   //ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -187,7 +189,7 @@ void mqtt_task(void* pvParameters){
 
 	float pm_delta = 0.25;							// Constants that define data change thresholds for publishing a packet
 	float minor_delta = 1.0;
-	float co_delta = 10.0;
+	float co_delta = 30.0;
 	float gps_delta = 0.05;
 
 	static time_t dtg;								// Variables to hold sensor data
@@ -204,8 +206,9 @@ void mqtt_task(void* pvParameters){
 	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 
 	// Generate client_ID . . . includes MAC Address as "IoT Device ID"
-	const char mqtt_client_helper[] = "projects/scottgale/locations/us-central1/registries/airu-sensor-registry/devices/M";
-	snprintf(client_ID, sizeof(client_ID), "%s%s", mqtt_client_helper, DEVICE_MAC);
+	const char mqtt_client_helper1[] = "projects/";
+	const char mqtt_client_helper2[] = "/locations/us-central1/registries/airu-sensor-registry/devices/M";
+	snprintf(client_ID, sizeof(client_ID), "%s%s%s%s", mqtt_client_helper1, PROJECT_ID, mqtt_client_helper2, DEVICE_MAC);
 	ESP_LOGI(TAG, "Generated client_ID: %s", client_ID);
 
 	// Generate mqtt_topic
@@ -230,12 +233,13 @@ void mqtt_task(void* pvParameters){
 	HDC1080_Poll(&pub_temp, &pub_hum);
 	MICS4514_Poll(&pub_co, &pub_nox);
 	GPS_Poll(&pub_gps);
-	int publishFlag = 1; 							// If publishFlag == 1 then publish, flag is set to 1 by time OR change in data
+	int publishFlag = 1; 							// set to 1 by time (PUBLISH_SECONDS) OR change in data defined by delta variable above
 
 	while(wifiConnectedFlag){
 		printf("\nclient_connected: %d wifi_connected: %d otaInProgressFlag: %d\n", client_connected, wifiConnectedFlag, otaInProgressFlag);
 		time(&current_time);
 		printf("\ncurrent_time: %d\t", (uint32_t)current_time);
+		printf("publish_time: %d\t", (uint32_t)publish_time);
 		printf("reconnect_time: %d\n", reconnect_time);
 
 		if (current_time > reconnect_time || !client_connected){	// Check to see if it's time to reconnect
@@ -269,10 +273,8 @@ void mqtt_task(void* pvParameters){
 				publishFlag = 1;
 			else if (fabs(gps.lon-pub_gps.lon) >= gps_delta)
 				publishFlag = 1;
-
-			if (current_time >= publish_time){
+			else if (current_time >= publish_time){
 				publishFlag = 1;
-				publish_time = (uint32_t)current_time + PUBLISH_SECONDS;
 			}
 
 			if (publishFlag == 1 && !otaInProgressFlag){	// Don't publish if OTA is in progress
@@ -287,8 +289,9 @@ void mqtt_task(void* pvParameters){
 				pub_co = co;
 				pub_gps = gps;
 				publishFlag = 0;
+				publish_time = (uint32_t)current_time + PUBLISH_SECONDS;
 
-				// Publish state - consists of DTG of last firmware update
+				// Publish state - consists of name of last firmware update saved in NVS
 				get_firmware_version();
 				MQTT_Publish(mqtt_state_topic, firmware_version);
 			}

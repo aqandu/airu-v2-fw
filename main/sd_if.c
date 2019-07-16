@@ -156,7 +156,7 @@ esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
 //	time_t now; /* time_t == long */
 //	struct tm timeinfo;
     struct stat st;
-    char filename[23];
+    char filename[64];
 
     ESP_LOGI(TAG, "SD Packet:\n%s", pkt);
 

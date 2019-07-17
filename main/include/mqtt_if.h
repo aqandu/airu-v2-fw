@@ -49,7 +49,7 @@ void MQTT_wifi_disconnected(void);
 *
 * @return
 */
-void MQTT_Publish(const char* topic, const char* msg);
+void MQTT_Publish(const char* topic, const char* msg, int qos);
 
 /*
 * @brief: Prepare data in MQTT format

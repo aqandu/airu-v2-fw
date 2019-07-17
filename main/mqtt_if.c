@@ -78,8 +78,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
 	esp_mqtt_client_handle_t this_client = event->client;
 	int msg_id = 0;
-	char tmp[25] = {0};
-	char tpc[25] = {0};
+	char tmp[64] = {0};
+	char tpc[64] = {0};
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
 
 	ESP_LOGI(TAG, "EVENT ID: %d", event->event_id);
@@ -88,13 +88,16 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   msg_id = esp_mqtt_client_subscribe(this_client, "v2/all", 2);
+		   msg_id = esp_mqtt_client_subscribe(this_client, "airu/all/v2", 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "v2/%s", DEVICE_MAC);
+		   sprintf(tmp, "airu/%s", DEVICE_MAC);
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+
+		   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+		   MQTT_Publish((const char*) tmp, "online", 2);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -125,8 +128,10 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   /* get the first token */
 		   tok = strtok(pld, s);
+		   if(tok == NULL)
+			   break;
 
-		   if(tok != NULL && strcmp(tok, "ota") == 0){
+		   if(strcmp(tok, "ota") == 0){
 		        tok = strtok(NULL, s);
 		        if(tok != NULL && strstr(tok, ".bin")){
 		        	ota_set_filename(tok);
@@ -136,6 +141,13 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		        	ESP_LOGI(TAG,"No binary file");
 		        }
 		   }
+
+		   else if (strcmp(tok, "ping") == 0){
+			   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+			   MQTT_Publish(tmp, "pong", 2);
+			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
+		   }
+
 		   break;
 
 	   case MQTT_EVENT_ERROR:
@@ -293,12 +305,12 @@ void MQTT_wifi_disconnected()
 *
 * @return
 */
-void MQTT_Publish(const char* topic, const char* msg)
+void MQTT_Publish(const char* topic, const char* msg, int qos)
 {
 	int msg_id;
 	ESP_LOGI(TAG, "%s ENTERRED client_connected %d", __func__, client_connected);
 	if(client_connected) {
-		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
+		msg_id = esp_mqtt_client_publish(client, topic, msg, 0, qos, 0);
 		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 	}
 	else {

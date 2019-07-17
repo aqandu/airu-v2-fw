@@ -1,3 +1,4 @@
+
 /*
  * mqtt_if.c
  *
@@ -13,6 +14,7 @@
 #include "ota_if.h"
 #include "mqtt_if.h"
 
+#include "app_utils.h"
 #include "http_server_if.h"
 #include "wifi_manager.h"
 #include "pm_if.h"
@@ -79,6 +81,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	esp_mqtt_client_handle_t this_client = event->client;
 	int msg_id = 0;
 	char tmp[64] = {0};
+	char tmp2[64] = {0};
 	char tpc[64] = {0};
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
 
@@ -97,7 +100,10 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
 		   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
-		   MQTT_Publish((const char*) tmp, "online", 2);
+		   time_t now;
+		   time(&now);
+		   sprintf(tmp2, "up %lu", now);
+		   MQTT_Publish((const char*) tmp, tmp2, 2);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -121,7 +127,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_DATA:
 		   strncpy(tpc, event->topic, event->topic_len);
 		   strncpy(pld, event->data, event->data_len);
-		   ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+		   ESP_LOGI(TAG, "MQTT_EVENT_DATA: %s", pld);
 
 		   const char s[2] = " ";
 		   char *tok;
@@ -183,10 +189,15 @@ void data_task()
 	esp_gps_t gps;
 	char mqtt_pkt[MQTT_PKT_LEN];
 	uint64_t uptime = 0;
-	const char* SD_PKT = "%s,%s,%lu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n";
+	uint64_t hr, rm;
+	uint8_t min, sec, system_time;
+	const char* SD_PKT = "%s,%s,%lu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n";
 	char sd_pkt[250] = {0};
 
+	app_getmac(DEVICE_MAC);
+
 	while (1) {
+
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
 		MICS4514_Poll(&co, &nox);
@@ -218,7 +229,21 @@ void data_task()
 		localtime_r(&now, &tm);
 		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
 		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-		sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
+
+		if (gps.year <= 18 || gps.year >= 80){
+			hr = uptime / 3600;
+			rm = uptime % 3600;
+			min = rm / 60;
+			sec = rm % 60;
+
+			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
+			system_time = 1;	// Using system time
+		}
+		else {
+			sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
+			system_time = 0;	// Using GPS time
+		}
+
 		sprintf(sd_pkt, SD_PKT,     strftime_buf,
 		                            DEVICE_MAC,
 		                            uptime,
@@ -231,10 +256,11 @@ void data_task()
 		                            temp,
 		                            hum,
 		                            co,
-		                            nox);
+		                            nox,
+									system_time);
 
 		ESP_LOGI(TAG, "%s", mqtt_pkt);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
+		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
 		vTaskDelay(ONE_SECOND_DELAY*60);
@@ -252,10 +278,8 @@ void MQTT_Initialize(void)
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
 	mqtt_event_group = xEventGroupCreate();
 	xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
-	uint8_t tmp[6];
-	esp_efuse_mac_get_default(tmp);
-	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-	xTaskCreate(&mqtt_task, "task_mqtt", 2048, NULL, 1, task_mqtt);
+	app_getmac(DEVICE_MAC);
+	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()

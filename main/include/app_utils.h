@@ -28,6 +28,9 @@ EventGroupHandle_t wifi_event_group;
 void __attribute__((noreturn)) task_fatal_error(const char *TAG);
 
 
+void app_getmac(char *mac);
+
+
 /*
 * @brief
 *

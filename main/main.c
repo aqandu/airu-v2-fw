@@ -58,6 +58,7 @@ Notes:
 #include "lwip/err.h"
 #include "lwip/netdb.h"
 
+#include "app_utils.h"
 #include "http_server_if.h"
 #include "wifi_manager.h"
 #include "pm_if.h"
@@ -101,9 +102,10 @@ void app_main()
 	/* initialize flash memory */
 	nvs_flash_init();
 
-	uint8_t tmp[6];
-	esp_efuse_mac_get_default(tmp);
-	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+//	uint8_t tmp[6];
+//	esp_efuse_mac_get_default(tmp);
+//	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	app_getmac(DEVICE_MAC);
 
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
     ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());
@@ -139,6 +141,7 @@ void app_main()
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
+	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */

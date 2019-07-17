@@ -22,7 +22,7 @@
 #include "freertos/event_groups.h"
 
 const char* TAG = "APP";
-
+char DEVICE_MAC[13] = {0};
 
 /*
 * @brief	Delete the caller task and loop ad-infinitum
@@ -39,6 +39,16 @@ void __attribute__((noreturn)) task_fatal_error(const char *TAG)
     while (1) {
         ;
     }
+}
+
+void app_getmac(char *mac)
+{
+	if(strlen(DEVICE_MAC)<12){
+		uint8_t tmp[6];
+		esp_efuse_mac_get_default(tmp);
+		sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	}
+	strcpy(mac, DEVICE_MAC);
 }
 
 

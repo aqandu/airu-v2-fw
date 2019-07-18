@@ -453,23 +453,18 @@ esp_err_t http_get_isp_info(char *json_buf, size_t len)
 		r = read(s, recv_buf, sizeof(recv_buf)-1);
 		total += r;
 		if (total < 100) {
-			ESP_LOGI(TAG, "... get through header");
 			continue;
 		}
 		for(int i = 0; i < r; i++) {
 			if (recv_buf[i] == '{'){
-				ESP_LOGI(TAG, "... found start of json");
 				waiting_for_json = 0;
-			}
-			else {
-				ESP_LOGI(TAG, "... waiting for json [%c]", recv_buf[i]);
 			}
 			if (!waiting_for_json){
 				json_buf[ii++] = recv_buf[i];
-				ESP_LOGI(TAG, "... storing [%c] @ [%d]", recv_buf[i], ii - 1);
 			}
 			if (ii >= len) {
 				ESP_LOGE(TAG, "... buffer overflow");
+				json_buf[ii-1] = '\0';	// In case you still want to use the partial data
 				close(s);
 				return -1;
 			}

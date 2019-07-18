@@ -9,8 +9,11 @@
 #define MAIN_INCLUDE_MQTT_IF_H_
 
 #define MQTT_PKT_LEN 256
+#define MQTT_TOPIC_PREFIX "airu"
 #define MQTT_DBG_TPC "v2/dbg"
-#define MQTT_DAT_TPC "airu/influx"
+#define MQTT_DAT_TPC ""MQTT_TOPIC_PREFIX"/influx"
+#define MQTT_CLIENT_SUBCRIBE_TPC ""MQTT_TOPIC_PREFIX"/all/v2"
+
 
 /*
 * @brief

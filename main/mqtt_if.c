@@ -90,15 +90,15 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   msg_id = esp_mqtt_client_subscribe(this_client, "airu/all/v2", 2);
+		   msg_id = esp_mqtt_client_subscribe(this_client, MQTT_CLIENT_SUBCRIBE_TPC, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "airu/%s", DEVICE_MAC);
+		   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/%s", DEVICE_MAC);
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+		   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/ack/v2/%s", DEVICE_MAC);
 		   time_t now;
 		   time(&now);
 		   sprintf(tmp2, "up %lu", now);
@@ -148,7 +148,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   }
 
 		   else if (strcmp(tok, "ping") == 0){
-			   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+			   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/ack/v2/%s", DEVICE_MAC);
 			   MQTT_Publish(tmp, "pong", 2);
 			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
 		   }

@@ -59,6 +59,15 @@ void http_server_post_registration();
  */
 char* http_server_get_header(char *request, char *header_name, int *len);
 
+/**
+ * @brief get ISP info from http://ip-api.com as json
+ *
+ * @param json_buf JSON buffer to fill
+ * @param len the size of the JSON buffer
+ * @return err
+ */
+esp_err_t http_get_isp_info(char *json_buf, size_t len);
+
 #ifdef __cplusplus
 }
 #endif

@@ -82,6 +82,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	char tmp[64] = {0};
 	char tmp2[64] = {0};
 	char tpc[64] = {0};
+	char *json_buf;
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
 
 	ESP_LOGI(TAG, "EVENT ID: %d", event->event_id);
@@ -101,8 +102,12 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/ack/v2/%s", DEVICE_MAC);
 		   time_t now;
 		   time(&now);
-		   sprintf(tmp2, "up %lu", now);
-		   MQTT_Publish((const char*) tmp, tmp2, 2);
+		   sprintf(tmp2, " - %lu", now);
+		   json_buf = malloc(512);
+		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
+		   strcat(json_buf, tmp2);
+		   MQTT_Publish((const char*) tmp, json_buf, 2);
+		   free(json_buf);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:

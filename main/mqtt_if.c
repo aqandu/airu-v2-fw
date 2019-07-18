@@ -83,6 +83,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	char tmp[64] = {0};
 	char tmp2[64] = {0};
 	char tpc[64] = {0};
+	char json_buf[512];
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
 
 	ESP_LOGI(TAG, "EVENT ID: %d", event->event_id);
@@ -91,19 +92,28 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   msg_id = esp_mqtt_client_subscribe(this_client, "airu/all/v2", 2);
+		   msg_id = esp_mqtt_client_subscribe(this_client, "offline/all/v2", 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "airu/%s", DEVICE_MAC);
+		   sprintf(tmp, "offline/%s", DEVICE_MAC);
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+		   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
 		   time_t now;
 		   time(&now);
 		   sprintf(tmp2, "up %lu", now);
 		   MQTT_Publish((const char*) tmp, tmp2, 2);
+
+		   esp_err_t err = http_get_isp_info(json_buf, 512);
+		   if (err != 0){
+			   ESP_LOGE(TAG, "ERROR in http_get_isp_info");
+		   }
+		   else{
+			   ESP_LOGI(TAG, "\n%s\n", json_buf);
+			   MQTT_Publish((const char*) tmp, json_buf, 2);
+		   }
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
@@ -149,7 +159,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   }
 
 		   else if (strcmp(tok, "ping") == 0){
-			   sprintf(tmp, "airu/ack/v2/%s", DEVICE_MAC);
+			   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
 			   MQTT_Publish(tmp, "pong", 2);
 			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
 		   }

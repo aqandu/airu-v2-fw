@@ -32,13 +32,12 @@
 #define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
-extern bool MQTT_Wifi_Connection;
+extern int WIFI_MANAGER_STA_DISCONNECT_BIT;
 
 static const char* TAG = "MQTT";
 static char DEVICE_MAC[13];
 static volatile bool client_connected;
 static esp_mqtt_client_handle_t client = NULL;
-static EventGroupHandle_t mqtt_event_group;
 static TaskHandle_t task_mqtt = NULL;
 static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
 
@@ -181,11 +180,15 @@ void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
 	MQTT_Connect();
-	while(MQTT_Wifi_Connection) {
-		vTaskDelay(ONE_SECOND_DELAY*2);
+	EventBits_t uxBits;
+	while(1) {
+		uxBits = wifi_manager_wait_disconnect();
+		if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
+			break;
+		}
 	}
 	printf("\nDeleting mqtt_task\n");
-	MQTT_wifi_disconnected();								// Stop the mqtt client and free all the memory
+	MQTT_wifi_disconnected();			// Stop the mqtt client and free all the memory
 	vTaskDelete(NULL);
 }
 /*
@@ -273,7 +276,7 @@ void data_task()
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*60);
+		vTaskDelay(ONE_SECOND_DELAY*5);
 	}
 }
 /*
@@ -286,8 +289,6 @@ void data_task()
 void MQTT_Initialize(void)
 {
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
-	mqtt_event_group = xEventGroupCreate();
-	xEventGroupClearBits(mqtt_event_group , WIFI_CONNECTED_BIT);
 	app_getmac(DEVICE_MAC);
 	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
@@ -298,21 +299,8 @@ void MQTT_Connect()
 
 	esp_mqtt_client_config_t mqtt_cfg = getMQTT_Config();
 	client = esp_mqtt_client_init(&mqtt_cfg);
-	ESP_LOGI(TAG, "%s esp_mqtt_client_start", __func__);
-	esp_mqtt_client_start(client);
+	ESP_LOGI(TAG, "%s esp_mqtt_client_start [%s]", __func__, esp_err_to_name(esp_mqtt_client_start(client)));
 	client_connected = false;
-}
-
-/*
-* @brief Signals MQTT to initialize.
-*
-* @param
-*
-* @return
-*/
-void MQTT_wifi_connected()
-{
-	xEventGroupSetBits(mqtt_event_group, WIFI_CONNECTED_BIT);
 }
 
 void MQTT_wifi_disconnected()
@@ -320,15 +308,9 @@ void MQTT_wifi_disconnected()
 	ESP_LOGI(TAG, "%s: ENTERRED\n", __func__);
 	if (client) {
 		ESP_LOGD(TAG, "%s: Going to free some heap: %d\n", __func__, esp_get_free_heap_size());
-		esp_err_t ret = esp_mqtt_client_destroy(client);
+		ESP_LOGI(TAG, "esp_mqtt_client_destroy [%s]", esp_err_to_name(esp_mqtt_client_destroy(client)));
 		client = NULL;
-		printf("Memory freed, returning %d\n", ret);
 		ESP_LOGI(TAG, "After freeing some heap: %d\n",esp_get_free_heap_size());
-	}
-	if (mqtt_event_group) {
-		ESP_LOGD(TAG, "%s: Going to vEventGroupDelete\n", __func__);
-		vEventGroupDelete(mqtt_event_group);					// Delete the event group handler
-		mqtt_event_group = NULL;
 	}
 }
 

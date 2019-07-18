@@ -59,6 +59,7 @@ Contains the freeRTOS task and all necessary support
 #include "mqtt_if.h"
 
 #define THIRTY_SECONDS_TIMEOUT (30000 / portTICK_PERIOD_MS)
+#define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
 
 static const char* TAG = "WIFI_MANAGER";
 static bool initializeTNTPAndMQTT = false;
@@ -71,7 +72,6 @@ char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
-bool MQTT_Wifi_Connection = false;
 
 /**
  * The actual WiFi settings in use
@@ -122,6 +122,15 @@ const int WIFI_MANAGER_REQUEST_WIFI_SCAN = BIT5;
 /* @brief When set, means a client requested to disconnect from currently connected AP. */
 const int WIFI_MANAGER_REQUEST_WIFI_DISCONNECT = BIT6;
 
+/* @brief When set, means a client get kicked off by router, send reconnect signal.
+ * Set when receiving SYSTEM_EVENT_STA_DISCONNECTED
+ * Clear when receiving IP
+ * */
+const int WIFI_MANAGER_REQUEST_RECONNECT = BIT7;
+
+EventBits_t wifi_manager_wait_disconnect() {
+	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+}
 void wifi_manager_scan_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 }
@@ -130,6 +139,20 @@ void wifi_manager_disconnect_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 }
 
+void wifi_manager_json_status_update(update_reason_code_t statusCode) {
+	/* update JSON status */
+	if(wifi_manager_lock_json_buffer( portMAX_DELAY )){
+		wifi_manager_generate_ip_info_json(statusCode);
+		wifi_manager_unlock_json_buffer();
+	}
+	else{
+		/* Even if someone were to furiously refresh a web resource that needs the json mutex,
+		 * it seems impossible that this thread cannot obtain the mutex. Abort here is reasonnable.
+		 */
+		abort();
+	}
+
+}
 esp_err_t wifi_manager_save_reg_config(){
 	nvs_handle handle;
 	esp_err_t esp_err;
@@ -499,14 +522,25 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
         break;
 
 	case SYSTEM_EVENT_STA_GOT_IP:
-    	MQTT_Wifi_Connection = true;
         xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
+		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+		LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
+
         break;
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
-    	MQTT_Wifi_Connection = false;
+    	ESP_LOGW(TAG, "disconnect reason [%d]", event->event_info.disconnected.reason);
+    	if ((event->event_info.disconnected.reason != WIFI_REASON_ASSOC_LEAVE)  /*Get kicked off by router*/
+    			& (event->event_info.disconnected.reason != WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) /*Authenticate failed*/
+				& (event->event_info.disconnected.reason != WIFI_REASON_AUTH_FAIL) /*Authenticate failed*/
+//				& (event->event_info.disconnected.reason != WIFI_REASON_NO_AP_FOUND) /* No AP found */
+				)
+    	{
+    		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+    	}
     	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
+		LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
         break;
 
 	default:
@@ -515,15 +549,9 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 	return ESP_OK;
 }
 
-
-
-
-
-
 wifi_config_t* wifi_manager_get_wifi_sta_config(){
 	return wifi_manager_config_sta;
 }
-
 
 void wifi_manager_connect_async(){
 	/* in order to avoid a false positive on the front end app we need to quickly flush the ip json
@@ -760,8 +788,11 @@ void wifi_manager( void * pvParameters ){
 
 		/* actions that can trigger: request a connection, a scan, or a disconnection */
 		uxBits = xEventGroupWaitBits(wifi_manager_event_group,
-				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT | WIFI_MANAGER_REQUEST_WIFI_SCAN | WIFI_MANAGER_REQUEST_WIFI_DISCONNECT,
-				pdFALSE, pdFALSE, THIRTY_SECONDS_TIMEOUT );
+				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT |
+				WIFI_MANAGER_REQUEST_WIFI_SCAN |
+				WIFI_MANAGER_REQUEST_WIFI_DISCONNECT |
+				WIFI_MANAGER_REQUEST_RECONNECT,
+				pdFALSE, pdFALSE, portMAX_DELAY );
 
 		if(uxBits & WIFI_MANAGER_REQUEST_WIFI_DISCONNECT){
 			/* user requested a disconnect, this will in effect disconnect the wifi but also erase NVS memory*/
@@ -792,16 +823,8 @@ void wifi_manager( void * pvParameters ){
 			wifi_manager_save_sta_config();
 
 			/* update JSON status */
-			if(wifi_manager_lock_json_buffer( portMAX_DELAY )){
-				wifi_manager_generate_ip_info_json(UPDATE_USER_DISCONNECT);
-				wifi_manager_unlock_json_buffer();
-			}
-			else{
-				/* Even if someone were to furiously refresh a web resource that needs the json mutex,
-				 * it seems impossible that this thread cannot obtain the mutex. Abort here is reasonnable.
-				 */
-				abort();
-			}
+			wifi_manager_json_status_update(UPDATE_USER_DISCONNECT);
+
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 		}
@@ -823,19 +846,9 @@ void wifi_manager( void * pvParameters ){
 
 			/* set the new config and connect - reset the disconnect bit first as it is later tested */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
-			ESP_LOGI(TAG, "%d", __LINE__);
-			uint8_t ret = esp_wifi_set_config(WIFI_IF_STA, wifi_manager_get_wifi_sta_config());
-			if (ret != ESP_OK)
-			{
-				ESP_LOGE(TAG, "esp_wifi_set_config: %d", ret);
-			}
-			ESP_LOGI(TAG, "%d", __LINE__);
 
-			ret = esp_wifi_connect();
-			if (ret != ESP_OK)
-			{
-				ESP_LOGE(TAG, "esp_wifi_connect: %d", ret);
-			}
+			ESP_LOGI(TAG, "esp_wifi_set_config: [%s]", esp_err_to_name(esp_wifi_set_config(WIFI_IF_STA, wifi_manager_get_wifi_sta_config())));
+			ESP_LOGI(TAG, "esp_wifi_connect: [%s]", esp_err_to_name(esp_wifi_connect()));
 			/* 2 scenarios here: connection is successful and SYSTEM_EVENT_STA_GOT_IP will be posted
 			 * or it's a failure and we get a SYSTEM_EVENT_STA_DISCONNECTED with a reason code.
 			 * Note that the reason code is not exploited. For all intent and purposes a failure is a failure.
@@ -843,81 +856,62 @@ void wifi_manager( void * pvParameters ){
 			ESP_LOGI(TAG, "xEventGroupWaitBits %d", __LINE__);
 			uxBits = xEventGroupWaitBits(wifi_manager_event_group,
 					WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT,
-					pdFALSE, pdFALSE, THIRTY_SECONDS_TIMEOUT );
+					pdFALSE, pdFALSE, portMAX_DELAY );
 
 			if(uxBits & (WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT)){
 
-				/* Update the json regardless of connection status.
-				 * If connection was succesful an IP will get assigned.
-				 * If the connection attempt is failed we mark it as a failed connection attempt
-				 * as it is important for the front end app to distinguish failed attempt to
-				 * regular disconnects
-				 */
-				if(wifi_manager_lock_json_buffer( portMAX_DELAY )){
+				/* only save the config if the connection was successful! */
+				if(uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT){
 
-					/* only save the config if the connection was successful! */
-					if(uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT){
+					ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
 
-						/* generate the connection info with success */
-						wifi_manager_generate_ip_info_json( UPDATE_CONNECTION_OK );
+					struct hostent *hp = gethostbyname("google.com");
+				    if (hp == NULL) {
+				    	ESP_LOGE(TAG, "gethostbyname() failed\n");
+				    } else {
+				    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
+				       unsigned int i=0;
+				       while ( hp -> h_addr_list[i] != NULL) {
+				    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
+				          i++;
+				       }
+				       printf("\n");
+				    }
 
-						/* save wifi config in NVS */
-						ESP_LOGI(TAG, "AirU obtained an IP address from AP\n\r");
-						wifi_manager_save_sta_config();
+					/* generate the connection info with success */
+					wifi_manager_json_status_update(UPDATE_CONNECTION_OK);
+					/* update the LED */
+					LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 
-						/* update the LED */
-						LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
-						ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
+					/* save wifi config in NVS */
+					ESP_LOGI(TAG, "AirU obtained an IP address from AP\n\r");
+					wifi_manager_save_sta_config();
 
-						struct hostent *hp = gethostbyname("google.com");
-					    if (hp == NULL) {
-					    	ESP_LOGE(TAG, "gethostbyname() failed\n");
-					    } else {
-					    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
-					       unsigned int i=0;
-					       while ( hp -> h_addr_list[i] != NULL) {
-					    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
-					          i++;
-					       }
-					       printf("\n");
-					    }
-
-						if (!initializeTNTPAndMQTT) {
-							/* Start SNTP */
-							sntp_initialize();
-							initializeTNTPAndMQTT = true;
-						}
-						vTaskDelay( 10*(1000 / portTICK_PERIOD_MS));
-						/* Start MQTT */
-						MQTT_Initialize();
+					if (!initializeTNTPAndMQTT) {
+						/* Start SNTP */
+						sntp_initialize();
+						initializeTNTPAndMQTT = true;
 					}
-					else{
-						ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
-
-						/* failed attempt to connect regardles of the reason */
-						wifi_manager_generate_ip_info_json( UPDATE_FAILED_ATTEMPT );
-
-						/* otherwise: reset the config */
-						memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
-
-						/* update the LED */
-						LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
-
-						/* Shut down the MQTT socket - It'll come back up when we reconnect */
-						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
-					}
-					wifi_manager_unlock_json_buffer();
+					vTaskDelay( 10*ONE_SECOND_DELAY);
+					/* Start MQTT */
+					MQTT_Initialize();
 				}
 				else{
-					/* Even if someone were to furiously refresh a web resource that needs the json mutex,
-					 * it seems impossible that this thread cannot obtain the mutex. Abort here is reasonable.
-					 * leave the WIFI_MANAGER_REQUEST_STA_CONNECT_BIT = 1. So that we retry the next circle
-					 */
-					ESP_LOGW(TAG, "Someone were to furiously refresh a web resource that needs the json mutex\n\r");
-					abort();
+					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
+
+					/* failed attempt to connect regardles of the reason */
+					wifi_manager_json_status_update(UPDATE_FAILED_ATTEMPT);
+					/* update the LED */
+					LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
+
+					/* otherwise: reset the config */
+					memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
+
+					/* Shut down the MQTT socket - It'll come back up when we reconnect */
+					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 				}
 			}
-			else{
+			else {
 				/* hit portMAX_DELAY limit ? Guess it would never happen
 				 * leave the WIFI_MANAGER_REQUEST_STA_CONNECT_BIT = 1. So that we retry the next circle
 				 * */
@@ -932,7 +926,8 @@ void wifi_manager( void * pvParameters ){
 			ap_num = MAX_AP_NUM;
 			ESP_LOGI(TAG, "WIFI_MANAGER_REQUEST_WIFI_SCAN\n");
 
-			if(!(uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT)){
+			if(!(uxBits & WIFI_MANAGER_REQUEST_STA_CONNECT_BIT))
+			{
 				ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
 				ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
 
@@ -950,27 +945,34 @@ void wifi_manager( void * pvParameters ){
 			/* STA is actively trying to connect to an AP that isn't present. Terminate this.
 			 * Web interface will request another scan in a few seconds. */
 			else{
-				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
+//				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 			}
 
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 		}
-		else if (uxBits & SYSTEM_EVENT_STA_DISCONNECTED)
-		{
-			// Check for wifi status
-			if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
-				ESP_LOGW(TAG, "WIFI_MANAGER_STA_DISCONNECT_BIT");
-				ESP_LOGW(TAG, "AirU is still disconnected... retry connecting");
-				ESP_LOGI(TAG, "About to fetch wifi sta config");
-				if(wifi_manager_fetch_wifi_sta_config()){
-					/* request a connection */
-					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
-				}
-			}
-		}
 		else {
 			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
+		}
+		if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
+		{
+			ESP_LOGW(TAG, "WIFI_MANAGER_REQUEST_RECONNECT");
+			ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
+			ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
+			wifi_manager_fetch_wifi_sta_config();
+
+			for(int i=0; i<ap_num;i++){
+				wifi_ap_record_t ap = accessp_records[i];
+				ESP_LOGD(TAG, "[%s] ?? [%s]\n", ap.ssid, wifi_manager_config_sta->sta.ssid);
+				/* Looking for the most recent network from the available. Skip if theres not */
+				if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
+					ESP_LOGI(TAG, "Found 1 matched SSID: [%s]", wifi_manager_config_sta->sta.ssid);
+					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+					xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+					break;
+				}
+			}
+			vTaskDelay( 5*ONE_SECOND_DELAY);
 		}
 	} /* for(;;) */
 	vTaskDelay( (TickType_t)10);

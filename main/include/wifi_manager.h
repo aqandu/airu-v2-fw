@@ -323,6 +323,7 @@ esp_err_t wifi_manager_save_wifi_settings();
  */
 bool wifi_manager_connected_to_access_point();
 
+EventBits_t wifi_manager_wait_disconnect();
 #ifdef __cplusplus
 }
 #endif

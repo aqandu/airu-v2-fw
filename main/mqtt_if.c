@@ -16,6 +16,7 @@
 
 #include "app_utils.h"
 #include "http_server_if.h"
+#include "http_client_if.h"
 #include "wifi_manager.h"
 #include "pm_if.h"
 #include "hdc1080_if.h"
@@ -271,7 +272,7 @@ void data_task()
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*5);
+		vTaskDelay(ONE_SECOND_DELAY*3);
 	}
 }
 /*
@@ -285,7 +286,8 @@ void MQTT_Initialize(void)
 {
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
 	app_getmac(DEVICE_MAC);
-	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
+	ftp_put();
+//	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()

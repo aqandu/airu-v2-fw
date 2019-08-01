@@ -115,16 +115,16 @@ void app_main()
 	LED_Initialize();
 
 	/* Initialize the GPS Driver */
-	GPS_Initialize();
+//	GPS_Initialize();
 
 	/* Initialize the PM Driver */
-	PMS_Initialize();
+//	PMS_Initialize();
 
 	/* Initialize the HDC1080 Driver */
-	HDC1080_Initialize();
+//	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
+//	MICS4514_Initialize();
 
 	/* Initialize the SD Card Driver */
 	sd_init();
@@ -139,10 +139,10 @@ void app_main()
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
 	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 
 	/* start the data gather task */
-	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+//	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

@@ -26,6 +26,11 @@
 #include "led_if.h"
 #include "sd_if.h"
 
+#define MQTT_ROOT_TOPIC 		"offline" // or airu
+#define MQTT_DATA_PUB_TOPIC 	MQTT_ROOT_TOPIC "/influx"
+#define MQTT_SUB_ALL_TOPIC		MQTT_ROOT_TOPIC "/all/v2"
+#define MQTT_ACK_TOPIC_TMPLT	MQTT_ROOT_TOPIC "/ack/%s"
+
 
 #define WIFI_CONNECTED_BIT 		BIT0
 #define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
@@ -92,15 +97,19 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-		   msg_id = esp_mqtt_client_subscribe(this_client, "offline/all/v2", 2);
+
+		   // Subscribe to "all" topic
+		   msg_id = esp_mqtt_client_subscribe(this_client, MQTT_SUB_ALL_TOPIC, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "offline/%s", DEVICE_MAC);
+		   // Subscribe to "device" topic
+		   sprintf(tmp, "%s/%s", MQTT_ROOT_TOPIC, DEVICE_MAC);
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
+		   // Respond to "ack" topic that we're online
+		   sprintf(tmp, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
 		   time_t now;
 		   time(&now);
 		   sprintf(tmp2, " - %lu", now);
@@ -253,8 +262,10 @@ void data_task()
 			system_time = 0;	// Using GPS time
 		}
 
+		"time,ID,SensorModel,topic,SecActive,Altitude,Latitude,Longitude,PM1,PM2.5,PM10,Temperature,Humidity,CO,NO\n";
 		sprintf(sd_pkt, SD_PKT,     strftime_buf,
 		                            DEVICE_MAC,
+									TOPIC,
 		                            uptime,
 		                            gps.alt,
 		                            gps.lat,

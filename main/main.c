@@ -32,7 +32,7 @@ Notes:
 			similar to PM UART, where every sample that comes in gets parsed.
 			Accumulate the last X measurements, and when we publish over MQTT
 			take an average and send it. We need the GPS location to be the same
-			within 4 decimal points.
+			within 4 decimal points, so we can use it as a tag in InfluxDB.
 */
 
 
@@ -70,6 +70,7 @@ Notes:
 #include "ota_if.h"
 #include "led_if.h"
 #include "sd_if.h"
+#include "http_file_upload.h"
 
 /* GPIO */
 #define STAT1_LED 21

@@ -20,27 +20,27 @@
 #include "sd_if.h"
 #include "gps_if.h"
 
-#define SD_LOG_FILE_NAME "/sdcard/LOGGING-0.log"
-#define SD_LOG_FILE_MOST_RECENT_NAME "/sdcard/LOGGING-15.log"
-#define SD_LOG_FILE_FORMAT "/sdcard/LOGGING-%02d.log"
-#define FILENAME_LENGTH 25
-#define MOUNT_CONFIG_MAXFILE 20
-#define MOUNT_CONFIG_MAXLOGFILE 15
-#define MAX_FILE_SIZE_MB 1
-#define MAX_LOG_PKG_LENGTH 256
-#define SD_LOG 0
+#define SD_LOG_FILE_NAME 				"/sdcard/LOGGING-0.log"
+#define SD_LOG_FILE_MOST_RECENT_NAME 	"/sdcard/LOGGING-15.log"
+#define SD_LOG_FILE_FORMAT 				"/sdcard/LOGGING-%02d.log"
+#define MOUNT_CONFIG_MAXFILE 			20
+#define MOUNT_CONFIG_MAXLOGFILE 		15
+#define MAX_FILE_SIZE_MB 				1
+#define MAX_LOG_PKG_LENGTH 				256
+#define SD_LOG 							0
 
 // Maximum time to wait for the mutex in a logging statement.
 #define MAX_MUTEX_WAIT_MS 30
 #define MAX_MUTEX_WAIT_TICKS ((MAX_MUTEX_WAIT_MS + portTICK_PERIOD_MS - 1) / portTICK_PERIOD_MS)
 
 static const char *TAG = "SD";
-static const char *DATA_HEADER = "Time (GMT),MAC,Uptime (s),Altitude (m),Latitude (DD.dd),Longitude (DD.dd),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (C),Humidity,RED (x/4096),OX (x/4096),GPS[0]/Sys[1] Timestamp\n";
+static const char *DATA_HEADER = "time,ID,SensorModel,Altitude,CO,Humidity,Latitude,Longitude,NO,PM1,PM10,PM2.5,SecActive,Temperature,topic\n";
 static sdmmc_card_t* card = NULL;
-SemaphoreHandle_t s_log_mutex=NULL;
+SemaphoreHandle_t s_log_mutex = NULL;
 // Share object, need synchronization
 static FILE *_semaphoreLogFileInstance;
 
+static bool fs_mounted = false;
 
 //int lineCount(char* filename);
 //int deleteLineInFile(char* filename, int deleteLine);
@@ -135,6 +135,7 @@ esp_err_t sd_init(void)
 		esp_log_set_vprintf(esp_sd_log_write);
 		periodic_timer_callback(NULL);
     }
+    fs_mounted = true;
     return ret;
 }
 
@@ -310,4 +311,31 @@ void releaseLogFileInstance() {
 			return;
 		}
     }
+}
+
+
+FILE* sd_fopen(const char* filename)
+{
+	esp_err_t err;
+	FILE* fp;
+	char fn_full[SD_FILENAME_LENGTH];
+
+	// Mount if needed
+	if(!fs_mounted){
+		if((err = sd_init()) != ESP_OK){
+			return NULL;
+		}
+	}
+
+	if(snprintf(fn_full, SD_FILENAME_LENGTH, "/sdcard/%s", filename) > SD_FILENAME_LENGTH){
+		ESP_LOGE(TAG, "Filename too long: %s", fn_full);
+		return NULL;
+	}
+
+	ESP_LOGI(TAG, "Opening %s", fn_full);
+	if((fp = fopen(fn_full, "r")) == NULL){
+		ESP_LOGE(TAG, "Could not open %s", fn_full);
+	}
+
+	return fp;
 }

@@ -227,6 +227,7 @@ wifi_config_t* wifi_manager_get_wifi_sta_config();
  * SYSTEM_EVENT_STA_DISCONNECTED
  */
 esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event);
+EventGroupHandle_t wifi_manager_event_group;
 
 
 /**
@@ -324,6 +325,8 @@ esp_err_t wifi_manager_save_wifi_settings();
 bool wifi_manager_connected_to_access_point();
 
 EventBits_t wifi_manager_wait_disconnect();
+void wifi_loop(void);
+bool isWifiConnected();
 #ifdef __cplusplus
 }
 #endif

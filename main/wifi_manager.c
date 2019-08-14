@@ -28,7 +28,6 @@ Contains the freeRTOS task and all necessary support
 @see https://idyl.io
 @see https://github.com/tonyp7/esp32-wifi-manager
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,20 +49,21 @@ Contains the freeRTOS task and all necessary support
 #include "lwip/inet.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/dns.h"
-
+#ifdef USING_WIFI_AP
 #include "json.h"
+#endif
 #include "wifi_manager.h"
 #include "http_server_if.h"
 #include "led_if.h"
 #include "time_if.h"
 #include "mqtt_if.h"
+#include "blufi_example.h"
 
 #define THIRTY_SECONDS_TIMEOUT (30000 / portTICK_PERIOD_MS)
 #define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
 
 static const char* TAG = "WIFI_MANAGER";
 static bool initializeTNTPAndMQTT = false;
-//static const char* HDL = "WIFI-HANDLER";
 
 SemaphoreHandle_t wifi_manager_json_mutex = NULL;
 uint16_t ap_num = MAX_AP_NUM;
@@ -71,6 +71,10 @@ wifi_ap_record_t *accessp_records; //[MAX_AP_NUM];
 char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
+uint8_t gl_sta_bssid[6];
+uint8_t gl_sta_ssid[32];
+int gl_sta_ssid_len;
+
 wifi_config_t* wifi_manager_config_sta = NULL;
 
 /**
@@ -99,8 +103,6 @@ struct registration_info_t reg_info = {
 
 const char wifi_manager_nvs_namespace[] = "espwifimgr";
 
-EventGroupHandle_t wifi_manager_event_group;
-
 /* @brief indicate that the ESP32 is currently connected. */
 const int WIFI_MANAGER_WIFI_CONNECTED_BIT = BIT0;
 
@@ -128,6 +130,7 @@ const int WIFI_MANAGER_REQUEST_WIFI_DISCONNECT = BIT6;
  * */
 const int WIFI_MANAGER_REQUEST_RECONNECT = BIT7;
 
+void initialize_wifi(void);
 EventBits_t wifi_manager_wait_disconnect() {
 	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
 }
@@ -139,6 +142,14 @@ void wifi_manager_disconnect_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 }
 
+/* wifi scanner config */
+wifi_scan_config_t scan_config = {
+	.ssid = 0,
+	.bssid = 0,
+	.channel = 0,
+	.show_hidden = true
+};
+#ifdef USING_WIFI_AP
 void wifi_manager_json_status_update(update_reason_code_t statusCode) {
 	/* update JSON status */
 	if(wifi_manager_lock_json_buffer( portMAX_DELAY )){
@@ -151,8 +162,118 @@ void wifi_manager_json_status_update(update_reason_code_t statusCode) {
 		 */
 		abort();
 	}
+}
+void wifi_manager_clear_reg_info_json(){
+	strcpy(reg_info_json, "{}\n");
+}
+void wifi_manager_generate_reg_info_json(){
+
+	memset(reg_info_json, 0x00, JSON_REG_INFO_SIZE);
+
+    /* ssid needs to be json escaped. To save on heap memory it's directly printed at the correct address */
+
+	// Name (First and Last)
+    strcat(reg_info_json, "{\"name\":");
+    json_print_string( (unsigned char*)reg_info.name,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
+
+    // Email
+    strcat(reg_info_json, ",\"email\":");
+    json_print_string( (unsigned char*)reg_info.email,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
+
+    // Visibility
+    size_t len = strlen(reg_info_json);
+    len += sprintf(reg_info_json + len, ",\"mapVisibility\":%d", !reg_info.hidden);
+
+    // MAC Address
+    uint8_t mac[6];
+    esp_efuse_mac_get_default(mac);
+	len += sprintf(reg_info_json + len, ",\"macAddress\":\"%02X:%02X:%02X:%02X:%02X:%02X\"}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+}
+
+void wifi_manager_clear_ip_info_json(){
+	strcpy(ip_info_json, "{}\n");
+}
+void wifi_manager_generate_ip_info_json(update_reason_code_t update_reason_code){
+
+	wifi_config_t *config = wifi_manager_get_wifi_sta_config();
+	if(config){
+
+		const char ip_info_json_format[] = ",\"ip\":\"%s\",\"netmask\":\"%s\",\"gw\":\"%s\",\"urc\":%d}\n";
+
+		memset(ip_info_json, 0x00, JSON_IP_INFO_SIZE);
+
+		/* to avoid declaring a new buffer we copy the data directly into the buffer at its correct address */
+		strcpy(ip_info_json, "{\"ssid\":");
+		json_print_string(config->sta.ssid,  (unsigned char*)(ip_info_json+strlen(ip_info_json)) );
+
+		if(update_reason_code == UPDATE_CONNECTION_OK){
+			/* rest of the information is copied after the ssid */
+			tcpip_adapter_ip_info_t ip_info;
+			ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info));
+			char ip[IP4ADDR_STRLEN_MAX]; /* note: IP4ADDR_STRLEN_MAX is defined in lwip */
+			char gw[IP4ADDR_STRLEN_MAX];
+			char netmask[IP4ADDR_STRLEN_MAX];
+			strcpy(ip, ip4addr_ntoa(&ip_info.ip));
+			strcpy(netmask, ip4addr_ntoa(&ip_info.netmask));
+			strcpy(gw, ip4addr_ntoa(&ip_info.gw));
+
+			snprintf( (ip_info_json + strlen(ip_info_json)), JSON_IP_INFO_SIZE, ip_info_json_format,
+					ip,
+					netmask,
+					gw,
+					(int)update_reason_code);
+		}
+		else{
+			/* notify in the json output the reason code why this was updated without a connection */
+			snprintf( (ip_info_json + strlen(ip_info_json)), JSON_IP_INFO_SIZE, ip_info_json_format,
+								"0",
+								"0",
+								"0",
+								(int)update_reason_code);
+		}
+	}
+	else{
+		wifi_manager_clear_ip_info_json();
+	}
+
 
 }
+
+
+void wifi_manager_clear_access_points_json(){
+	strcpy(accessp_json, "[]\n");
+}
+void wifi_manager_generate_acess_points_json(){
+
+	strcpy(accessp_json, "[");
+
+
+	const char oneap_str[] = ",\"chan\":%d,\"rssi\":%d,\"auth\":%d}%c\n";
+
+	/* stack buffer to hold on to one AP until it's copied over to accessp_json */
+	char one_ap[JSON_ONE_APP_SIZE];
+	for(int i=0; i<ap_num;i++){
+
+		wifi_ap_record_t ap = accessp_records[i];
+
+		/* ssid needs to be json escaped. To save on heap memory it's directly printed at the correct address */
+		strcat(accessp_json, "{\"ssid\":");
+		json_print_string( (unsigned char*)ap.ssid,  (unsigned char*)(accessp_json+strlen(accessp_json)) );
+
+		/* print the rest of the json for this access point: no more string to escape */
+		snprintf(one_ap, (size_t)JSON_ONE_APP_SIZE, oneap_str,
+				ap.primary,
+				ap.rssi,
+				ap.authmode,
+				i==ap_num-1?']':',');
+
+		/* add it to the list */
+		strcat(accessp_json, one_ap);
+	}
+
+}
+
+#endif
 esp_err_t wifi_manager_save_reg_config(){
 	nvs_handle handle;
 	esp_err_t esp_err;
@@ -367,115 +488,11 @@ bool wifi_manager_fetch_wifi_sta_config(){
 
 }
 
-void wifi_manager_clear_reg_info_json(){
-	strcpy(reg_info_json, "{}\n");
-}
-void wifi_manager_generate_reg_info_json(){
-
-	memset(reg_info_json, 0x00, JSON_REG_INFO_SIZE);
-
-    /* ssid needs to be json escaped. To save on heap memory it's directly printed at the correct address */
-
-	// Name (First and Last)
-    strcat(reg_info_json, "{\"name\":");
-    json_print_string( (unsigned char*)reg_info.name,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
-
-    // Email
-    strcat(reg_info_json, ",\"email\":");
-    json_print_string( (unsigned char*)reg_info.email,  (unsigned char*)(reg_info_json+strlen(reg_info_json)) );
-
-    // Visibility
-    size_t len = strlen(reg_info_json);
-    len += sprintf(reg_info_json + len, ",\"mapVisibility\":%d", !reg_info.hidden);
-
-    // MAC Address
-    uint8_t mac[6];
-    esp_efuse_mac_get_default(mac);
-	len += sprintf(reg_info_json + len, ",\"macAddress\":\"%02X:%02X:%02X:%02X:%02X:%02X\"}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+bool wifi_manager_connected_to_access_point()
+{
+	return (xEventGroupGetBits(wifi_manager_event_group) & WIFI_MANAGER_WIFI_CONNECTED_BIT);
 }
 
-void wifi_manager_clear_ip_info_json(){
-	strcpy(ip_info_json, "{}\n");
-}
-void wifi_manager_generate_ip_info_json(update_reason_code_t update_reason_code){
-
-	wifi_config_t *config = wifi_manager_get_wifi_sta_config();
-	if(config){
-
-		const char ip_info_json_format[] = ",\"ip\":\"%s\",\"netmask\":\"%s\",\"gw\":\"%s\",\"urc\":%d}\n";
-
-		memset(ip_info_json, 0x00, JSON_IP_INFO_SIZE);
-
-		/* to avoid declaring a new buffer we copy the data directly into the buffer at its correct address */
-		strcpy(ip_info_json, "{\"ssid\":");
-		json_print_string(config->sta.ssid,  (unsigned char*)(ip_info_json+strlen(ip_info_json)) );
-
-		if(update_reason_code == UPDATE_CONNECTION_OK){
-			/* rest of the information is copied after the ssid */
-			tcpip_adapter_ip_info_t ip_info;
-			ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info));
-			char ip[IP4ADDR_STRLEN_MAX]; /* note: IP4ADDR_STRLEN_MAX is defined in lwip */
-			char gw[IP4ADDR_STRLEN_MAX];
-			char netmask[IP4ADDR_STRLEN_MAX];
-			strcpy(ip, ip4addr_ntoa(&ip_info.ip));
-			strcpy(netmask, ip4addr_ntoa(&ip_info.netmask));
-			strcpy(gw, ip4addr_ntoa(&ip_info.gw));
-
-			snprintf( (ip_info_json + strlen(ip_info_json)), JSON_IP_INFO_SIZE, ip_info_json_format,
-					ip,
-					netmask,
-					gw,
-					(int)update_reason_code);
-		}
-		else{
-			/* notify in the json output the reason code why this was updated without a connection */
-			snprintf( (ip_info_json + strlen(ip_info_json)), JSON_IP_INFO_SIZE, ip_info_json_format,
-								"0",
-								"0",
-								"0",
-								(int)update_reason_code);
-		}
-	}
-	else{
-		wifi_manager_clear_ip_info_json();
-	}
-
-
-}
-
-
-void wifi_manager_clear_access_points_json(){
-	strcpy(accessp_json, "[]\n");
-}
-void wifi_manager_generate_acess_points_json(){
-
-	strcpy(accessp_json, "[");
-
-
-	const char oneap_str[] = ",\"chan\":%d,\"rssi\":%d,\"auth\":%d}%c\n";
-
-	/* stack buffer to hold on to one AP until it's copied over to accessp_json */
-	char one_ap[JSON_ONE_APP_SIZE];
-	for(int i=0; i<ap_num;i++){
-
-		wifi_ap_record_t ap = accessp_records[i];
-
-		/* ssid needs to be json escaped. To save on heap memory it's directly printed at the correct address */
-		strcat(accessp_json, "{\"ssid\":");
-		json_print_string( (unsigned char*)ap.ssid,  (unsigned char*)(accessp_json+strlen(accessp_json)) );
-
-		/* print the rest of the json for this access point: no more string to escape */
-		snprintf(one_ap, (size_t)JSON_ONE_APP_SIZE, oneap_str,
-				ap.primary,
-				ap.rssi,
-				ap.authmode,
-				i==ap_num-1?']':',');
-
-		/* add it to the list */
-		strcat(accessp_json, one_ap);
-	}
-
-}
 
 
 bool wifi_manager_lock_json_buffer(TickType_t xTicksToWait){
@@ -524,6 +541,10 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 	case SYSTEM_EVENT_STA_GOT_IP:
         xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+        memcpy(gl_sta_bssid, event->event_info.connected.bssid, 6);
+        memcpy(gl_sta_ssid, event->event_info.connected.ssid, event->event_info.connected.ssid_len);
+        gl_sta_ssid_len = event->event_info.connected.ssid_len;
+
 		LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 
         break;
@@ -559,11 +580,13 @@ void wifi_manager_connect_async(){
 	 * it's a remnant from a previous connection
 	 */
 	ESP_LOGI(TAG, "connect_async: waiting for json buffer lock");
+#ifdef USING_WIFI_AP
 	if(wifi_manager_lock_json_buffer( portMAX_DELAY )){
 		wifi_manager_clear_ip_info_json();
 		wifi_manager_unlock_json_buffer();
 	}
 	ESP_LOGI(TAG, "connect_async: cleared json info");
+#endif
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
 }
 
@@ -657,6 +680,7 @@ void wifi_manager( void * pvParameters ){
 	wifi_manager_json_mutex = xSemaphoreCreateMutex();
 	accessp_records = (wifi_ap_record_t*)malloc(sizeof(wifi_ap_record_t) * MAX_AP_NUM);
 
+#ifdef USING_WIFI_AP
 	accessp_json = (char*)malloc(MAX_AP_NUM * JSON_ONE_APP_SIZE + 4); /* 4 bytes for json encapsulation of "[\n" and "]\0" */
 
 	wifi_manager_clear_access_points_json();
@@ -685,14 +709,6 @@ void wifi_manager( void * pvParameters ){
     /* event handler and event group for the wifi driver */
 	wifi_manager_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_event_loop_init(wifi_manager_event_handler, NULL));
-
-    /* wifi scanner config */
-	wifi_scan_config_t scan_config = {
-		.ssid = 0,
-		.bssid = 0,
-		.channel = 0,
-		.show_hidden = true
-	};
 
 	/* try to get access to previously saved wifi */
 	ESP_LOGI(TAG, "About to fetch wifi sta config");
@@ -773,19 +789,38 @@ void wifi_manager( void * pvParameters ){
 	else
 		ESP_LOGI(TAG, "starting softAP with 40 MHz bandwidth\n");
 	ESP_LOGI(TAG, "starting softAP on channel %i\n", wifi_settings.ap_channel);
-	if(wifi_settings.sta_power_save ==1) ESP_LOGI(TAG, "wifi_manager: STA power save enabled\n");
-
 	/* wait for access point to start */
 	xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_AP_STARTED, pdFALSE, pdTRUE, portMAX_DELAY );
 
 	ESP_LOGI(TAG, "softAP started, starting http_server\n");
 
 	http_server_set_event_start();
+
+#else
+	uint8_t mac[6];
+	esp_efuse_mac_get_default(mac);
+	sprintf((char*)wifi_settings.ap_ssid, "%s-%02X%02X", DEFAULT_AP_SSID, mac[4], mac[5]);
+	/* try to get access to previously saved wifi */
+	ESP_LOGI(TAG, "About to fetch wifi sta config");
+	initialize_wifi();
+	if(wifi_manager_fetch_wifi_sta_config()){
+
+		ESP_LOGI(TAG, "saved wifi found on startup\n");
+
+		/* request a connection */
+		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+	}
+#endif
+	if(wifi_settings.sta_power_save ==1) ESP_LOGI(TAG, "wifi_manager: STA power save enabled\n");
 	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
+	wifi_loop();
+	vTaskDelay( (TickType_t)10);
+} /*void wifi_manager*/
 
+void wifi_loop() {
 	EventBits_t uxBits;
-	for(;;){
 
+	while (1) {
 		/* actions that can trigger: request a connection, a scan, or a disconnection */
 		uxBits = xEventGroupWaitBits(wifi_manager_event_group,
 				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT |
@@ -821,10 +856,10 @@ void wifi_manager( void * pvParameters ){
 
 			/* save NVS memory */
 			wifi_manager_save_sta_config();
-
+#ifdef USING_WIFI_AP
 			/* update JSON status */
 			wifi_manager_json_status_update(UPDATE_USER_DISCONNECT);
-
+#endif
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 		}
@@ -859,7 +894,7 @@ void wifi_manager( void * pvParameters ){
 					pdFALSE, pdFALSE, portMAX_DELAY );
 
 			if(uxBits & (WIFI_MANAGER_WIFI_CONNECTED_BIT | WIFI_MANAGER_STA_DISCONNECT_BIT)){
-
+	        wifi_mode_t mode;
 				/* only save the config if the connection was successful! */
 				if(uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT){
 
@@ -877,9 +912,10 @@ void wifi_manager( void * pvParameters ){
 				       }
 				       printf("\n");
 				    }
-
+#ifdef USING_WIFI_AP
 					/* generate the connection info with success */
 					wifi_manager_json_status_update(UPDATE_CONNECTION_OK);
+#endif
 					/* update the LED */
 					LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 
@@ -892,20 +928,33 @@ void wifi_manager( void * pvParameters ){
 						sntp_initialize();
 						initializeTNTPAndMQTT = true;
 					}
-					vTaskDelay( 10*ONE_SECOND_DELAY);
+					vTaskDelay( 5*ONE_SECOND_DELAY);
 					/* Start MQTT */
 					MQTT_Initialize();
+			        esp_blufi_extra_info_t info;
+			        esp_wifi_get_mode(&mode);
+			        memset(&info, 0, sizeof(esp_blufi_extra_info_t));
+			        memcpy(info.sta_bssid, gl_sta_bssid, 6);
+			        info.sta_bssid_set = true;
+			        info.sta_ssid = gl_sta_ssid;
+			        info.sta_ssid_len = gl_sta_ssid_len;
+					/* Send wifi report to bluetooth device */
+			        esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_SUCCESS, 0, &info);
 				}
 				else{
 					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
-
+#ifdef USING_WIFI_AP
 					/* failed attempt to connect regardles of the reason */
 					wifi_manager_json_status_update(UPDATE_FAILED_ATTEMPT);
+#endif
 					/* update the LED */
 					LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 					/* otherwise: reset the config */
 					memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
+
+					/* Send wifi report to bluetooth device */
+					esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_FAIL, 0, NULL);
 
 					/* Shut down the MQTT socket - It'll come back up when we reconnect */
 					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
@@ -930,7 +979,23 @@ void wifi_manager( void * pvParameters ){
 			{
 				ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
 				ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
+		        esp_blufi_ap_record_t * blufi_ap_list = (esp_blufi_ap_record_t *)malloc(ap_num * sizeof(esp_blufi_ap_record_t));
+		        if (!blufi_ap_list) {
+		            if (accessp_records) {
+		                free(accessp_records);
+		            }
+		            ESP_LOGE(TAG,"malloc error, blufi_ap_list is NULL");
+		            break;
+		        }
+		        for (int i = 0; i < ap_num; ++i)
+		        {
+		            blufi_ap_list[i].rssi = accessp_records[i].rssi;
+		            memcpy(blufi_ap_list[i].ssid, accessp_records[i].ssid, sizeof(accessp_records[i].ssid));
+		        }
+		        esp_bluetooth_send_wifi_list(ap_num, blufi_ap_list);
+//		        esp_wifi_scan_stop();
 
+#ifdef USING_WIFI_AP
 				/* make sure the http server isn't trying to access the list while it gets refreshed */
 				if(wifi_manager_lock_json_buffer( ( TickType_t ) 20 )){
 					/* Will remove the duplicate SSIDs from the list and update ap_num */
@@ -941,6 +1006,7 @@ void wifi_manager( void * pvParameters ){
 				else{
 					ESP_LOGW(TAG, "could not get access to json mutex in wifi_scan\n");
 				}
+#endif
 			}
 			/* STA is actively trying to connect to an AP that isn't present. Terminate this.
 			 * Web interface will request another scan in a few seconds. */
@@ -974,13 +1040,22 @@ void wifi_manager( void * pvParameters ){
 			}
 			vTaskDelay( 5*ONE_SECOND_DELAY);
 		}
-	} /* for(;;) */
-	vTaskDelay( (TickType_t)10);
-} /*void wifi_manager*/
-
-
-bool wifi_manager_connected_to_access_point()
-{
-	return (xEventGroupGetBits(wifi_manager_event_group) & WIFI_MANAGER_WIFI_CONNECTED_BIT);
+	}
 }
 
+bool isWifiConnected() {
+	EventBits_t uxBits;
+	uxBits = xEventGroupGetBitsFromISR(wifi_manager_event_group);
+	return ((uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT) == (WIFI_MANAGER_WIFI_CONNECTED_BIT));
+}
+void initialize_wifi()
+{
+    tcpip_adapter_init();
+    wifi_manager_event_group = xEventGroupCreate();
+    ESP_ERROR_CHECK( esp_event_loop_init(wifi_manager_event_handler, NULL) );
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK( esp_wifi_start() );
+}

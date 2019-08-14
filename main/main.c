@@ -70,6 +70,7 @@ Notes:
 #include "ota_if.h"
 #include "led_if.h"
 #include "sd_if.h"
+#include "blufi_example.h"
 
 /* GPIO */
 #define STAT1_LED 21
@@ -83,6 +84,7 @@ static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t data_task_handle = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
+static TaskHandle_t bluetooth_task_handle = NULL;
 static const char *TAG = "AIRU";
 
 /**
@@ -130,7 +132,7 @@ void app_main()
 	sd_init();
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+//	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
 	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
@@ -138,11 +140,14 @@ void app_main()
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
-
-	/* start the data gather task */
+//	/* start the ota task */
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+//
+//	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+
+	/* start the bluetooth */
+	xTaskCreate(&bluetooth_manager, "Bluetooth_task", 6000, NULL, 2, &bluetooth_task_handle);
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

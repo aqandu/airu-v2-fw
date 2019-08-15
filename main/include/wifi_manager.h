@@ -323,7 +323,20 @@ esp_err_t wifi_manager_save_wifi_settings();
  */
 bool wifi_manager_connected_to_access_point();
 
+/**
+ * @brief Ping www.google.com. If successful, we have Internet.
+ */
+bool wifi_manager_check_connection();
+
+/**
+ * @brief set bit to check internet connection with ping test
+ */
+void wifi_manager_check_connection_async();
+
+EventBits_t wifi_manager_wait_connect();
 EventBits_t wifi_manager_wait_disconnect();
+EventBits_t wifi_manager_wait_internet_access();
+bool wifi_manager_ping_test();
 #ifdef __cplusplus
 }
 #endif

@@ -13,7 +13,7 @@
 
 #define SD_FILENAME_LENGTH 25
 
-esp_err_t sd_init(void);
+esp_err_t SD_Initialize(void);
 esp_err_t sd_deinit(void);
 esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day);
 vprintf_like_t esp_sd_log_write(const char* format, va_list ap);

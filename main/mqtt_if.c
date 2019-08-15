@@ -25,15 +25,9 @@
 #include "gps_if.h"
 #include "led_if.h"
 #include "sd_if.h"
-
-#define MQTT_ROOT_TOPIC 		"offline" // or airu
-#define MQTT_DATA_PUB_TOPIC 	MQTT_ROOT_TOPIC "/influx"
-#define MQTT_SUB_ALL_TOPIC		MQTT_ROOT_TOPIC "/all/v2"
-#define MQTT_ACK_TOPIC_TMPLT	MQTT_ROOT_TOPIC "/ack/%s"
-
+#include "wifi_manager.h"
 
 #define WIFI_CONNECTED_BIT 		BIT0
-#define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
 #define THIRTY_SECONDS_COUNT 30
 #define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
@@ -45,7 +39,7 @@ static char DEVICE_MAC[13];
 static volatile bool client_connected;
 static esp_mqtt_client_handle_t client = NULL;
 static TaskHandle_t task_mqtt = NULL;
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
+
 
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
  /*
@@ -116,13 +110,17 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   json_buf = malloc(512);
 		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
 		   strcat(json_buf, tmp2);
-		   MQTT_Publish((const char*) tmp, json_buf, 2);
+		   MQTT_Publish_General((const char*) tmp, json_buf, 2);
 		   free(json_buf);
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+		   MQTT_wifi_disconnected();
 		   client_connected = false;
+
+		   // Set the WIFI_MANAGER_HAVE_INTERNET_BIT: is it MQTT or internet problem?
+		   wifi_manager_check_connection_async();
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -164,7 +162,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   else if (strcmp(tok, "ping") == 0){
 			   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
-			   MQTT_Publish(tmp, "pong", 2);
+			   MQTT_Publish_General(tmp, "pong", 2);
 			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
 		   }
 
@@ -184,108 +182,35 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
+	// Wait for internet
+	ESP_LOGI(TAG, "Waiting for internet access..");
+	wifi_manager_wait_internet_access();
+
+	ESP_LOGI(TAG, "Got internet access. Connecting...");
 	MQTT_Connect();
-	EventBits_t uxBits;
+
+//	EventBits_t uxBits;
+
 	while(1) {
-		uxBits = wifi_manager_wait_disconnect();
-		if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
-			break;
-		}
+
+		// Wait for a disconnect event
+		wifi_manager_wait_disconnect();
+		ESP_LOGI(TAG, "WIFI disconnected");
+
+		// Wait for a reconnect event and internet access
+		wifi_manager_wait_internet_access();
+		ESP_LOGI(TAG, "WIFI reconnected");
+		MQTT_Connect();
+
+//		if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
+//			break;
+//		}
 	}
-	printf("\nDeleting mqtt_task\n");
-	MQTT_wifi_disconnected();			// Stop the mqtt client and free all the memory
-	vTaskDelete(NULL);
+//	printf("\nDeleting mqtt_task\n");
+//	MQTT_wifi_disconnected();			// Stop the mqtt client and free all the memory
+//	vTaskDelete(NULL);
 }
-/*
- * Data gather task
- */
-void data_task()
-{
-	pm_data_t pm_dat;
-	double temp, hum;
-	uint16_t co, nox;
-	esp_gps_t gps;
-	char mqtt_pkt[MQTT_PKT_LEN];
-	uint64_t uptime = 0;
-	uint64_t hr, rm;
-	uint8_t min, sec, system_time;
-	const char* SD_PKT = "%s,%s,%lu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n";
-	char sd_pkt[250] = {0};
 
-	app_getmac(DEVICE_MAC);
-
-	while (1) {
-
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
-		GPS_Poll(&gps);
-
-		uptime = esp_timer_get_time() / 1000000;
-
-		//
-		// Send data over MQTT
-		//
-		bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox				/* NOx */);
-
-		time_t now;
-		struct tm tm;
-		char strftime_buf[64];
-		time(&now);
-		localtime_r(&now, &tm);
-		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-
-		if (gps.year <= 18 || gps.year >= 80){
-			hr = uptime / 3600;
-			rm = uptime % 3600;
-			min = rm / 60;
-			sec = rm % 60;
-
-			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
-			system_time = 1;	// Using system time
-		}
-		else {
-			sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
-			system_time = 0;	// Using GPS time
-		}
-
-		"time,ID,SensorModel,topic,SecActive,Altitude,Latitude,Longitude,PM1,PM2.5,PM10,Temperature,Humidity,CO,NO\n";
-		sprintf(sd_pkt, SD_PKT,     strftime_buf,
-		                            DEVICE_MAC,
-									TOPIC,
-		                            uptime,
-		                            gps.alt,
-		                            gps.lat,
-		                            gps.lon,
-		                            pm_dat.pm1,
-		                            pm_dat.pm2_5,
-		                            pm_dat.pm10,
-		                            temp,
-		                            hum,
-		                            co,
-		                            nox,
-									system_time);
-
-		ESP_LOGI(TAG, "%s", mqtt_pkt);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
-		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
-		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*3);
-	}
-}
 /*
 * @brief
 *
@@ -297,8 +222,7 @@ void MQTT_Initialize(void)
 {
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
 	app_getmac(DEVICE_MAC);
-	ftp_put();
-//	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
+	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()
@@ -329,7 +253,7 @@ void MQTT_wifi_disconnected()
 *
 * @return
 */
-void MQTT_Publish(const char* topic, const char* msg, int qos)
+void MQTT_Publish_General(const char* topic, const char* msg, int qos)
 {
 	int msg_id;
 	ESP_LOGI(TAG, "%s ENTERRED client_connected %d", __func__, client_connected);
@@ -340,5 +264,17 @@ void MQTT_Publish(const char* topic, const char* msg, int qos)
 	else {
 		ESP_LOGW(TAG, "Client has not connected yet");
 	}
+}
+
+/*
+* @brief
+*
+* @param
+*
+* @return
+*/
+void MQTT_Publish_Data(const char* msg)
+{
+	MQTT_Publish_General(MQTT_DATA_PUB_TOPIC, msg, 2);
 }
 

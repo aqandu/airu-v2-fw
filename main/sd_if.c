@@ -65,7 +65,7 @@ static bool fs_mounted = false;
 #define PIN_NUM_CS   13
 #endif //USE_SPI_MODE
 
-esp_err_t sd_init(void)
+esp_err_t SD_Initialize(void)
 {
     ESP_LOGI(TAG, "Initializing SD card");
 
@@ -322,7 +322,7 @@ FILE* sd_fopen(const char* filename)
 
 	// Mount if needed
 	if(!fs_mounted){
-		if((err = sd_init()) != ESP_OK){
+		if((err = SD_Initialize()) != ESP_OK){
 			return NULL;
 		}
 	}

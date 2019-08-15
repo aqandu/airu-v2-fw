@@ -170,7 +170,7 @@ static int http_init(http_poster_t* poster)
 	// Get the file statistics
 	if(stat(poster->fn_src, &poster->st) != ESP_OK){
 		ESP_LOGE(TAG, "No file stats for %s", poster->fn_src);
-		return ESP_FAIL;
+		return NO_SD_FILE_FOUND;
 	}
 
 	ESP_LOGI(TAG, "Filename:  %s", poster->fn_base);
@@ -179,7 +179,7 @@ static int http_init(http_poster_t* poster)
 
 	if(poster->st.st_size == 0){
 		ESP_LOGE(TAG, "File is 0 bytes: %s", poster->fn_src);
-		return ESP_FAIL;
+		return ZERO_LENGTH_FILE;
 	}
 
 	// Set the buffers
@@ -426,8 +426,9 @@ static void http_post_cleanup(http_poster_t* poster)
 	free(poster->sz_buf);
 }
 
-esp_err_t http_upload_file_from_sd(const char* filename)
+int http_upload_file_from_sd(const char* filename)
 {
+	int err;
 	http_poster_t p = {
 			.hostname = HOSTNAME,
 			.port = PORT,
@@ -435,9 +436,9 @@ esp_err_t http_upload_file_from_sd(const char* filename)
 	};
 	http_poster_t* poster = &p;
 
-	if(http_init(poster) != ESP_OK){
+	if((err = http_init(poster)) != ESP_OK){
 		http_post_cleanup(poster);
-		return ESP_FAIL;
+		return err;
 	}
 
 	/* Connect to server */

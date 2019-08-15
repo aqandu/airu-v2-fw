@@ -10,8 +10,15 @@
 
 #include "esp_err.h"
 
+typedef enum {
+	UPLOAD_NO_ERR = 0,
+	GENERIC_ESP_FAIL = -1,
+	NO_SD_FILE_FOUND = -2,
+	ZERO_LENGTH_FILE = -3,
+}http_file_upload_errors_t;
+
 void set_chunk_size(uint32_t chunk_size);
-esp_err_t http_upload_file_from_sd(const char* filename);
+int http_upload_file_from_sd(const char* filename);
 
 
 #endif /* MAIN_HTTP_FILE_UPLOAD_H_ */

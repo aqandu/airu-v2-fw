@@ -28,11 +28,11 @@ time_t time_gmtime(void);
 *
 * @return
 */
-<<<<<<< HEAD
-int sntp_initialize(void);
-=======
+//<<<<<<< HEAD
+//int sntp_initialize(void);
+//=======
 void SNTP_Initialize(void);
->>>>>>> csvupload
+//>>>>>>> csvupload
 
 
 /*

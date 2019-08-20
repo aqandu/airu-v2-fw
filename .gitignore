@@ -5,3 +5,4 @@ build/
 .cproject
 sdkconfig
 server_certs/
+Firmware-Updates/

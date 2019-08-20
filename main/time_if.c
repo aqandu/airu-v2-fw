@@ -5,7 +5,6 @@
  *      Author: tombo
  */
 
-#include "time_if.h"
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
@@ -22,8 +21,11 @@
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
 #include "esp_sntp.h"
+#include "wifi_manager.h"
+#include "time_if.h"
 
 #define WIFI_CONNECTED_BIT 	BIT0
+#define GOT_TS_BIT			BIT1
 
 static const unsigned long MS_BETWEEN_NTP_UPDATE = 600000;
 static const unsigned long SEC_JAN1_2018 = 1514764800;
@@ -34,6 +36,11 @@ static clock_t ms_active = 0;
 static EventGroupHandle_t ntp_event_group;
 
 static time_t _sntp_obtain_time(void);
+
+void SNTP_time_is_set(void)
+{
+	xEventGroupWaitBits(ntp_event_group, GOT_TS_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
+}
 
 /*
 * @brief	Try 10 times to get the current time from the NTP server
@@ -54,6 +61,11 @@ static time_t _sntp_obtain_time(void)
         vTaskDelay(2000 / portTICK_PERIOD_MS);
         time(&now);
     }
+
+    if(now > SEC_JAN1_2018){
+    	xEventGroupSetBits(ntp_event_group, GOT_TS_BIT);
+    }
+
     return now;
 }
 
@@ -101,14 +113,24 @@ void sntp_wifi_connected()
 *
 * @return	N/A
 */
-int sntp_initialize(void)
+//<<<<<<< HEAD
+//int sntp_initialize(void)
+//=======
+void SNTP_Initialize(void)
+//>>>>>>> csvupload
 {
 	time_t now;
 	struct tm timeinfo;
     char strftime_buf[64];
 
     ntp_event_group = xEventGroupCreate();
-    xEventGroupClearBits(ntp_event_group, WIFI_CONNECTED_BIT);
+    xEventGroupClearBits(ntp_event_group, WIFI_CONNECTED_BIT|GOT_TS_BIT);
+
+    // Wait for internet access
+    ESP_LOGI(TAG, "Waiting for internet access...");
+    wifi_manager_wait_internet_access();
+    ESP_LOGI(TAG, "Got internet access...");
+
 
     /* Waiting for WiFi to connect */
 //    xEventGroupWaitBits(ntp_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);

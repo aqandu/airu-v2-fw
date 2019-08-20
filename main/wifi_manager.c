@@ -37,6 +37,7 @@ Contains the freeRTOS task and all necessary support
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/timers.h"
 #include "esp_event_loop.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
@@ -55,13 +56,15 @@ Contains the freeRTOS task and all necessary support
 #include "wifi_manager.h"
 #include "http_server_if.h"
 #include "led_if.h"
-#include "time_if.h"
-#include "mqtt_if.h"
+//#include "time_if.h"
+//#include "mqtt_if.h"
 
 #define THIRTY_SECONDS_TIMEOUT (30000 / portTICK_PERIOD_MS)
 #define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
+#define RECONNECT_RETRY_PERIOD 60 * ONE_SECOND_DELAY
 
 static const char* TAG = "WIFI_MANAGER";
+static TimerHandle_t wifi_reconnect_timer;
 static bool initializeTNTPAndMQTT = false;
 //static const char* HDL = "WIFI-HANDLER";
 
@@ -72,6 +75,8 @@ char *accessp_json = NULL;
 char *ip_info_json = NULL;
 char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
+
+static void vTimerCallback(TimerHandle_t xTimer);
 
 /**
  * The actual WiFi settings in use
@@ -128,15 +133,46 @@ const int WIFI_MANAGER_REQUEST_WIFI_DISCONNECT = BIT6;
  * */
 const int WIFI_MANAGER_REQUEST_RECONNECT = BIT7;
 
+/* @brief Issue ping test to google. If successful this bit is set */
+const int WIFI_MANAGER_HAVE_INTERNET_BIT = BIT8;
+
+/* @brief Ping test requested */
+const int WIFI_MANAGER_REQUEST_PING_TEST = BIT9;
+
+EventBits_t wifi_manager_wait_connect() {
+	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+}
+EventBits_t wifi_manager_wait_internet_access() {
+	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+}
 EventBits_t wifi_manager_wait_disconnect() {
 	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
 }
 void wifi_manager_scan_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 }
-
 void wifi_manager_disconnect_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
+}
+bool wifi_manager_connected_to_access_point(){
+	return (xEventGroupGetBits(wifi_manager_event_group) & WIFI_MANAGER_WIFI_CONNECTED_BIT);
+}
+
+/*
+ * @brief 	Reconnect timer callback. Try to reconnect every x seconds.
+ * 			Needed when AP and AirU get power cycled and AirU comes back
+ * 			first. It will listen for AP coming back online and connect
+ * 			when it does.
+ *
+ * @param 	xTimer - the timer handle
+ *
+ * @return 	N/A
+ */
+static void vTimerCallback(TimerHandle_t xTimer)
+{
+	ESP_LOGI(TAG, "Reconnect timer called");
+	xTimerStop(xTimer, 0);
+	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 }
 
 void wifi_manager_json_status_update(update_reason_code_t statusCode) {
@@ -540,6 +576,7 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
     	}
     	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
+		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
 		LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
         break;
 
@@ -784,6 +821,12 @@ void wifi_manager( void * pvParameters ){
 	http_server_set_event_start();
 	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 
+  // create the timer to determine validity of pm data
+	wifi_reconnect_timer = xTimerCreate("wifi_reconnect_timer",
+						  RECONNECT_RETRY_PERIOD,
+						  pdFALSE, (void *)NULL,
+						  vTimerCallback);
+
 	EventBits_t uxBits;
 	for(;;){
 
@@ -792,12 +835,16 @@ void wifi_manager( void * pvParameters ){
 				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT |
 				WIFI_MANAGER_REQUEST_WIFI_SCAN |
 				WIFI_MANAGER_REQUEST_WIFI_DISCONNECT |
-				WIFI_MANAGER_REQUEST_RECONNECT,
+				WIFI_MANAGER_REQUEST_RECONNECT |
+				WIFI_MANAGER_REQUEST_PING_TEST,
 				pdFALSE, pdFALSE, portMAX_DELAY );
 
 		if(uxBits & WIFI_MANAGER_REQUEST_WIFI_DISCONNECT){
 			/* user requested a disconnect, this will in effect disconnect the wifi but also erase NVS memory*/
 			ESP_LOGI(TAG, "WIFI_MANAGER_REQUEST_WIFI_DISCONNECT\n");
+
+			/* if disconnected, there is no internet */
+			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
 
 			/*disconnect only if it was connected to begin with! */
 			if( uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT ){
@@ -864,21 +911,6 @@ void wifi_manager( void * pvParameters ){
 				/* only save the config if the connection was successful! */
 				if(uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT){
 
-					ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
-
-					struct hostent *hp = gethostbyname("google.com");
-				    if (hp == NULL) {
-				    	ESP_LOGE(TAG, "gethostbyname() failed\n");
-				    } else {
-				    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
-				       unsigned int i=0;
-				       while ( hp -> h_addr_list[i] != NULL) {
-				    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
-				          i++;
-				       }
-				       printf("\n");
-				    }
-
 					/* generate the connection info with success */
 					wifi_manager_json_status_update(UPDATE_CONNECTION_OK);
 					/* update the LED */
@@ -888,12 +920,29 @@ void wifi_manager( void * pvParameters ){
 					ESP_LOGI(TAG, "AirU obtained an IP address from AP\n\r");
 					wifi_manager_save_sta_config();
 
-					/* Start SNTP */
-					err = sntp_initialize();
-
-					/* Start MQTT */
-					MQTT_Initialize();
-
+//<<<<<<< HEAD
+//					/* Start SNTP */
+//					err = sntp_initialize();
+//
+//					/* Start MQTT */
+//					MQTT_Initialize();
+//
+//=======
+					ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
+					wifi_manager_ping_test();
+//					if(wifi_manager_ping_test()){
+//
+//						if (!initializeTNTPAndMQTT) {
+//							/* Start SNTP */
+//							sntp_initialize();
+//							initializeTNTPAndMQTT = true;
+//						}
+//	//					vTaskDelay( 10*ONE_SECOND_DELAY);
+//						/* Start MQTT */
+//						MQTT_Initialize();
+//					}
+					xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+//>>>>>>> csvupload
 				}
 				else{
 					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
@@ -953,33 +1002,79 @@ void wifi_manager( void * pvParameters ){
 		else {
 			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
 		}
+
 		if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
 		{
-			ESP_LOGW(TAG, "WIFI_MANAGER_REQUEST_RECONNECT");
-			ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-			ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
 			wifi_manager_fetch_wifi_sta_config();
+			ESP_LOGI(TAG, "WIFI STA SSID: %s", wifi_manager_config_sta->sta.ssid);
 
-			for(int i=0; i<ap_num;i++){
-				wifi_ap_record_t ap = accessp_records[i];
-				ESP_LOGD(TAG, "[%s] ?? [%s]\n", ap.ssid, wifi_manager_config_sta->sta.ssid);
-				/* Looking for the most recent network from the available. Skip if theres not */
-				if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
-					ESP_LOGI(TAG, "Found 1 matched SSID: [%s]", wifi_manager_config_sta->sta.ssid);
-					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
-					xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-					break;
+			// If there's an SSID saved in FLASH
+			if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0)
+			{
+				ESP_LOGW(TAG, "WIFI_MANAGER_REQUEST_RECONNECT");
+				ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
+				ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
+
+				for(int i=0; i<ap_num;i++){
+					wifi_ap_record_t ap = accessp_records[i];
+					ESP_LOGD(TAG, "[%s] ?? [%s]\n", ap.ssid, wifi_manager_config_sta->sta.ssid);
+					/* Looking for the most recent network from the available. Skip if theres not */
+					if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
+						ESP_LOGI(TAG, "Found 1 matched SSID: [%s]", wifi_manager_config_sta->sta.ssid);
+						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+						break;
+					}
+				}
+
+				// Restart the timer if we didn't just turn off the reconnect request
+				if((uxBits & xEventGroupGetBits(wifi_manager_event_group))){
+					xTimerStart(wifi_reconnect_timer, 0);
 				}
 			}
-			vTaskDelay( 5*ONE_SECOND_DELAY);
+
+			// No SSID saved in FLASH - Don't try reconnecting anymore
+			else {
+				xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+			}
+		}
+
+		if ((uxBits & WIFI_MANAGER_REQUEST_PING_TEST))
+		{
+			wifi_manager_check_connection();
+			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
 		}
 	} /* for(;;) */
 	vTaskDelay( (TickType_t)10);
 } /*void wifi_manager*/
 
-
-bool wifi_manager_connected_to_access_point()
+bool wifi_manager_ping_test()
 {
-	return (xEventGroupGetBits(wifi_manager_event_group) & WIFI_MANAGER_WIFI_CONNECTED_BIT);
+	ESP_LOGI(TAG, "Ping test...");
+	struct hostent *hp = gethostbyname("google.com");
+    if (hp == NULL) {
+    	ESP_LOGE(TAG, "gethostbyname() failed\n");
+    	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+    	return false;
+    } else {
+    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
+//       unsigned int i=0;
+//       while ( hp -> h_addr_list[i] != NULL) {
+//    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
+//          i++;
+//       }
+//       printf("\n");
+       xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+       return true;
+    }
 }
 
+void wifi_manager_check_connection_async()
+{
+	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
+}
+
+bool wifi_manager_check_connection()
+{
+	return (wifi_manager_connected_to_access_point()) ? wifi_manager_ping_test() : false;
+}

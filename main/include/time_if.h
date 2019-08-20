@@ -28,7 +28,7 @@ time_t time_gmtime(void);
 *
 * @return
 */
-void sntp_initialize(void);
+int sntp_initialize(void);
 
 
 /*

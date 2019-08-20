@@ -31,7 +31,7 @@
 #define THIRTY_SECONDS_COUNT 30
 #define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
-extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
+extern const uint8_t ca_pem_start[] asm("_binary_tetradca_pem_start");
 extern int WIFI_MANAGER_STA_DISCONNECT_BIT;
 
 static const char* TAG = "MQTT";
@@ -65,6 +65,8 @@ esp_mqtt_client_config_t getMQTT_Config(){
 			.event_handle = mqtt_event_handler,
 			.cert_pem = (const char *)ca_pem_start,
 	};
+
+	ESP_LOGI(TAG, "MQTT Credentials:\n\rHost:\t%s\n\rUsername:\t%s\n\rPassword:\t%s\n\rPort:\t%i\n\rCert:\t%s\n\r", CONFIG_MQTT_HOST, CONFIG_MQTT_USERNAME, CONFIG_MQTT_PASSWORD, MQTT_SSL_DEFAULT_PORT, (const char *)ca_pem_start);
 	return mqtt_cfg;
 }
 
@@ -271,7 +273,7 @@ void data_task()
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*5);
+		vTaskDelay(ONE_SECOND_DELAY * 5);
 	}
 }
 /*
@@ -285,6 +287,9 @@ void MQTT_Initialize(void)
 {
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
 	app_getmac(DEVICE_MAC);
+	if (task_mqtt != NULL){
+		vTaskDelete(task_mqtt);
+	}
 	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 

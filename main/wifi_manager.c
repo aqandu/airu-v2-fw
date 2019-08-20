@@ -652,6 +652,7 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 
 void wifi_manager( void * pvParameters ){
 
+	esp_err_t err;
 	ESP_LOGI(TAG, "wifi_manager task Started");
 	/* memory allocation of objects used by the task */
 	wifi_manager_json_mutex = xSemaphoreCreateMutex();
@@ -887,14 +888,12 @@ void wifi_manager( void * pvParameters ){
 					ESP_LOGI(TAG, "AirU obtained an IP address from AP\n\r");
 					wifi_manager_save_sta_config();
 
-					if (!initializeTNTPAndMQTT) {
-						/* Start SNTP */
-						sntp_initialize();
-						initializeTNTPAndMQTT = true;
-					}
-					vTaskDelay( 10*ONE_SECOND_DELAY);
+					/* Start SNTP */
+					err = sntp_initialize();
+
 					/* Start MQTT */
 					MQTT_Initialize();
+
 				}
 				else{
 					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");

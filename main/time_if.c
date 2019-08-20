@@ -47,7 +47,7 @@ static time_t _sntp_obtain_time(void)
     // wait for time to be set
     time_t now = 0;
     int retry = 0;
-    const int retry_count = 50;
+    const int retry_count = 10;
 
     while(now < (time_t) SEC_JAN1_2018 && ++retry < retry_count) {
         ESP_LOGI(TAG, "Waiting for system time to be set... [%d / %d]", retry, retry_count);
@@ -101,7 +101,7 @@ void sntp_wifi_connected()
 *
 * @return	N/A
 */
-void sntp_initialize(void)
+int sntp_initialize(void)
 {
 	time_t now;
 	struct tm timeinfo;
@@ -114,6 +114,7 @@ void sntp_initialize(void)
 //    xEventGroupWaitBits(ntp_event_group, WIFI_CONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
 	ESP_LOGI(TAG, "Initializing SNTP");
 
+	sntp_stop(); // in case it was already connected
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
     sntp_setservername(1, "north-america.pool.ntp.org");
@@ -122,7 +123,7 @@ void sntp_initialize(void)
     sntp_setservername(4, "129.6.15.29");
     sntp_init();
 
-    // Set timezone to Eastern Standard Time and print local time
+    // Set timezone to GMT
     setenv("TZ", "Etc/GMT", 1);
     tzset();
 
@@ -137,6 +138,8 @@ void sntp_initialize(void)
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     ESP_LOGI(TAG, "NTP Time Set! The current GMT date/time is: %s", strftime_buf);
+
+    return (timeinfo.tm_year < (2016 - 1900)) ? -1 : 0;
 }
 
 

@@ -94,18 +94,19 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   msg_id = esp_mqtt_client_subscribe(this_client, MQTT_CLIENT_SUBCRIBE_TPC, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/%s", DEVICE_MAC);
+		   sprintf(tmp, "%s/%s", MQTT_TOPIC_PREFIX, DEVICE_MAC);
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-		   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/ack/v2/%s", DEVICE_MAC);
+		   sprintf(tmp, "%s/ack/v2/%s", MQTT_TOPIC_PREFIX, DEVICE_MAC);
 		   time_t now;
 		   time(&now);
 		   sprintf(tmp2, " - %lu", now);
 		   json_buf = malloc(512);
 		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
 		   strcat(json_buf, tmp2);
+		   ESP_LOGI(TAG, "\n\rtopic: %s\n\rmsg: %s\n\r", tmp, json_buf);
 		   MQTT_Publish((const char*) tmp, json_buf, 2);
 		   free(json_buf);
 		   break;
@@ -271,7 +272,7 @@ void data_task()
 		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
 		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
-		vTaskDelay(ONE_SECOND_DELAY*5);
+		vTaskDelay(ONE_SECOND_DELAY * 60);
 	}
 }
 /*

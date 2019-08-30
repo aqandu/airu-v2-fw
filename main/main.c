@@ -119,7 +119,7 @@ void data_task()
 {
 	pm_data_t pm_dat;
 	double temp, hum;
-	uint16_t co, nox;
+	int co, nox;
 	esp_gps_t gps;
 	char *pkt;
 	uint64_t uptime = 0;
@@ -136,7 +136,7 @@ void data_task()
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
+		MICS4514_Poll(&nox, &co);
 		GPS_Poll(&gps);
 
 		uptime = esp_timer_get_time() / 1000000;

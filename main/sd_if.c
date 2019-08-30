@@ -181,7 +181,7 @@ esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
 
     // Write the header if it's a new file
     if (!exists) {
-    	fprintf(f, "%s", SD_HDR);
+    	fprintf(f, "%s", DATA_HEADER);
     }
 
     // Write the data

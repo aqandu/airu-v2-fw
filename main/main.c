@@ -32,7 +32,7 @@ Notes:
 			similar to PM UART, where every sample that comes in gets parsed.
 			Accumulate the last X measurements, and when we publish over MQTT
 			take an average and send it. We need the GPS location to be the same
-			within 4 decimal points.
+			within 4 decimal points, so we can use it as a tag in InfluxDB.
 */
 
 
@@ -58,6 +58,7 @@ Notes:
 #include "lwip/err.h"
 #include "lwip/netdb.h"
 
+#include "app_utils.h"
 #include "http_server_if.h"
 #include "wifi_manager.h"
 #include "pm_if.h"
@@ -68,6 +69,8 @@ Notes:
 #include "gps_if.h"
 #include "ota_if.h"
 #include "led_if.h"
+#include "sd_if.h"
+#include "http_file_upload.h"
 
 
 /* GPIO */
@@ -76,14 +79,27 @@ Notes:
 #define STAT3_LED 18
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
+#define ONE_MIN 					60
+#define ONE_HR						ONE_MIN * 60
+#define ONE_DAY						ONE_HR * 24
+#define FILE_UPLOAD_WAIT_TIME_SEC	30 //ONE_HR * 6
+
+
 static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
-static TaskHandle_t task_data = NULL;
+static TaskHandle_t data_task_handle = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
+static TaskHandle_t task_uploadcsv = NULL;
+static TaskHandle_t task_offlinetracker = NULL;
 static const char *TAG = "AIRU";
-static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
+static const char *TAG_OFFLINE_TRACKER = "OFFLINE";
+static const char *TAG_UPLOAD = "UPLOAD";
+
+const char file_upload_nvs_namespace[] = "fileupload";
+const char* earliest_missed_data_ts = "offline";
+const char* last_upload_ts = "lastup";
 
 /**
  * @brief RTOS task that periodically prints the heap memory available.
@@ -91,7 +107,7 @@ static const char *MQTT_PKT = "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive
  */
 void monitoring_task(void *pvParameter)
 {
-	for(;;){
+	while(1){
 		printf("free heap: %d\n",esp_get_free_heap_size());
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 	}
@@ -100,77 +116,109 @@ void monitoring_task(void *pvParameter)
 /*
  * Data gather task
  */
-void data_task(void *pvParameters)
+void data_task()
 {
 	pm_data_t pm_dat;
 	double temp, hum;
-	uint16_t co, nox;
+	int co, nox;
 	esp_gps_t gps;
-	char mqtt_pkt[MQTT_PKT_LEN];
+	char *pkt;
 	uint64_t uptime = 0;
+	uint64_t hr, rm;
+	time_t now;
+	struct tm tm;
+	char strftime_buf[64];
+	uint8_t min, sec, system_time;
 
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	for(;;){
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Data Task...");
+	app_getmac(DEVICE_MAC);
+
+	while (1) {
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&co, &nox);
+		MICS4514_Poll(&nox, &co);
 		GPS_Poll(&gps);
 
 		uptime = esp_timer_get_time() / 1000000;
+
+		pkt = malloc(MQTT_PKT_LEN);
 
 		//
 		// Send data over MQTT
 		//
 
-		// Prepare the packet
-		/* "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%lu\,Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,
-		 * PM1\=%.2f\,PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu";
-		 */
-		bzero(mqtt_pkt, MQTT_PKT_LEN);
-		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-									uptime, 		/* secActive */
-									gps.alt,		/* Altitude */
-									gps.lat, 		/* Latitude */
-									gps.lon, 		/* Longitude */
-									pm_dat.pm1,		/* PM1 */
-									pm_dat.pm2_5,	/* PM2.5 */
-									pm_dat.pm10, 	/* PM10 */
-									temp,			/* Temperature */
-									hum,			/* Humidity */
-									co,				/* CO */
-									nox				/* NOx */);
-		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt);
-		printf("\nMQTT Publish Topic: %s\n", MQTT_DAT_TPC);
-		printf("Packet: %s\n", mqtt_pkt);
-//		printf("\n\rPM:\t%.2f\n\rT/H:\t%.2f/%.2f\n\rCO/NOx:\t%d/%d\n\n\r", pm_dat.pm2_5, temp, hum, co, nox);
-//		printf("Date: %02d/%02d/%d %02d:%02d:%02d\n", gps.month, gps.day, gps.year, gps.hour, gps.min, gps.sec);
-//		printf("GPS: %.4f, %.4f\n", gps.lat, gps.lon);
-//		printf("Uptime: %llu\n", uptime);
+		sprintf(pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
+							   uptime, 			/* secActive */
+							   gps.alt,			/* Altitude */
+							   gps.lat, 		/* Latitude */
+							   gps.lon, 		/* Longitude */
+							   pm_dat.pm1,		/* PM1 */
+							   pm_dat.pm2_5,	/* PM2.5 */
+							   pm_dat.pm10, 	/* PM10 */
+							   temp,			/* Temperature */
+							   hum,				/* Humidity */
+							   co,				/* CO */
+							   nox);			/* NOx */
 
-		//
-		// Save data to the SD card
-		//
+		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
+		MQTT_Publish_Data(pkt);
 
+		/************************************
+		 * Save to SD Card
+		 *************************************/
+		time(&now);
+		localtime_r(&now, &tm);
+		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
 
+		if (gps.year <= 18 || gps.year >= 80){
+			hr = uptime / 3600;
+			rm = uptime % 3600;
+			min = rm / 60;
+			sec = rm % 60;
+
+			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
+			system_time = 1;	// Using system time
+		}
+		else {
+			sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
+			system_time = 0;	// Using GPS time
+		}
+
+		sprintf(pkt, SD_PKT, strftime_buf,
+							 DEVICE_MAC,
+							 MQTT_DATA_PUB_TOPIC,
+							 uptime,
+							 gps.alt,
+							 gps.lat,
+							 gps.lon,
+							 pm_dat.pm1,
+							 pm_dat.pm2_5,
+							 pm_dat.pm10,
+							 temp,
+							 hum,
+							 co,
+							 nox);
+
+		sd_write_data(pkt, gps.year, gps.month, gps.day);
+		periodic_timer_callback(NULL);
+
+		free(pkt);
+
+		vTaskDelay(ONE_SECOND_DELAY * DATA_WRITE_PERIOD_SEC);
 	}
 }
 
-
 void app_main()
 {
-//	esp_log_level_set("*", ESP_LOG_INFO);
-
 	/* initialize flash memory */
 	nvs_flash_init();
 
-	uint8_t tmp[6];
-	esp_efuse_mac_get_default(tmp);
-	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+	app_getmac(DEVICE_MAC);
 
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+    ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "IDF version: %s", esp_get_idf_version());
 
 	/* Initialize the LED Driver */
 	LED_Initialize();
@@ -187,6 +235,9 @@ void app_main()
 	/* Initialize the MICS Driver */
 	MICS4514_Initialize();
 
+	/* Initialize the SD Card Driver */
+	SD_Initialize();
+
 	/* start the HTTP Server task */
 	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
@@ -196,15 +247,21 @@ void app_main()
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
-	/* start the OTA task */
-	vTaskDelay(5000 / portTICK_PERIOD_MS);
-	xTaskCreate(&ota_task, "ota_task", 2048, NULL, 6, NULL);
-
-	/* start the data task */
-	xTaskCreate(&data_task, "data_task", 4096, NULL, 2, &task_data);
-
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+
+	/* start the data gather task */
+	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+
+	/* SNTP_Initialize() and MQTT_Initialize() must go below the tasks
+	 * because we create some mutexes in the tasks that these functions use.
+	 */
+
+	/* Initialize SNTP */
+	SNTP_Initialize();
+
+	/* Initialize MQTT */
+	MQTT_Initialize();
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

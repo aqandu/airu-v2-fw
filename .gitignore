@@ -2,3 +2,9 @@
 build/
 .DS_Store
 .settings/
+.cproject
+sdkconfig
+server_certs/
+Firmware-Updates/
+.gitsecret/keys/random_seed
+!*.secret

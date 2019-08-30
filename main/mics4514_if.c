@@ -66,8 +66,8 @@ void MICS4514_Initialize(void)
 	check_efuse();
 
 	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC_CHANNEL_5, ADC_ATTEN_DB_11); 	// Pin 9, GPIO33
-	adc1_config_channel_atten(ADC_CHANNEL_3, ADC_ATTEN_DB_11);	// Pin 5, GPIO39
+	adc1_config_channel_atten(ADC_CHANNEL_6, ADC_ATTEN_DB_11); 	// WROOM Pin 6 - GPIO 34 - OX - NOx
+	adc1_config_channel_atten(ADC_CHANNEL_7, ADC_ATTEN_DB_11);	// WROOM Pin 7 - GPIO 35 - RE - CO
 
 	//Characterize ADC
 	adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
@@ -83,20 +83,22 @@ void MICS4514_Initialize(void)
 /*
  *
  */
-void MICS4514_Poll(uint16_t *ox_val, uint16_t *red_val)
+void MICS4514_Poll(int *ox_val, int *red_val)
 {
-	*ox_val = 0;
-	*red_val = 0;
+	int64_t ch6 = 0;
+	int64_t ch7 = 0;
 
 	for (int i = 0; i < NO_OF_SAMPLES; i++) {
-		*ox_val  += adc1_get_raw(ADC_CHANNEL_5);
-		*red_val += adc1_get_raw(ADC_CHANNEL_3);
+		ch6 += adc1_get_raw(ADC_CHANNEL_6);
+		ch7 += adc1_get_raw(ADC_CHANNEL_7);
 	}
-	*ox_val  /= NO_OF_SAMPLES;
-	*red_val /= NO_OF_SAMPLES;
+	ch6 /= NO_OF_SAMPLES;
+	ch7 /= NO_OF_SAMPLES;
 
 	//Convert adc_reading to voltage in mV
-	*ox_val = esp_adc_cal_raw_to_voltage(*ox_val, adc_chars);
-	*red_val = esp_adc_cal_raw_to_voltage(*red_val, adc_chars);
+	*ox_val  = (int) ch6;
+	*red_val = (int) ch7;
+//	*ox_val  = esp_adc_cal_raw_to_voltage(ch6, adc_chars);
+//	*red_val = esp_adc_cal_raw_to_voltage(ch7, adc_chars);
 	return;
 }

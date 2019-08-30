@@ -183,7 +183,6 @@ static esp_err_t _ota_commence()
 
     if (esp_partition_check_identity(esp_ota_get_running_partition(), update_partition) == true) {
         ESP_LOGI(TAG, "The current running firmware is same as the firmware just downloaded");
-        int i = 0;
         ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button to download it");
         return ESP_FAIL;
 //        while(1) {

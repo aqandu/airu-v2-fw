@@ -13,6 +13,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
+#define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
+
 #define SHA256_HASH_LEN 32	 		/* SHA-256 digest length */
 #define WIFI_CONNECTED_BIT BIT0		/* IP address obtained */
 #define OTA_REQUEST_BIT BIT1		/* OTA request recieved over MQTT */
@@ -27,6 +29,9 @@ EventGroupHandle_t wifi_event_group;
 * @return 	N/A
 */
 void __attribute__((noreturn)) task_fatal_error(const char *TAG);
+
+
+void app_getmac(char *mac);
 
 
 /*

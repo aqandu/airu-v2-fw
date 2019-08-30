@@ -37,6 +37,9 @@ Contains the freeRTOS task and all necessary support
 extern "C" {
 #endif
 
+#include "esp_wifi_types.h"
+#include "tcpip_adapter.h"
+#include "esp_event_legacy.h"
 /**
  * @brief If WIFI_MANAGER_DEBUG is defined, additional debug information will be sent to the standard output.
  */
@@ -320,6 +323,20 @@ esp_err_t wifi_manager_save_wifi_settings();
  */
 bool wifi_manager_connected_to_access_point();
 
+/**
+ * @brief Ping www.google.com. If successful, we have Internet.
+ */
+bool wifi_manager_check_connection();
+
+/**
+ * @brief set bit to check internet connection with ping test
+ */
+void wifi_manager_check_connection_async();
+
+EventBits_t wifi_manager_wait_connect();
+EventBits_t wifi_manager_wait_disconnect();
+EventBits_t wifi_manager_wait_internet_access();
+//void wifi_manager_ping_test(void);
 #ifdef __cplusplus
 }
 #endif

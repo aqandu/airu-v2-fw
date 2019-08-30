@@ -9,7 +9,7 @@
 #define MAIN_INCLUDE_MQTT_IF_H_
 
 #define MQTT_PKT_LEN 			256
-#define DATA_WRITE_PERIOD_SEC	5
+#define DATA_WRITE_PERIOD_SEC	60
 
 #define MQTT_ROOT_TOPIC 		"airu" 							/* "offline" */
 #define MQTT_DATA_PUB_TOPIC 	MQTT_ROOT_TOPIC "/influx"

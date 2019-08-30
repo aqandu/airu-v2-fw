@@ -128,7 +128,6 @@ void data_task()
 	struct tm tm;
 	char strftime_buf[64];
 	uint8_t min, sec, system_time;
-	const char* SD_PKT = "%s,%s,%lu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n";
 
 	app_getmac(DEVICE_MAC);
 
@@ -163,6 +162,9 @@ void data_task()
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
 		MQTT_Publish_Data(pkt);
 
+		/************************************
+		 * Save to SD Card
+		 *************************************/
 		time(&now);
 		localtime_r(&now, &tm);
 		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
@@ -197,7 +199,6 @@ void data_task()
 							 co,
 							 nox);
 
-		ESP_LOGI(TAG, "SD PACKET:\n\r%s", pkt);
 		sd_write_data(pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
 

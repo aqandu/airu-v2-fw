@@ -89,14 +89,16 @@ void MICS4514_Poll(int *ox_val, int *red_val)
 	int64_t ch7 = 0;
 
 	for (int i = 0; i < NO_OF_SAMPLES; i++) {
-		ch6  += adc1_get_raw(ADC_CHANNEL_6);
+		ch6 += adc1_get_raw(ADC_CHANNEL_6);
 		ch7 += adc1_get_raw(ADC_CHANNEL_7);
 	}
-	ch6  /= NO_OF_SAMPLES;
+	ch6 /= NO_OF_SAMPLES;
 	ch7 /= NO_OF_SAMPLES;
 
 	//Convert adc_reading to voltage in mV
-	*ox_val  = esp_adc_cal_raw_to_voltage(ch6, adc_chars);
-	*red_val = esp_adc_cal_raw_to_voltage(ch7, adc_chars);
+	*ox_val  = (int) ch6;
+	*red_val = (int) ch7;
+//	*ox_val  = esp_adc_cal_raw_to_voltage(ch6, adc_chars);
+//	*red_val = esp_adc_cal_raw_to_voltage(ch7, adc_chars);
 	return;
 }

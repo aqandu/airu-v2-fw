@@ -34,7 +34,6 @@
 #define MAX_MUTEX_WAIT_TICKS ((MAX_MUTEX_WAIT_MS + portTICK_PERIOD_MS - 1) / portTICK_PERIOD_MS)
 
 static const char *TAG = "SD";
-static const char *DATA_HEADER = "time,ID,SensorModel,Altitude,CO,Humidity,Latitude,Longitude,NO,PM1,PM10,PM2.5,SecActive,Temperature,topic\n";
 static sdmmc_card_t* card = NULL;
 SemaphoreHandle_t s_log_mutex = NULL;
 // Share object, need synchronization

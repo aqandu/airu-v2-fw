@@ -6,3 +6,5 @@ build/
 sdkconfig
 server_certs/
 Firmware-Updates/
+.gitsecret/keys/random_seed
+!*.secret

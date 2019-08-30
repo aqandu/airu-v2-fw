@@ -31,7 +31,7 @@
 #define THIRTY_SECONDS_COUNT 30
 #define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
-extern const uint8_t ca_pem_start[] asm("_binary_tetradca_pem_start");
+extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern int WIFI_MANAGER_STA_DISCONNECT_BIT;
 
 static const char* TAG = "MQTT";
@@ -66,7 +66,6 @@ esp_mqtt_client_config_t getMQTT_Config(){
 			.cert_pem = (const char *)ca_pem_start,
 	};
 
-	ESP_LOGI(TAG, "MQTT Credentials:\n\rHost:\t%s\n\rUsername:\t%s\n\rPassword:\t%s\n\rPort:\t%i\n\rCert:\t%s\n\r", CONFIG_MQTT_HOST, CONFIG_MQTT_USERNAME, CONFIG_MQTT_PASSWORD, MQTT_SSL_DEFAULT_PORT, (const char *)ca_pem_start);
 	return mqtt_cfg;
 }
 
@@ -93,12 +92,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_CONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 		   client_connected = true;
-//<<<<<<< HEAD
-//		   msg_id = esp_mqtt_client_subscribe(this_client, MQTT_CLIENT_SUBCRIBE_TPC, 2);
-//		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-//
-//		   sprintf(tmp, "%s/%s", MQTT_TOPIC_PREFIX, DEVICE_MAC);
-//=======
 
 		   // Subscribe to "all" topic
 		   msg_id = esp_mqtt_client_subscribe(this_client, MQTT_SUB_ALL_TOPIC, 2);
@@ -106,29 +99,21 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   // Subscribe to "device" topic
 		   sprintf(tmp, "%s/%s", MQTT_ROOT_TOPIC, DEVICE_MAC);
-//>>>>>>> csvupload
+
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-//<<<<<<< HEAD
-//		   sprintf(tmp, "%s/ack/v2/%s", MQTT_TOPIC_PREFIX, DEVICE_MAC);
-//=======
 		   // Respond to "ack" topic that we're online
 		   sprintf(tmp, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
-//>>>>>>> csvupload
+
 		   time_t now;
 		   time(&now);
 		   sprintf(tmp2, " - %lu", now);
 		   json_buf = malloc(512);
 		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
 		   strcat(json_buf, tmp2);
-//<<<<<<< HEAD
-//		   ESP_LOGI(TAG, "\n\rtopic: %s\n\rmsg: %s\n\r", tmp, json_buf);
-//		   MQTT_Publish((const char*) tmp, json_buf, 2);
-//=======
 		   MQTT_Publish_General((const char*) tmp, json_buf, 2);
-//>>>>>>> csvupload
 		   free(json_buf);
 		   break;
 
@@ -179,13 +164,10 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   }
 
 		   else if (strcmp(tok, "ping") == 0){
-//<<<<<<< HEAD
-//			   sprintf(tmp, ""MQTT_TOPIC_PREFIX"/ack/v2/%s", DEVICE_MAC);
-//			   MQTT_Publish(tmp, "pong", 2);
-//=======
+
 			   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
 			   MQTT_Publish_General(tmp, "pong", 2);
-//>>>>>>> csvupload
+
 			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
 		   }
 
@@ -212,8 +194,6 @@ void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Got internet access. Connecting...");
 	MQTT_Connect();
 
-//	EventBits_t uxBits;
-
 	while(1) {
 
 		// Wait for a disconnect event
@@ -224,86 +204,7 @@ void mqtt_task(void* pvParameters){
 		wifi_manager_wait_internet_access();
 		ESP_LOGI(TAG, "WIFI reconnected");
 		MQTT_Connect();
-
-//<<<<<<< HEAD
-//	while (1) {
-//
-//		PMS_Poll(&pm_dat);
-//		HDC1080_Poll(&temp, &hum);
-//		MICS4514_Poll(&co, &nox);
-//		GPS_Poll(&gps);
-//
-//		uptime = esp_timer_get_time() / 1000000;
-//
-//		//
-//		// Send data over MQTT
-//		//
-//		bzero(mqtt_pkt, MQTT_PKT_LEN);
-//		sprintf(mqtt_pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-//									uptime, 		/* secActive */
-//									gps.alt,		/* Altitude */
-//									gps.lat, 		/* Latitude */
-//									gps.lon, 		/* Longitude */
-//									pm_dat.pm1,		/* PM1 */
-//									pm_dat.pm2_5,	/* PM2.5 */
-//									pm_dat.pm10, 	/* PM10 */
-//									temp,			/* Temperature */
-//									hum,			/* Humidity */
-//									co,				/* CO */
-//									nox				/* NOx */);
-//
-//		time_t now;
-//		struct tm tm;
-//		char strftime_buf[64];
-//		time(&now);
-//		localtime_r(&now, &tm);
-//		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-//		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-//
-//		if (gps.year <= 18 || gps.year >= 80){
-//			hr = uptime / 3600;
-//			rm = uptime % 3600;
-//			min = rm / 60;
-//			sec = rm % 60;
-//
-//			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
-//			system_time = 1;	// Using system time
-//		}
-//		else {
-//			sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
-//			system_time = 0;	// Using GPS time
-//		}
-//
-//		sprintf(sd_pkt, SD_PKT,     strftime_buf,
-//		                            DEVICE_MAC,
-//		                            uptime,
-//		                            gps.alt,
-//		                            gps.lat,
-//		                            gps.lon,
-//		                            pm_dat.pm1,
-//		                            pm_dat.pm2_5,
-//		                            pm_dat.pm10,
-//		                            temp,
-//		                            hum,
-//		                            co,
-//		                            nox,
-//									system_time);
-//
-//		ESP_LOGI(TAG, "%s", mqtt_pkt);
-//		MQTT_Publish(MQTT_DAT_TPC, mqtt_pkt, 2);
-//		sd_write_data(sd_pkt, gps.year, gps.month, gps.day);
-//		periodic_timer_callback(NULL);
-//		vTaskDelay(ONE_SECOND_DELAY * 60);
-//
-//=======
-//		if (uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT) {
-//			break;
-//		}
-//>>>>>>> csvupload
 	}
-//	printf("\nDeleting mqtt_task\n");
-//	MQTT_wifi_disconnected();			// Stop the mqtt client and free all the memory
-//	vTaskDelete(NULL);
 }
 
 /*

@@ -5,8 +5,6 @@
  *      Author: tombo
  */
 
-#include "app_utils.h"
-
 #include <string.h>
 #include "esp_system.h"
 #include "esp_log.h"
@@ -20,6 +18,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "app_utils.h"
 
 const char* TAG = "APP";
 char DEVICE_MAC[13] = {0};

@@ -23,7 +23,7 @@
 #define SD_LOG_FILE_NAME 				"/sdcard/LOGGING-0.log"
 #define SD_LOG_FILE_MOST_RECENT_NAME 	"/sdcard/LOGGING-15.log"
 #define SD_LOG_FILE_FORMAT 				"/sdcard/LOGGING-%02d.log"
-#define MOUNT_CONFIG_MAXFILE 			20
+#define MOUNT_CONFIG_MAXFILE 			4000
 #define MOUNT_CONFIG_MAXLOGFILE 		15
 #define MAX_FILE_SIZE_MB 				1
 #define MAX_LOG_PKG_LENGTH 				256
@@ -84,10 +84,10 @@ esp_err_t SD_Initialize(void)
     // Internal pull-ups are not sufficient. However, enabling internal pull-ups
     // does make a difference some boards, so we do that here.
     gpio_set_pull_mode(15, GPIO_PULLUP_ONLY);   // CMD, needed in 4- and 1- line modes
-    gpio_set_pull_mode(2, GPIO_PULLUP_ONLY);    // D0, needed in 4- and 1-line modes
-    gpio_set_pull_mode(4, GPIO_PULLUP_ONLY);    // D1, needed in 4-line mode only
-    gpio_set_pull_mode(12, GPIO_PULLUP_ONLY);   // D2, needed in 4-line mode only
-    gpio_set_pull_mode(13, GPIO_PULLUP_ONLY);   // D3, needed in 4- and 1-line modes
+    gpio_set_pull_mode(2,  GPIO_PULLUP_ONLY);   // D0,  needed in 4- and 1-line modes
+    gpio_set_pull_mode(4,  GPIO_PULLUP_ONLY);   // D1,  needed in 4-line mode only
+    gpio_set_pull_mode(12, GPIO_PULLUP_ONLY);   // D2,  needed in 4-line mode only
+    gpio_set_pull_mode(13, GPIO_PULLUP_ONLY);   // D3,  needed in 4- and 1-line modes
 
 #else
     ESP_LOGI(TAG, "Using SPI peripheral");

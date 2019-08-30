@@ -113,11 +113,7 @@ void sntp_wifi_connected()
 *
 * @return	N/A
 */
-//<<<<<<< HEAD
-//int sntp_initialize(void)
-//=======
-void SNTP_Initialize(void)
-//>>>>>>> csvupload
+int SNTP_Initialize(void)
 {
 	time_t now;
 	struct tm timeinfo;

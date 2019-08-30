@@ -51,6 +51,8 @@ Contains the freeRTOS task and all necessary support
 #include "lwip/inet.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/dns.h"
+#include "esp_ping.h"
+#include "ping/ping.h"
 
 #include "json.h"
 #include "wifi_manager.h"
@@ -59,14 +61,17 @@ Contains the freeRTOS task and all necessary support
 //#include "time_if.h"
 //#include "mqtt_if.h"
 
+#define str(x) #x
+#define xstr(x) str(x)
+
+#define MS2TICK(ms) (( ms / portTICK_PERIOD_MS ))
 #define THIRTY_SECONDS_TIMEOUT (30000 / portTICK_PERIOD_MS)
 #define ONE_SECOND_DELAY (1000 / portTICK_PERIOD_MS)
-#define RECONNECT_RETRY_PERIOD 60 * ONE_SECOND_DELAY
+#define RECONNECT_RETRY_PERIOD 30 * ONE_SECOND_DELAY
+#define PING_TEST_TIMEOUT_MS 3000
 
 static const char* TAG = "WIFI_MANAGER";
 static TimerHandle_t wifi_reconnect_timer;
-static bool initializeTNTPAndMQTT = false;
-//static const char* HDL = "WIFI-HANDLER";
 
 SemaphoreHandle_t wifi_manager_json_mutex = NULL;
 uint16_t ap_num = MAX_AP_NUM;
@@ -77,6 +82,7 @@ char *reg_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
 
 static void vTimerCallback(TimerHandle_t xTimer);
+static void wifi_manager_ping_test(void);
 
 /**
  * The actual WiFi settings in use
@@ -170,7 +176,7 @@ bool wifi_manager_connected_to_access_point(){
  */
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-	ESP_LOGI(TAG, "Reconnect timer called");
+	ESP_LOGI(TAG, "TIMER: Reconnect timer done. Setting WIFI_MANAGER_REQUEST_RECONNECT Bit.");
 	xTimerStop(xTimer, 0);
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 }
@@ -539,7 +545,6 @@ char* wifi_manager_get_ap_list_json(){
 
 esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 {
-	ESP_LOGI(TAG, "Event Handler Event ID: %d", event->event_id);
     switch(event->event_id) {
 
     case SYSTEM_EVENT_AP_START:
@@ -827,6 +832,9 @@ void wifi_manager( void * pvParameters ){
 						  pdFALSE, (void *)NULL,
 						  vTimerCallback);
 
+	// Do an initial scan so we have something ready when the user gets to the webpage
+	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
+
 	EventBits_t uxBits;
 	for(;;){
 
@@ -920,29 +928,18 @@ void wifi_manager( void * pvParameters ){
 					ESP_LOGI(TAG, "AirU obtained an IP address from AP\n\r");
 					wifi_manager_save_sta_config();
 
-//<<<<<<< HEAD
-//					/* Start SNTP */
-//					err = sntp_initialize();
-//
-//					/* Start MQTT */
-//					MQTT_Initialize();
-//
-//=======
-					ESP_LOGI(TAG, "Got IP address, ping google.com for testing");
-					wifi_manager_ping_test();
-//					if(wifi_manager_ping_test()){
-//
-//						if (!initializeTNTPAndMQTT) {
-//							/* Start SNTP */
-//							sntp_initialize();
-//							initializeTNTPAndMQTT = true;
-//						}
-//	//					vTaskDelay( 10*ONE_SECOND_DELAY);
-//						/* Start MQTT */
-//						MQTT_Initialize();
-//					}
-					xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-//>>>>>>> csvupload
+					ESP_LOGI(TAG, "Got IP address, ping Google DNS 8.8.8.8 to test internet access");
+					if(wifi_manager_check_connection()){
+						ESP_LOGI(TAG, "Ping success! Got internet access.");
+						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+					}
+					else{
+						// start the timer. When it expires, we'll attempt to reconnect
+						if(!xTimerIsTimerActive(wifi_reconnect_timer)){
+							xTimerStart(wifi_reconnect_timer, 0);
+						}
+						ESP_LOGE(TAG, "Ping test failed! No internet access! Setting request reconnect timer");
+					}
 				}
 				else{
 					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
@@ -993,43 +990,45 @@ void wifi_manager( void * pvParameters ){
 			/* STA is actively trying to connect to an AP that isn't present. Terminate this.
 			 * Web interface will request another scan in a few seconds. */
 			else{
-//				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
+				xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_DISCONNECT);
 			}
 
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 		}
-		else {
-			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
-		}
-
-		if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
+		else if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
 		{
+			ESP_LOGI(TAG, "WIFI Reconnect requested. Checking for saved SSID");
 			wifi_manager_fetch_wifi_sta_config();
 			ESP_LOGI(TAG, "WIFI STA SSID: %s", wifi_manager_config_sta->sta.ssid);
 
 			// If there's an SSID saved in FLASH
 			if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0)
 			{
-				ESP_LOGW(TAG, "WIFI_MANAGER_REQUEST_RECONNECT");
-				ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-				ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, accessp_records));
-
-				for(int i=0; i<ap_num;i++){
-					wifi_ap_record_t ap = accessp_records[i];
-					ESP_LOGD(TAG, "[%s] ?? [%s]\n", ap.ssid, wifi_manager_config_sta->sta.ssid);
-					/* Looking for the most recent network from the available. Skip if theres not */
-					if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
-						ESP_LOGI(TAG, "Found 1 matched SSID: [%s]", wifi_manager_config_sta->sta.ssid);
-						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
-						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-						break;
+				ESP_LOGI(TAG, "Save SSID. Attempting reconnect.");
+				if(esp_wifi_scan_start(&scan_config, true) == ESP_OK){
+					ESP_LOGI(TAG, "WIFI Scan good");
+					if(esp_wifi_scan_get_ap_records(&ap_num, accessp_records) == ESP_OK){
+						ESP_LOGI(TAG, "Got records");
+						for(int i=0; i<ap_num;i++){
+							wifi_ap_record_t ap = accessp_records[i];
+							if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
+								ESP_LOGI(TAG, "Found 1 matched SSID in vicinity: [%s]. Will restart reconnect attempt timer.", wifi_manager_config_sta->sta.ssid);
+								xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+								xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+								break;
+							}
+						}
 					}
 				}
 
 				// Restart the timer if we didn't just turn off the reconnect request
-				if((uxBits & xEventGroupGetBits(wifi_manager_event_group))){
+				if((WIFI_MANAGER_REQUEST_RECONNECT & xEventGroupGetBits(wifi_manager_event_group))){
+					ESP_LOGI(TAG, "SSID in vicinity. Restarting reconnect timer.");
 					xTimerStart(wifi_reconnect_timer, 0);
+				}
+				else{
+					ESP_LOGI(TAG, "WIFI_MANAGER_REQUEST_RECONNECT was disabled because stored SSID is not in vicinity. Timer was not reloaded.");
 				}
 			}
 
@@ -1038,6 +1037,11 @@ void wifi_manager( void * pvParameters ){
 				xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 			}
 		}
+		else {
+			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
+		}
+
+
 
 		if ((uxBits & WIFI_MANAGER_REQUEST_PING_TEST))
 		{
@@ -1048,25 +1052,37 @@ void wifi_manager( void * pvParameters ){
 	vTaskDelay( (TickType_t)10);
 } /*void wifi_manager*/
 
-bool wifi_manager_ping_test()
-{
-	ESP_LOGI(TAG, "Ping test...");
-	struct hostent *hp = gethostbyname("google.com");
-    if (hp == NULL) {
-    	ESP_LOGE(TAG, "gethostbyname() failed\n");
-    	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
-    	return false;
-    } else {
-    	ESP_LOGI(TAG, "We are able to ping %s = ", hp->h_name);
-//       unsigned int i=0;
-//       while ( hp -> h_addr_list[i] != NULL) {
-//    	   ESP_LOGI(TAG, "%s ", inet_ntoa( *( struct in_addr*)( hp -> h_addr_list[i])));
-//          i++;
-//       }
-//       printf("\n");
-       xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
-       return true;
-    }
+
+esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
+	ESP_LOGI("PING", "\n\r\tAvgTime:\t%.1fmS \n\r\tSent:\t\t%d \n\r\tRec:\t\t%d \n\r\tErr Cnt:\t%d  \n\r\tErr:\t\t%d \n\r\tmin(mS):\t%d \n\r\tmax(mS):\t%d \n\r\tResp(mS):\t%d \n\r\tTimeouts:\t%d \n\r\tTotal Time:\t%d\n", (float)pf->total_time/pf->recv_count, pf->send_count, pf->recv_count, pf->err_count, pf->ping_err, pf->min_time, pf->max_time,pf->resp_time, pf->timeout_count, pf->total_time );
+	if (pf->recv_count > 0){
+		ESP_LOGI("PING", "Received a response. ");
+		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+	}
+	else{
+		ESP_LOGE("PING", "Couldn't ping 8.8.8.8. Internet is down!");
+	}
+
+	return ESP_OK;
+}
+
+static void wifi_manager_ping_test(){
+	uint32_t ping_timeout = PING_TEST_TIMEOUT_MS; 	// ms till we consider it timed out
+	uint32_t ping_count = 1;
+	struct in_addr ip;
+	inet_aton("8.8.8.8", &ip);		// Google's DNS
+
+	ESP_LOGI("PING", "Issuing Ping test. IP binary: 0x%08x", ip.s_addr);
+
+	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+
+	esp_ping_set_target(PING_TARGET_IP_ADDRESS_COUNT, &ping_count, sizeof(uint32_t));
+	esp_ping_set_target(PING_TARGET_RCV_TIMEO, &ping_timeout, sizeof(uint32_t));
+	esp_ping_set_target(PING_TARGET_IP_ADDRESS, &ip.s_addr, sizeof(uint32_t));
+	esp_ping_set_target(PING_TARGET_RES_FN, &pingResults, sizeof(pingResults));
+	ping_init();
+
+	ESP_LOGI("PING", "Ping test results sent to \"pingResults()\"");
 }
 
 void wifi_manager_check_connection_async()
@@ -1076,5 +1092,13 @@ void wifi_manager_check_connection_async()
 
 bool wifi_manager_check_connection()
 {
-	return (wifi_manager_connected_to_access_point()) ? wifi_manager_ping_test() : false;
+	EventBits_t uxBits;
+	if(wifi_manager_connected_to_access_point()){
+		wifi_manager_ping_test();
+		return (WIFI_MANAGER_HAVE_INTERNET_BIT & \
+				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT, pdFALSE, pdTRUE, MS2TICK(PING_TEST_TIMEOUT_MS)));
+	}
+	else{
+		return false;
+	}
 }

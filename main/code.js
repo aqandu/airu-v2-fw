@@ -90,6 +90,7 @@ $(document).ready(function(){
 	});
 
 	$("#join").on("click", function() {
+		console.log("join clicked");
 		performConnect();
 	});
 
@@ -120,6 +121,7 @@ $(document).ready(function(){
 	});
 
 	$("#ok-connect").on("click", function() {
+		console.log("ok-connect clicked");
 		$( "#connect-wait" ).slideUp( "fast", function() {});
 		$( "#wifi" ).slideDown( "fast", function() {});
 	});
@@ -198,14 +200,25 @@ function performConnect(conntype){
 	$( "#connect_manual" ).slideUp( "fast", function() {});
 	$( "#connect-wait" ).slideDown( "fast", function() {});
 
-
+	// selectedSSID = "Tom\'s iPhone";
+	// pwd = "nitroT14";
+	// selectedSSID = "SuckMyGig";
+	// pwd = "yRrMZ4nkhYBo";
+	var hdrs = JSON.stringify({'X-Custom-ssid': selectedSSID, 'X-Custom-pwd': pwd})
+	console.log("HEADERS: " + hdrs);
 	$.ajax({
 		url: '/connect.json',
 		dataType: 'json',
 		method: 'POST',
 		cache: false,
-		headers: { 'X-Custom-ssid': selectedSSID, 'X-Custom-pwd': pwd },
-		data: { 'timestamp': Date.now()}
+		headers: {'X-Custom-ssid': selectedSSID, 'X-Custom-pwd': pwd},
+		// data: JSON.stringify({'timestamp': Date.now()}),
+		success: function(msg){
+			console.log( "Data Saved: " + msg );
+	  	},
+		error: function(XMLHttpRequest, textStatus, errorThrown) {
+			console.log("POST Error. Headers: " + hdrs + "Error: " + errorThrown);
+		}
 	});
 
 
@@ -240,16 +253,16 @@ function performRegistration(){
 }
 
 function lastRegistered(){
-	console.log("Last registered function...");
+	// console.log("Last registered function...");
 	$.getJSON( "/register.json", function( data ) {
 		var h1 = "";
 		var h2 = "";
 		if(data['name'].length > 0){
-			console.log("got data");
+			// console.log("got data");
 			h1 += '<h4>This device was last registered to {0}</h4>'.format(data['name']);
 		}
 		else {
-			console.log("couldn't get data");
+			// console.log("couldn't get data");
 			h1 += '<h4>This device is currently unregistered</h4>';
 		}
 		if(data['macAddress'].length === 0) {
@@ -359,7 +372,7 @@ function refreshAPHTML(data){
 	});
 
 	$( "#wifi-list" ).html(h)
-	console.log("calling lastRegistered from refreshAPHTML");
+	// console.log("calling lastRegistered from refreshAPHTML");
 	lastRegistered();
 }
 

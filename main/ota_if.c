@@ -34,8 +34,8 @@ static char ota_file_basename[OTA_FILE_BN_LEN] = {0};
 
 static const char *TAG = "OTA";
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
-extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
-extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
+//extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
+//extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
 static void _http_cleanup(esp_http_client_handle_t client);
 static esp_err_t _ota_commence( void );
@@ -113,7 +113,7 @@ static esp_err_t _ota_commence()
 
     esp_http_client_config_t config = {
         .url = fn_path,
-        .cert_pem = (char *)server_cert_pem_start,
+//        .cert_pem = (char *)server_cert_pem_start,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
     if (client == NULL) {

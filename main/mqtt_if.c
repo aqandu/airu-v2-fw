@@ -31,7 +31,7 @@
 #define THIRTY_SECONDS_COUNT 30
 #define THIRTY_SECONDS_DELAY THIRTY_SECONDS_COUNT*ONE_SECOND_DELAY
 
-extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
+extern const uint8_t ca_pem_start[] asm("_binary_ca_airu_pem_start");
 extern int WIFI_MANAGER_STA_DISCONNECT_BIT;
 
 static const char* TAG = "MQTT";

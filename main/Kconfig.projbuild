@@ -16,4 +16,47 @@ config MQTT_PASSWORD
 	default "password"
 	help
 		MQTT password for the desired broker.
+
+config MQTT_ROOT_TOPIC
+	string "Root topic (airu, tetrad, etc)"
+	default "airu"
+	help
+		Default topic for MQTT pub/sub
+
+config MQTT_DATA_PUB_TOPIC
+	string "Data publish topic (influx, offline, etc)"
+	default "influx"
+	help
+		Data publish topic (full topic = MQTT_ROOT_TOPIC + '/' + MQTT_DATA_PUB_TOPIC)
+
+config MQTT_SUB_ALL_TOPIC
+	string "Client subscribe all topic"
+	default "all/v2"
+	help
+		Client subscribe topic for mass communication
+
+config DATA_UPLOAD_PERIOD
+	int "Period (s)"
+	default 60
+	help
+		Data upload rate via MQTT and SD data write rate. 
+
+config USE_SD
+	bool "Use the SD card"
+	default y
+	help
+		SD card will be used by the device
+
+config SD_DATA_STORE
+	bool "Store data packets to SD card"
+	default y
+	help
+		Do you want to store samples to the SD card?
+
+config SD_CARD_DEBUG
+	bool "Log messages to the SD card instead of stout"
+	default n
+	help
+		Setting this flag will log LOG[E,W,I] messages to the SD card instead of stdout
+		- If SD card is not available you'll have no output
 endmenu

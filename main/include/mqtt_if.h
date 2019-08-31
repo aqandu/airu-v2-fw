@@ -11,10 +11,9 @@
 #define MQTT_PKT_LEN 			256
 #define DATA_WRITE_PERIOD_SEC	60
 
-#define MQTT_ROOT_TOPIC 		"airu" 							/* "offline" */
-#define MQTT_DATA_PUB_TOPIC 	MQTT_ROOT_TOPIC "/influx"
-#define MQTT_SUB_ALL_TOPIC		MQTT_ROOT_TOPIC "/all/v2"
-#define MQTT_ACK_TOPIC_TMPLT	MQTT_ROOT_TOPIC "/ack/%s"
+#define MQTT_DATA_PUB_TOPIC 	CONFIG_MQTT_ROOT_TOPIC "/" CONFIG_MQTT_DATA_PUB_TOPIC	/* I don't know how to concatonate these in kconfig file" */
+#define MQTT_SUB_ALL_TOPIC		CONFIG_MQTT_ROOT_TOPIC "/" CONFIG_MQTT_SUB_ALL_TOPIC
+#define MQTT_ACK_TOPIC_TMPLT	CONFIG_MQTT_ROOT_TOPIC "/ack/%s"
 
 #define MQTT_PKT "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,"\
 				 "Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,"\

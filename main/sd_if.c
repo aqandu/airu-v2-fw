@@ -27,7 +27,7 @@
 #define MOUNT_CONFIG_MAXLOGFILE 		15
 #define MAX_FILE_SIZE_MB 				1
 #define MAX_LOG_PKG_LENGTH 				256
-#define SD_LOG 							0
+//#define SD_LOG 							0
 
 // Maximum time to wait for the mutex in a logging statement.
 #define MAX_MUTEX_WAIT_MS 30
@@ -130,10 +130,11 @@ esp_err_t SD_Initialize(void)
 
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
-    if(SD_LOG) {
+#ifdef CONFIG_SD_CARD_DEBUG
 		esp_log_set_vprintf(esp_sd_log_write);
 		periodic_timer_callback(NULL);
     }
+#endif
     fs_mounted = true;
     return ret;
 }

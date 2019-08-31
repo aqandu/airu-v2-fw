@@ -97,7 +97,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
 		   // Subscribe to "device" topic
-		   sprintf(tmp, "%s/%s", MQTT_ROOT_TOPIC, DEVICE_MAC);
+		   sprintf(tmp, "%s/%s", CONFIG_MQTT_ROOT_TOPIC, DEVICE_MAC);
 
 		   ESP_LOGI(TAG, "Subscribing to: %s", tmp);
 		   msg_id = esp_mqtt_client_subscribe(this_client, (const char*) tmp, 2);

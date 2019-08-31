@@ -69,7 +69,9 @@ Notes:
 #include "gps_if.h"
 #include "ota_if.h"
 #include "led_if.h"
+#ifdef CONFIG_USE_SD
 #include "sd_if.h"
+#endif
 #include "http_file_upload.h"
 
 
@@ -101,17 +103,17 @@ const char file_upload_nvs_namespace[] = "fileupload";
 const char* earliest_missed_data_ts = "offline";
 const char* last_upload_ts = "lastup";
 
-/**
- * @brief RTOS task that periodically prints the heap memory available.
- * @note Pure debug information, should not be ever started on production code!
- */
-void monitoring_task(void *pvParameter)
-{
-	while(1){
-		printf("free heap: %d\n",esp_get_free_heap_size());
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
-	}
-}
+///**
+// * @brief RTOS task that periodically prints the heap memory available.
+// * @note Pure debug information, should not be ever started on production code!
+// */
+//void monitoring_task(void *pvParameter)
+//{
+//	while(1){
+//		printf("free heap: %d\n",esp_get_free_heap_size());
+//		vTaskDelay(5000 / portTICK_PERIOD_MS);
+//	}
+//}
 
 /*
  * Data gather task
@@ -163,6 +165,7 @@ void data_task()
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
 		MQTT_Publish_Data(pkt);
 
+#ifdef CONFIG_SD_DATA_STORE
 		/************************************
 		 * Save to SD Card
 		 *************************************/
@@ -202,10 +205,11 @@ void data_task()
 
 		sd_write_data(pkt, gps.year, gps.month, gps.day);
 		periodic_timer_callback(NULL);
+#endif
 
 		free(pkt);
 
-		vTaskDelay(ONE_SECOND_DELAY * DATA_WRITE_PERIOD_SEC);
+		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
 	}
 }
 
@@ -253,18 +257,18 @@ void app_main()
 	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
-	/* SNTP_Initialize() and MQTT_Initialize() must go below the tasks
-	 * because we create some mutexes in the tasks that these functions use.
+	/*
+	 * These initializations need to be after the tasks, because necessary mutexs get
+	 * created above and used below. Better ways to do this but this is simplest.
 	 */
-
 	/* Initialize SNTP */
 	SNTP_Initialize();
 
 	/* Initialize MQTT */
 	MQTT_Initialize();
 
-	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
-#if WIFI_MANAGER_DEBUG
-	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
-#endif
+//	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
+//#if WIFI_MANAGER_DEBUG
+//	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
+//#endif
 }

@@ -1095,8 +1095,12 @@ bool wifi_manager_check_connection()
 	EventBits_t uxBits;
 	if(wifi_manager_connected_to_access_point()){
 		wifi_manager_ping_test();
-		return (WIFI_MANAGER_HAVE_INTERNET_BIT & \
+		bool ret = (WIFI_MANAGER_HAVE_INTERNET_BIT & \
 				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT, pdFALSE, pdTRUE, MS2TICK(PING_TEST_TIMEOUT_MS)));
+		if (!ret){
+			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
+		}
+		return ret;
 	}
 	else{
 		return false;

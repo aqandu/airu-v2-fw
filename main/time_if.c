@@ -54,7 +54,7 @@ static time_t _sntp_obtain_time(void)
     // wait for time to be set
     time_t now = 0;
     int retry = 0;
-    const int retry_count = 10;
+    const int retry_count = 25;
 
     while(now < (time_t) SEC_JAN1_2018 && ++retry < retry_count) {
         ESP_LOGI(TAG, "Waiting for system time to be set... [%d / %d]", retry, retry_count);

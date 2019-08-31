@@ -252,7 +252,7 @@ void app_main()
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
 	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
+	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
 
 	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);

@@ -165,7 +165,7 @@ static esp_err_t _ota_commence()
 //                task_fatal_error(TAG);
             }
             binary_file_length += data_read;
-            ESP_LOGI(TAG, "Written image length: %d", binary_file_length);
+//            ESP_LOGI(TAG, "Written image length: %d", binary_file_length);
         }
         else if (data_read == 0) {
             ESP_LOGI(TAG, "Connection closed,all data received");

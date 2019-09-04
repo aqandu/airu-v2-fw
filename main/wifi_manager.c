@@ -694,25 +694,6 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 
 void wifi_manager( void * pvParameters ){
 
-
-	tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_ETH); // Don't run a DHCP client
-	inet_pton(AF_INET, &ip[0], &ipInfo.ip);
-	inet_pton(AF_INET, &dgw[0], &ipInfo.gw);
-	inet_pton(AF_INET, &snm[0], &ipInfo.netmask);
-	tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_ETH, &ipInfo);
-	eth_config_t config = DEFAULT_ETHERNET_PHY_CONFIG;
-	/* Set the PHY address in the example configuration */
-	config.phy_addr = CONFIG_PHY_ADDRESS;
-	config.gpio_config = eth_gpio_config_rmii;
-	config.tcpip_input = tcpip_adapter_eth_input;
-	config.phy_power_enable = phy_device_power_enable_via_gpio;
-	err = esp_eth_init(&config);
-
-
-
-
-
-
 	esp_err_t err;
 	ESP_LOGI(TAG, "wifi_manager task Started");
 	/* memory allocation of objects used by the task */

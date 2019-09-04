@@ -54,7 +54,7 @@ config SD_DATA_STORE
 		Do you want to store samples to the SD card?
 
 config SD_CARD_DEBUG
-	bool "Log messages to the SD card instead of stout"
+	bool "Log messages to the SD card instead of stdout"
 	default n
 	help
 		Setting this flag will log LOG[E,W,I] messages to the SD card instead of stdout

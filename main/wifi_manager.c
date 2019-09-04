@@ -571,10 +571,10 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
     	ESP_LOGW(TAG, "disconnect reason [%d]", event->event_info.disconnected.reason);
-    	if ((event->event_info.disconnected.reason != WIFI_REASON_ASSOC_LEAVE)  /*Get kicked off by router*/
+    	if ((event->event_info.disconnected.reason != WIFI_REASON_ASSOC_LEAVE)  				/*Get kicked off by router*/
     			& (event->event_info.disconnected.reason != WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) /*Authenticate failed*/
-				& (event->event_info.disconnected.reason != WIFI_REASON_AUTH_FAIL) /*Authenticate failed*/
-//				& (event->event_info.disconnected.reason != WIFI_REASON_NO_AP_FOUND) /* No AP found */
+				& (event->event_info.disconnected.reason != WIFI_REASON_AUTH_FAIL) 				/*Authenticate failed*/
+//				& (event->event_info.disconnected.reason != WIFI_REASON_NO_AP_FOUND) 			/* No AP found */
 				)
     	{
     		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
@@ -693,6 +693,25 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 }
 
 void wifi_manager( void * pvParameters ){
+
+
+	tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_ETH); // Don't run a DHCP client
+	inet_pton(AF_INET, &ip[0], &ipInfo.ip);
+	inet_pton(AF_INET, &dgw[0], &ipInfo.gw);
+	inet_pton(AF_INET, &snm[0], &ipInfo.netmask);
+	tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_ETH, &ipInfo);
+	eth_config_t config = DEFAULT_ETHERNET_PHY_CONFIG;
+	/* Set the PHY address in the example configuration */
+	config.phy_addr = CONFIG_PHY_ADDRESS;
+	config.gpio_config = eth_gpio_config_rmii;
+	config.tcpip_input = tcpip_adapter_eth_input;
+	config.phy_power_enable = phy_device_power_enable_via_gpio;
+	err = esp_eth_init(&config);
+
+
+
+
+
 
 	esp_err_t err;
 	ESP_LOGI(TAG, "wifi_manager task Started");
@@ -826,7 +845,10 @@ void wifi_manager( void * pvParameters ){
 	http_server_set_event_start();
 	ESP_LOGW(TAG, "free heap: %d\n",esp_get_free_heap_size());
 
-  // create the timer to determine validity of pm data
+	/*
+	 * Reconnect timer is active if there is a stored SSID and it appears on a WIFI scan.
+	 * When the timer finishes we set the RECONNECT flag.
+	 */
 	wifi_reconnect_timer = xTimerCreate("wifi_reconnect_timer",
 						  RECONNECT_RETRY_PERIOD,
 						  pdFALSE, (void *)NULL,
@@ -859,7 +881,8 @@ void wifi_manager( void * pvParameters ){
 				xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 				ESP_ERROR_CHECK(esp_wifi_disconnect());
 
-				/* wait until wifi disconnects. From experiments, it seems to take about 150ms to disconnect */
+				/* TODO: Isn't this already cleared?
+				 * wait until wifi disconnects. From experiments, it seems to take about 150ms to disconnect */
 				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
 			}
 			else{
@@ -872,6 +895,7 @@ void wifi_manager( void * pvParameters ){
 
 			/* erase configuration */
 			if(wifi_manager_config_sta){
+				ESP_LOGI(TAG, "Erasing wifi_manager_config_sta because of DISCONNECT");
 				memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
 			}
 
@@ -934,14 +958,21 @@ void wifi_manager( void * pvParameters ){
 						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 					}
 					else{
-						// start the timer. When it expires, we'll attempt to reconnect
+						/*
+						 * Connected to AP but no Internet access. Set the timer. When it expires
+						 * we'll try to reconnect if the AP is still there
+						 */
 						if(!xTimerIsTimerActive(wifi_reconnect_timer)){
 							xTimerStart(wifi_reconnect_timer, 0);
 						}
+						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 						ESP_LOGE(TAG, "Ping test failed! No internet access! Setting request reconnect timer");
 					}
 				}
 				else{
+					/* uxBits & WIFI_MANAGER_STA_DISCONNECT_BIT
+					 * esp_wifi_connect() failed. event_handler set this bit.
+					 * */
 					ESP_LOGE(TAG, "AirU FAILED to obtained an IP address from AP\n\r");
 
 					/* failed attempt to connect regardles of the reason */
@@ -952,7 +983,6 @@ void wifi_manager( void * pvParameters ){
 					/* otherwise: reset the config */
 					memset(wifi_manager_config_sta, 0x00, sizeof(wifi_config_t));
 
-					/* Shut down the MQTT socket - It'll come back up when we reconnect */
 					xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 				}
 			}

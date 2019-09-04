@@ -23,11 +23,11 @@
 #define SD_LOG_FILE_NAME 				"/sdcard/LOGGING-0.log"
 #define SD_LOG_FILE_MOST_RECENT_NAME 	"/sdcard/LOGGING-15.log"
 #define SD_LOG_FILE_FORMAT 				"/sdcard/LOGGING-%02d.log"
-#define MOUNT_CONFIG_MAXFILE 			4000
+#define MOUNT_CONFIG_MAXFILE 			20
 #define MOUNT_CONFIG_MAXLOGFILE 		15
 #define MAX_FILE_SIZE_MB 				1
 #define MAX_LOG_PKG_LENGTH 				256
-//#define SD_LOG 							0
+//#define SD_LOG 							0	/* moved to menuconfig */
 
 // Maximum time to wait for the mutex in a logging statement.
 #define MAX_MUTEX_WAIT_MS 30
@@ -107,7 +107,7 @@ esp_err_t SD_Initialize(void)
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
         .max_files = MOUNT_CONFIG_MAXFILE,
-        .allocation_unit_size = MAX_FILE_SIZE_MB * MOUNT_CONFIG_MAXFILE * 1024 * 1024
+        .allocation_unit_size = MAX_FILE_SIZE_MB /* * MOUNT_CONFIG_MAXFILE */ * 1024 * 1024
     };
 
     // Use settings defined above to initialize SD card and mount FAT filesystem.
@@ -130,10 +130,11 @@ esp_err_t SD_Initialize(void)
 
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
+
 #ifdef CONFIG_SD_CARD_DEBUG
-		esp_log_set_vprintf(esp_sd_log_write);
-		periodic_timer_callback(NULL);
-    }
+	printf("Setting sd card as logger...\n\r");
+	esp_log_set_vprintf(esp_sd_log_write);
+	periodic_timer_callback(NULL);
 #endif
     fs_mounted = true;
     return ret;
@@ -213,9 +214,9 @@ vprintf_like_t esp_sd_log_write(const char* format, va_list ap)
 // Call back for updating and checking log file name
 void periodic_timer_callback(void* arg)
 {
-#if SD_LOG == 1
+#ifdef CONFIG_SD_CARD_DEBUG
     bool exists;
-    char SDLogfileName[FILENAME_LENGTH];
+    char SDLogfileName[SD_FILENAME_LENGTH];
     FILE* logFileInstance = NULL;
     static bool firstTime = true;
     static uint8_t logFileCounting = 1;
@@ -228,6 +229,7 @@ void periodic_timer_callback(void* arg)
 		Create new file if size > 2Mb or not exist
 		New file name will be stored in loggingList.txt
 	*/
+    printf("First time: %d\n\r", firstTime);
 	if(!firstTime) {
 		logFileInstance = getLogFileInstance();
 	}
@@ -251,7 +253,7 @@ void periodic_timer_callback(void* arg)
 	}
 
 	if (logFileCounting > MOUNT_CONFIG_MAXLOGFILE) {
-		char oldLogFileName[FILENAME_LENGTH];
+		char oldLogFileName[SD_FILENAME_LENGTH];
 		for (uint8_t i = 1; i > MOUNT_CONFIG_MAXLOGFILE-1; i++) {
 	    	sprintf(SDLogfileName, SD_LOG_FILE_FORMAT, i);
 	    	// Make sure the furthest file get removed

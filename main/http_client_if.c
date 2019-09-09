@@ -89,7 +89,7 @@ static void http_post_multipart()
         .url = "http://httpbin.org/get", /* WEB_URL */
         .event_handler = _http_event_handler,
 		.method = HTTP_METHOD_POST,
-		.buffer_size_tx = MAX_HTTP_SEND_BUFFER,
+		.buffer_size = MAX_HTTP_SEND_BUFFER,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
 

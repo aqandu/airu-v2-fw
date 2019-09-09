@@ -20,7 +20,6 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
-#include "esp_sntp.h"
 #include "wifi_manager.h"
 #include "time_if.h"
 

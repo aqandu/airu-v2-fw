@@ -209,6 +209,9 @@ void data_task()
 
 		free(pkt);
 
+		/* this is a good place to do a ping test */
+		wifi_manager_check_connection();
+
 		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
 	}
 }
@@ -221,8 +224,6 @@ void app_main()
 	app_getmac(DEVICE_MAC);
 
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
-    ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());
-    ESP_LOGI(TAG, "IDF version: %s", esp_get_idf_version());
 
 	/* Initialize the LED Driver */
 	LED_Initialize();

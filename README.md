@@ -8,6 +8,11 @@ First of all, I do not recommend working with the ESP32 in a Windows environment
 
 # Project Setup
 Several files and settings are excluded using the `.gitignore` file and will have to be added manually until we have `git secret` set up. Make a `cert` directory and add the MQTT broker certificate (PEM format) inside it. Open menuconfig and update the following:
+- go to `~/esp/esp-idf/components/mqtt/mqtt_client.c` and replace line 885 with this line:
+
+`xEventGroupWaitBits(client->status_bits, STOPPED_BIT, false, true, 1000 / portTICK_PERIOD_MS /* portMAX_DELAY */);`
+
+meaning just replace `portMAX_DELAY` with `1000 / portTICK_PERIOD_MS`. There's currently an error with the mqtt client that will hang here if you attempt to connect and there was a problem, then you try to destroy (stop) the client. 
 - Serial Flash Config
     - Update the default serial port if nececessary (`/dev/cu.usbserial-1410` on OSX)
     - Flash Size (4 MB)
@@ -15,6 +20,7 @@ Several files and settings are excluded using the `.gitignore` file and will hav
 - AirU Configuration -> Update all appropriate
 - Partition Table -> Partition Table (Factory app, two OTA definitions)
 - Component Config -> FAT Filesystem support -> Long filename support (Long filename buffer in heap)
+
 
 
 

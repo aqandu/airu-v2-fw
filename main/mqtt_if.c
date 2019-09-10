@@ -118,7 +118,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-		   MQTT_wifi_disconnected();
+		   esp_mqtt_client_destroy(client);
 		   client_connected = false;
 
 		   // Set the WIFI_MANAGER_HAVE_INTERNET_BIT: is it MQTT or internet problem?
@@ -232,17 +232,6 @@ void MQTT_Connect()
 	client = esp_mqtt_client_init(&mqtt_cfg);
 	ESP_LOGI(TAG, "%s esp_mqtt_client_start [%s]", __func__, esp_err_to_name(esp_mqtt_client_start(client)));
 	client_connected = false;
-}
-
-void MQTT_wifi_disconnected()
-{
-	ESP_LOGI(TAG, "%s: ENTERRED\n", __func__);
-	if (client) {
-		ESP_LOGD(TAG, "%s: Going to free some heap: %d\n", __func__, esp_get_free_heap_size());
-		ESP_LOGI(TAG, "esp_mqtt_client_destroy [%s]", esp_err_to_name(esp_mqtt_client_destroy(client)));
-		client = NULL;
-		ESP_LOGI(TAG, "After freeing some heap: %d\n",esp_get_free_heap_size());
-	}
 }
 
 /*

@@ -15,7 +15,7 @@
 #define MQTT_SUB_ALL_TOPIC		CONFIG_MQTT_ROOT_TOPIC "/" CONFIG_MQTT_SUB_ALL_TOPIC
 #define MQTT_ACK_TOPIC_TMPLT	CONFIG_MQTT_ROOT_TOPIC "/ack/%s"
 
-#define MQTT_PKT "airQuality\,ID\=%s\,SensorModel\=H2+S2\ SecActive\=%llu\,"\
+#define MQTT_PKT "airQuality\,ID\=%s\,SensorModel\=H2+%s\ SecActive\=%llu\,"\
 				 "Altitude\=%.2f\,Latitude\=%.4f\,Longitude\=%.4f\,PM1\=%.2f\,"\
 				 "PM2.5\=%.2f\,PM10\=%.2f\,Temperature\=%.2f\,Humidity\=%.2f\,CO\=%zu\,NO\=%zu"
 

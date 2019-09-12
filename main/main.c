@@ -35,7 +35,7 @@ Notes:
 			within 4 decimal points, so we can use it as a tag in InfluxDB.
 */
 
-
+// Base necessary
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,27 +52,31 @@ Notes:
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+
+#include "app_utils.h"
+#include "pm_if.h"
+#include "led_if.h"
+#ifdef CONFIG_USE_SD
+#include "sd_if.h"
+#endif
+#include "hdc1080_if.h"
+#include "mics4514_if.h"
+#include "gps_if.h"
+
+// Internet necessary
 #include "esp_wifi.h"
 #include "mdns.h"
 #include "lwip/api.h"
 #include "lwip/err.h"
 #include "lwip/netdb.h"
+#include "esp_ota_ops.h"
 
-#include "app_utils.h"
+#include "http_file_upload.h"
 #include "http_server_if.h"
 #include "wifi_manager.h"
-#include "pm_if.h"
 #include "mqtt_if.h"
-#include "hdc1080_if.h"
-#include "mics4514_if.h"
 #include "time_if.h"
-#include "gps_if.h"
 #include "ota_if.h"
-#include "led_if.h"
-#ifdef CONFIG_USE_SD
-#include "sd_if.h"
-#endif
-#include "http_file_upload.h"
 
 
 /* GPIO */
@@ -132,6 +136,9 @@ void data_task()
 	char strftime_buf[64];
 	uint8_t min, sec, system_time;
 
+	// only need to get it once
+	esp_app_desc_t *app_desc = esp_ota_get_app_description();
+
 	while (1) {
 
 		PMS_Poll(&pm_dat);
@@ -146,19 +153,19 @@ void data_task()
 		//
 		// Send data over MQTT
 		//
-
-		sprintf(pkt, MQTT_PKT, DEVICE_MAC,		/* ID */
-							   uptime, 			/* secActive */
-							   gps.alt,			/* Altitude */
-							   gps.lat, 		/* Latitude */
-							   gps.lon, 		/* Longitude */
-							   pm_dat.pm1,		/* PM1 */
-							   pm_dat.pm2_5,	/* PM2.5 */
-							   pm_dat.pm10, 	/* PM10 */
-							   temp,			/* Temperature */
-							   hum,				/* Humidity */
-							   co,				/* CO */
-							   nox);			/* NOx */
+		sprintf(pkt, MQTT_PKT, DEVICE_MAC,			/* ID 			*/
+							   app_desc->version,	/* SensorModel 	*/
+							   uptime, 				/* secActive 	*/
+							   gps.alt,				/* Altitude 	*/
+							   gps.lat, 			/* Latitude 	*/
+							   gps.lon, 			/* Longitude 	*/
+							   pm_dat.pm1,			/* PM1 			*/
+							   pm_dat.pm2_5,		/* PM2.5 		*/
+							   pm_dat.pm10, 		/* PM10 		*/
+							   temp,				/* Temperature 	*/
+							   hum,					/* Humidity 	*/
+							   co,					/* CO 			*/
+							   nox);				/* NOx 			*/
 
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
 		MQTT_Publish_Data(pkt);

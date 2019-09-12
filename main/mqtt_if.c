@@ -79,7 +79,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	esp_mqtt_client_handle_t this_client = event->client;
 	int msg_id = 0;
 	char tmp[64] = {0};
-	char tmp2[64] = {0};
 	char tpc[64] = {0};
 	char *json_buf;
 	char pld[MQTT_BUFFER_SIZE_BYTE] = {0};
@@ -103,16 +102,12 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
 		   // Respond to "ack" topic that we're online
-		   sprintf(tmp, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
+		   sprintf(tpc, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
 
-		   time_t now;
-		   time(&now);
-		   sprintf(tmp2, " - %lu", now);
 		   json_buf = malloc(512);
-		   json_buf[0] = '\0'; // start with empty string in case there's an error in proceeding function
-		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
-		   strcat(json_buf, tmp2);
-		   MQTT_Publish_General((const char*) tmp, json_buf, 2);
+		   json_buf[0] = '\0';
+		   esp_err_t err = http_get_isp_info(json_buf, 512);
+		   MQTT_Publish_General((const char*) tpc, json_buf, 2);
 		   free(json_buf);
 		   break;
 

@@ -464,23 +464,23 @@ esp_err_t http_get_isp_info(char *json_buf, size_t len)
 			}
 			if (ii >= len) {
 				ESP_LOGE(TAG, "... buffer overflow");
-				json_buf[ii-1] = '\0';	// In case you still want to use the partial data
+				json_buf[ii - 1] = '\0';	// In case you still want to use the partial data
 				close(s);
 				return -1;
 			}
 		}
 	} while(r > 0);
 
-	// just in case
+	// terminate
 	json_buf[ii] = '\0';
 
-	ESP_LOGI(TAG, "... done reading from socket. Last read return=%d errno=%d.", r, errno);
+	ESP_LOGI(TAG, "... done reading from socket. Last read return=%d, errno=%d, ii=%d", r, errno, ii);
 	close(s);
 
 	// Add timestamp cause I like having it
 	time_t now;
 	time(&now);
-	snprintf(json_buf[ii - 1], len - strlen(json_buf), ",\"utc\":\"%lu\"}", now);
+	snprintf(&json_buf[ii - 1], len - strlen(json_buf), ",\"utc\":\"%lu\"}", now);
 
 	return ESP_OK;
 }

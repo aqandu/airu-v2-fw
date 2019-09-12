@@ -109,6 +109,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   time(&now);
 		   sprintf(tmp2, " - %lu", now);
 		   json_buf = malloc(512);
+		   json_buf[0] = '\0'; // start with empty string in case there's an error in proceeding function
 		   esp_err_t err = http_get_isp_info(json_buf, 512 - strlen(tmp2));
 		   strcat(json_buf, tmp2);
 		   MQTT_Publish_General((const char*) tmp, json_buf, 2);

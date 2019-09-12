@@ -480,7 +480,7 @@ esp_err_t http_get_isp_info(char *json_buf, size_t len)
 	// Add timestamp cause I like having it
 	time_t now;
 	time(&now);
-	snprintf(json_buf[ii - 1], ",\"utc\":\"%lu\"}", now);
+	snprintf(json_buf[ii - 1], len - strlen(json_buf), ",\"utc\":\"%lu\"}", now);
 
 	return ESP_OK;
 }

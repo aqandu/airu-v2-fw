@@ -44,7 +44,6 @@ Notes:
 #include "driver/spi_master.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
-#include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_adc_cal.h"
 #include "esp_spi_flash.h"
@@ -53,6 +52,7 @@ Notes:
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "esp_wifi.h"
 #include "mdns.h"
 #include "lwip/api.h"
 #include "lwip/err.h"
@@ -87,7 +87,7 @@ Notes:
 #define FILE_UPLOAD_WAIT_TIME_SEC	30 //ONE_HR * 6
 
 
-static char DEVICE_MAC[13];
+//static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t data_task_handle = NULL;
@@ -131,8 +131,6 @@ void data_task()
 	struct tm tm;
 	char strftime_buf[64];
 	uint8_t min, sec, system_time;
-
-	app_getmac(DEVICE_MAC);
 
 	while (1) {
 
@@ -219,10 +217,8 @@ void data_task()
 void app_main()
 {
 	/* initialize flash memory */
-	nvs_flash_init();
 
-	app_getmac(DEVICE_MAC);
-
+	APP_Initialize();
 	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
 
 	/* Initialize the LED Driver */
@@ -243,20 +239,20 @@ void app_main()
 	/* Initialize the SD Card Driver */
 	SD_Initialize();
 
+	/* start the led task */
+	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+
+	/* start the data gather task */
+	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+
 	/* start the HTTP Server task */
 	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
 	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
-	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
-
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
-
-	/* start the data gather task */
-	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get

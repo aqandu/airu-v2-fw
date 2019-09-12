@@ -34,7 +34,6 @@ extern const uint8_t ca_pem_start[] asm("_binary_ca_airu_pem_start");
 extern int WIFI_MANAGER_STA_DISCONNECT_BIT;
 
 static const char* TAG = "MQTT";
-static char DEVICE_MAC[13];
 static volatile bool client_connected;
 static esp_mqtt_client_handle_t client = NULL;
 static TaskHandle_t task_mqtt = NULL;
@@ -154,6 +153,11 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   if(strcmp(tok, "ota") == 0){
 		        tok = strtok(NULL, s);
 		        if(tok != NULL && strstr(tok, ".bin")){
+
+		        	// Notify ota starting over MQTT
+		        	sprintf(tmp, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
+		        	MQTT_Publish_General(tmp, "ota", 2);
+
 		        	ota_set_filename(tok);
 		        	ota_trigger();
 		        }
@@ -164,7 +168,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   else if (strcmp(tok, "ping") == 0){
 
-			   sprintf(tmp, "offline/ack/v2/%s", DEVICE_MAC);
+			   sprintf(tmp, MQTT_ACK_TOPIC_TMPLT, DEVICE_MAC);
 			   MQTT_Publish_General(tmp, "pong", 2);
 
 			   ESP_LOGI(TAG, "response: \"pong\" on \"%s\"", tmp);
@@ -217,7 +221,7 @@ void mqtt_task(void* pvParameters){
 void MQTT_Initialize(void)
 {
 	ESP_LOGI(TAG, "%s Initializing client...", __func__);
-	app_getmac(DEVICE_MAC);
+//	app_getmac(DEVICE_MAC);
 	if (task_mqtt != NULL){
 		vTaskDelete(task_mqtt);
 	}

@@ -19,6 +19,8 @@
 #define WIFI_CONNECTED_BIT BIT0		/* IP address obtained */
 #define OTA_REQUEST_BIT BIT1		/* OTA request recieved over MQTT */
 
+extern char DEVICE_MAC[13];
+
 EventGroupHandle_t wifi_event_group;
 
 /*
@@ -31,7 +33,7 @@ EventGroupHandle_t wifi_event_group;
 void __attribute__((noreturn)) task_fatal_error(const char *TAG);
 
 
-void app_getmac(char *mac);
+void APP_Setmac(void);
 
 
 /*
@@ -41,7 +43,7 @@ void app_getmac(char *mac);
 *
 * @return
 */
-void app_initialize(void);
+void APP_Initialize(void);
 
 
 /*

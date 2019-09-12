@@ -21,7 +21,7 @@
 #include "app_utils.h"
 
 const char* TAG = "APP";
-char DEVICE_MAC[13] = {0};
+char DEVICE_MAC[13] = { 0 };
 
 /*
 * @brief	Delete the caller task and loop ad-infinitum
@@ -40,16 +40,12 @@ void __attribute__((noreturn)) task_fatal_error(const char *TAG)
     }
 }
 
-void app_getmac(char *mac)
+void APP_Setmac()
 {
-	if(strlen(DEVICE_MAC)<12){
-		uint8_t tmp[6];
-		esp_efuse_mac_get_default(tmp);
-		sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
-	}
-	strcpy(mac, DEVICE_MAC);
+	uint8_t tmp[6];
+	esp_efuse_mac_get_default(tmp);
+	sprintf(DEVICE_MAC, "%02X%02X%02X%02X%02X%02X", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
 }
-
 
 /*
 * @brief
@@ -58,39 +54,44 @@ void app_getmac(char *mac)
 *
 * @return
 */
-void app_initialize(void)
+void APP_Initialize(void)
 {
     uint8_t sha_256[SHA256_HASH_LEN] = { 0 };
 	esp_partition_t partition;
+
+	APP_Setmac();
 
 	ESP_LOGI(TAG, "Startup..");
     ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "IDF version: %s", esp_get_idf_version());
 
-    esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT_TCP", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
-    esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
+    esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    ESP_LOGI(TAG, "APP Version: %s", app_desc->version);
 
-	// get sha256 digest for the partition table
-	partition.address   = ESP_PARTITION_TABLE_OFFSET;
-	partition.size      = ESP_PARTITION_TABLE_MAX_LEN;
-	partition.type      = ESP_PARTITION_TYPE_DATA;
-	esp_partition_get_sha256(&partition, sha_256);
-	print_sha256(sha_256, "SHA-256 for the partition table: ");
+//    esp_log_level_set("*", ESP_LOG_INFO);
+//    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
+//    esp_log_level_set("TRANSPORT_TCP", ESP_LOG_VERBOSE);
+//    esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
+//    esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
+//    esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
 
-	// get sha256 digest for bootloader
-	partition.address   = ESP_BOOTLOADER_OFFSET;
-	partition.size      = ESP_PARTITION_TABLE_OFFSET;
-	partition.type      = ESP_PARTITION_TYPE_APP;
-	esp_partition_get_sha256(&partition, sha_256);
-	print_sha256(sha_256, "SHA-256 for bootloader: ");
-
-	// get sha256 digest for running partition
-	esp_partition_get_sha256(esp_ota_get_running_partition(), sha_256);
-	print_sha256(sha_256, "SHA-256 for current firmware: ");
+//	// get sha256 digest for the partition table
+//	partition.address   = ESP_PARTITION_TABLE_OFFSET;
+//	partition.size      = ESP_PARTITION_TABLE_MAX_LEN;
+//	partition.type      = ESP_PARTITION_TYPE_DATA;
+//	esp_partition_get_sha256(&partition, sha_256);
+//	print_sha256(sha_256, "SHA-256 for the partition table: ");
+//
+//	// get sha256 digest for bootloader
+//	partition.address   = ESP_BOOTLOADER_OFFSET;
+//	partition.size      = ESP_PARTITION_TABLE_OFFSET;
+//	partition.type      = ESP_PARTITION_TYPE_APP;
+//	esp_partition_get_sha256(&partition, sha_256);
+//	print_sha256(sha_256, "SHA-256 for bootloader: ");
+//
+//	// get sha256 digest for running partition
+//	esp_partition_get_sha256(esp_ota_get_running_partition(), sha_256);
+//	print_sha256(sha_256, "SHA-256 for current firmware: ");
 
 	// Initialize NVS.
 	esp_err_t err = nvs_flash_init();

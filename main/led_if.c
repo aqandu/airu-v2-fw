@@ -94,6 +94,10 @@ void led_task(void *pvParameters)
 	EventBits_t uxBits;
 	ESP_LOGI(TAG, "led_task Enterred");
 
+	ch = STAT1_CH;
+	ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
+	ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 

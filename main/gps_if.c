@@ -189,8 +189,6 @@ esp_err_t parse(char *nmea) {
 		}
 	}
 
-	printf("\n%s\n\n\r", nmea);
-
 	if (strstr(nmea, "$GPGGA")) {
 		char *p = nmea;
 		// get time
@@ -384,13 +382,16 @@ esp_err_t parse(char *nmea) {
 		esp_gps.timeinfo.tm_min = minute;
 		esp_gps.timeinfo.tm_sec = seconds;
 
-		if (year < 80) {
+		if (year > 18 && year < 80) {
 			LED_SetEventBit(LED_EVENT_GPS_RTC_SET_BIT);
+		}
+		else {
+			LED_SetEventBit(LED_EVENT_GPS_RTC_NOT_SET_BIT);
 		}
 
 		if (gps_systime) {
-			time_t now = mktime(&esp_gps.timeinfo);
-			settimeofday(&now, "UTC");
+			struct timeval tv = { .tv_sec = mktime(&esp_gps.timeinfo) };
+			settimeofday(&tv, "UTC");
 		}
 
 		return ESP_OK;

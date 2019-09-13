@@ -19,7 +19,7 @@
 
 esp_err_t SD_Initialize(void);
 esp_err_t sd_deinit(void);
-esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day);
+esp_err_t sd_write_data(char* pkt);
 vprintf_like_t esp_sd_log_write(const char* format, va_list ap);
 void periodic_timer_callback(void* arg);
 FILE *getLogFileInstance();

@@ -152,22 +152,19 @@ esp_err_t sd_deinit(void)
  * believe GPS is a local time. GPS should always be correct as long as there's
  * a battery, so I don't think it will be a big deal.
  */
-esp_err_t sd_write_data(char* pkt, uint8_t year, uint8_t month, uint8_t day)
+esp_err_t sd_write_data(char* pkt)
 {
-//	esp_err_t err = ESP_FAIL;
-//	time_t now; /* time_t == long */
-//	struct tm timeinfo;
+	time_t now;
+	struct tm timeinfo;
     struct stat st;
     char filename[64];
 
     ESP_LOGI(TAG, "SD Packet:\n%s", pkt);
 
 	// Files are created daily. Filename is YYYY-MM-DD.csv
-//    time(&now);
-//    localtime_r(&now, &timeinfo);
-//    strftime(filename, sizeof(filename), "/sdcard/%y-%m-%d.csv", &timeinfo);
-
-	sprintf(filename, "/sdcard/%02d-%02d-%02d.csv", year, month, day);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    strftime(filename, sizeof(filename), "/sdcard/%Y-%m-%d.csv", &timeinfo);
 
     ESP_LOGI(TAG, "Filename: %s", filename);
 

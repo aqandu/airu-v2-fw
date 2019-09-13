@@ -93,18 +93,20 @@ void data_task()
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
+	GPS_Tx(PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);
+
 	GPS_SetSystemTimeFromGPS();
 
 	while (1) {
 
-//		PMS_Poll(&pm_dat);
-//		HDC1080_Poll(&temp, &hum);
-//		MICS4514_Poll(&nox, &co);
-//		GPS_Poll(&gps);
-//
-//		uptime = esp_timer_get_time() / 1000000;
-//
-//		pkt = malloc(SD_PKT_LEN);
+		PMS_Poll(&pm_dat);
+		HDC1080_Poll(&temp, &hum);
+		MICS4514_Poll(&nox, &co);
+		GPS_Poll(&gps);
+
+		uptime = esp_timer_get_time() / 1000000;
+
+		pkt = malloc(SD_PKT_LEN);
 
 		/************************************
 		 * Save to SD Card
@@ -114,7 +116,7 @@ void data_task()
 		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
 		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
 
-//		if (gps.timeinfo.tm_year <= 18 || gps.timeinfo.tm_year>= 80){
+//		if (gps.timeinfo.tm_year < 18 || gps.timeinfo.tm_year>= 80){
 //			hr = uptime / 3600;
 //			rm = uptime % 3600;
 //			min = rm / 60;
@@ -124,27 +126,27 @@ void data_task()
 //			system_time = 1;	// Using system time
 //		}
 //		else {
-//			sprintf(strftime_buf, "%02d:%02d:%02d", gps.timeinfo.tm_hour, gps.timeinfo.tm_min, gps.timeinfo.tm_sec);
-//			system_time = 0;	// Using GPS time
+//		sprintf(strftime_buf, "%02d:%02d:%02d", gps.timeinfo.tm_hour, gps.timeinfo.tm_min, gps.timeinfo.tm_sec);
+		strftime(strftime_buf, sizeof(strftime_buf), "%H:%M:%S", &tm);
 //		}
-//
-//		sprintf(pkt, SD_PKT, strftime_buf,
-//							 DEVICE_MAC,
-//							 uptime,
-//							 gps.alt,
-//							 gps.lat,
-//							 gps.lon,
-//							 pm_dat.pm1,
-//							 pm_dat.pm2_5,
-//							 pm_dat.pm10,
-//							 temp,
-//							 hum,
-//							 co,
-//							 nox);
-//
-//		sd_write_data(pkt, gps.timeinfo.tm_year, gps.timeinfo.tm_mon, gps.timeinfo.tm_mday);
-//
-//		free(pkt);
+
+		sprintf(pkt, SD_PKT, strftime_buf,
+							 DEVICE_MAC,
+							 uptime,
+							 gps.alt,
+							 gps.lat,
+							 gps.lon,
+							 pm_dat.pm1,
+							 pm_dat.pm2_5,
+							 pm_dat.pm10,
+							 temp,
+							 hum,
+							 co,
+							 nox);
+
+		sd_write_data(pkt);
+
+		free(pkt);
 
 		vTaskDelay(ONE_SECOND_DELAY * /*CONFIG_DATA_WRITE_PERIOD*/ 5);
 	}

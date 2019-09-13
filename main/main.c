@@ -47,6 +47,7 @@ Notes:
 #include "esp_system.h"
 #include "esp_adc_cal.h"
 #include "esp_spi_flash.h"
+#include "esp_ota_ops.h"
 #include "esp_event_loop.h"
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"

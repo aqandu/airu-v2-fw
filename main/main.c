@@ -93,11 +93,13 @@ void data_task()
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
-	GPS_Tx(PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);
+	GPS_Tx(PMTK_SET_NMEA_UPDATE_1HZ);
 
 	GPS_SetSystemTimeFromGPS();
 
 	while (1) {
+
+		vTaskDelay(ONE_SECOND_DELAY * /*CONFIG_DATA_WRITE_PERIOD*/ 5);
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
@@ -147,8 +149,6 @@ void data_task()
 		sd_write_data(pkt);
 
 		free(pkt);
-
-		vTaskDelay(ONE_SECOND_DELAY * /*CONFIG_DATA_WRITE_PERIOD*/ 5);
 	}
 }
 

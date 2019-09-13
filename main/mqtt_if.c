@@ -246,10 +246,15 @@ int MQTT_Publish_General(const char* topic, const char* msg, int qos)
 	int msg_id;
 	ESP_LOGI(TAG, "%s ENTERRED client_connected %d", __func__, client_connected);
 
-	msg_id = esp_mqtt_client_publish(client, topic, msg, 0, qos, 0);
-	ESP_LOGI(TAG, "Topic: %s, Msg: %s", topic, msg);
-	ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
-	return msg_id;
+	if(client_connected){
+		msg_id = esp_mqtt_client_publish(client, topic, msg, 0, qos, 0);
+		ESP_LOGI(TAG, "Topic: %s, Msg: %s", topic, msg);
+		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+		return msg_id;
+	}
+	else {
+		return ESP_FAIL;
+	}
 }
 
 /*

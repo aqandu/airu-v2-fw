@@ -75,7 +75,7 @@ typedef struct {
 
 esp_err_t GPS_Initialize(void);
 void GPS_Poll(esp_gps_t* gps);
-void GPS_Tx(void);
+void GPS_Tx(const char*);
 
 
 #endif /* MAIN_INCLUDE_GPS_IF_H_ */

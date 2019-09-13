@@ -395,7 +395,7 @@ uint8_t parseHex(char c) {
 	return 0;
 }
 
-void GPS_Tx(pmtk)
+void GPS_Tx(const char *pmtk)
 {
 	uart_write_bytes(GPS_UART_NUM, pmtk, strlen(pmtk));
 	ESP_LOGI(TAG, "Wrote packet to GPS");

@@ -63,21 +63,6 @@ Notes:
 #include "mics4514_if.h"
 #include "gps_if.h"
 
-// Internet necessary
-#include "esp_wifi.h"
-#include "mdns.h"
-#include "lwip/api.h"
-#include "lwip/err.h"
-#include "lwip/netdb.h"
-#include "esp_ota_ops.h"
-
-#include "http_file_upload.h"
-#include "http_server_if.h"
-#include "wifi_manager.h"
-#include "mqtt_if.h"
-#include "time_if.h"
-#include "ota_if.h"
-
 
 /* GPIO */
 #define STAT1_LED 21
@@ -85,39 +70,9 @@ Notes:
 #define STAT3_LED 18
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
-#define ONE_MIN 					60
-#define ONE_HR						ONE_MIN * 60
-#define ONE_DAY						ONE_HR * 24
-#define FILE_UPLOAD_WAIT_TIME_SEC	30 //ONE_HR * 6
-
-
-//static char DEVICE_MAC[13];
-static TaskHandle_t task_http_server = NULL;
-static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t data_task_handle = NULL;
-static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
-static TaskHandle_t task_uploadcsv = NULL;
-static TaskHandle_t task_offlinetracker = NULL;
 static const char *TAG = "AIRU";
-static const char *TAG_OFFLINE_TRACKER = "OFFLINE";
-static const char *TAG_UPLOAD = "UPLOAD";
-
-const char file_upload_nvs_namespace[] = "fileupload";
-const char* earliest_missed_data_ts = "offline";
-const char* last_upload_ts = "lastup";
-
-///**
-// * @brief RTOS task that periodically prints the heap memory available.
-// * @note Pure debug information, should not be ever started on production code!
-// */
-//void monitoring_task(void *pvParameter)
-//{
-//	while(1){
-//		printf("free heap: %d\n",esp_get_free_heap_size());
-//		vTaskDelay(5000 / portTICK_PERIOD_MS);
-//	}
-//}
 
 /*
  * Data gather task
@@ -141,36 +96,15 @@ void data_task()
 
 	while (1) {
 
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&nox, &co);
-		GPS_Poll(&gps);
+//		PMS_Poll(&pm_dat);
+//		HDC1080_Poll(&temp, &hum);
+//		MICS4514_Poll(&nox, &co);
+//		GPS_Poll(&gps);
+//
+//		uptime = esp_timer_get_time() / 1000000;
+//
+//		pkt = malloc(SD_PKT_LEN);
 
-		uptime = esp_timer_get_time() / 1000000;
-
-		pkt = malloc(MQTT_PKT_LEN);
-
-		//
-		// Send data over MQTT
-		//
-		sprintf(pkt, MQTT_PKT, DEVICE_MAC,			/* ID 			*/
-							   app_desc->version,	/* SensorModel 	*/
-							   uptime, 				/* secActive 	*/
-							   gps.alt,				/* Altitude 	*/
-							   gps.lat, 			/* Latitude 	*/
-							   gps.lon, 			/* Longitude 	*/
-							   pm_dat.pm1,			/* PM1 			*/
-							   pm_dat.pm2_5,		/* PM2.5 		*/
-							   pm_dat.pm10, 		/* PM10 		*/
-							   temp,				/* Temperature 	*/
-							   hum,					/* Humidity 	*/
-							   co,					/* CO 			*/
-							   nox);				/* NOx 			*/
-
-		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
-		MQTT_Publish_Data(pkt);
-
-#ifdef CONFIG_SD_DATA_STORE
 		/************************************
 		 * Save to SD Card
 		 *************************************/
@@ -179,45 +113,39 @@ void data_task()
 		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
 		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
 
-		if (gps.year <= 18 || gps.year >= 80){
-			hr = uptime / 3600;
-			rm = uptime % 3600;
-			min = rm / 60;
-			sec = rm % 60;
+//		if (gps.timeinfo.tm_year <= 18 || gps.timeinfo.tm_year>= 80){
+//			hr = uptime / 3600;
+//			rm = uptime % 3600;
+//			min = rm / 60;
+//			sec = rm % 60;
+//
+//			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
+//			system_time = 1;	// Using system time
+//		}
+//		else {
+//			sprintf(strftime_buf, "%02d:%02d:%02d", gps.timeinfo.tm_hour, gps.timeinfo.tm_min, gps.timeinfo.tm_sec);
+//			system_time = 0;	// Using GPS time
+//		}
+//
+//		sprintf(pkt, SD_PKT, strftime_buf,
+//							 DEVICE_MAC,
+//							 uptime,
+//							 gps.alt,
+//							 gps.lat,
+//							 gps.lon,
+//							 pm_dat.pm1,
+//							 pm_dat.pm2_5,
+//							 pm_dat.pm10,
+//							 temp,
+//							 hum,
+//							 co,
+//							 nox);
+//
+//		sd_write_data(pkt, gps.timeinfo.tm_year, gps.timeinfo.tm_mon, gps.timeinfo.tm_mday);
+//
+//		free(pkt);
 
-			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
-			system_time = 1;	// Using system time
-		}
-		else {
-			sprintf(strftime_buf, "%02d:%02d:%02d", gps.hour, gps.min, gps.sec);
-			system_time = 0;	// Using GPS time
-		}
-
-		sprintf(pkt, SD_PKT, strftime_buf,
-							 DEVICE_MAC,
-							 MQTT_DATA_PUB_TOPIC,
-							 uptime,
-							 gps.alt,
-							 gps.lat,
-							 gps.lon,
-							 pm_dat.pm1,
-							 pm_dat.pm2_5,
-							 pm_dat.pm10,
-							 temp,
-							 hum,
-							 co,
-							 nox);
-
-		sd_write_data(pkt, gps.year, gps.month, gps.day);
-		periodic_timer_callback(NULL);
-#endif
-
-		free(pkt);
-
-		/* this is a good place to do a ping test */
-		wifi_manager_check_connection();
-
-		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
+		vTaskDelay(ONE_SECOND_DELAY * /*CONFIG_DATA_WRITE_PERIOD*/ 5);
 	}
 }
 
@@ -251,25 +179,6 @@ void app_main()
 
 	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
-
-	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
-
-	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
-
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
-
-	/*
-	 * These initializations need to be after the tasks, because necessary mutexs get
-	 * created above and used below. Better ways to do this but this is simplest.
-	 */
-	/* Initialize SNTP */
-	SNTP_Initialize();
-
-	/* Initialize MQTT */
-	MQTT_Initialize();
 
 //	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 //#if WIFI_MANAGER_DEBUG

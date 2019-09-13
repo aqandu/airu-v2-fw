@@ -82,7 +82,11 @@ void LED_SetEventBit(led_events_t bit)
 	xEventGroupSetBits(led_event_group, bit);
 }
 
-
+/*
+ * LED1: RED
+ * LED2: YELLOW
+ * LED3: BLUE
+ */
 void led_task(void *pvParameters)
 {
 	int ch;
@@ -93,16 +97,16 @@ void led_task(void *pvParameters)
 	for(;;) {
 		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
-		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
-			ch = STAT1_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
-		}
-		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
-			ch = STAT1_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
-		}
+//		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
+//			ch = STAT1_CH;
+//			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
+//			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+//		}
+//		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
+//			ch = STAT1_CH;
+//			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
+//			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+//		}
 		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
 			ch = STAT3_CH;
 			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);

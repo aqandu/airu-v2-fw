@@ -13,7 +13,8 @@
 
 #define SD_FILENAME_LENGTH 25
 #define SD_HDR "time,ID,topic,SecActive,Altitude,Latitude,Longitude,PM1,PM2.5,PM10,Temperature,Humidity,CO,NO\n"
-#define SD_PKT "%s,%s,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n"
+#define SD_PKT "%s,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n"
+#define SD_PKT_LEN 512
 
 
 esp_err_t SD_Initialize(void);

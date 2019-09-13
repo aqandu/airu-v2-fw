@@ -10,6 +10,8 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
@@ -28,7 +30,7 @@
 static uint8_t nmea[MAX_SENTENCE_LEN];
 //static EventGroupHandle_t gps_event_group;
 static QueueHandle_t gps_event_queue;
-
+static bool gps_systime = false;
 static const char* TAG = "GPS";
 static esp_err_t parse(char *nmea);
 static uint8_t parseHex(char c);
@@ -37,13 +39,12 @@ static esp_gps_t esp_gps = {
 		.lat 	= -1,
 		.lon 	= -1,
 		.alt 	= -1,
-		.year 	= 0,
-		.month 	= 0,
-		.day 	= 0,
-		.hour 	= 0,
-		.min 	= 0,
-		.sec 	= 0
 };
+
+void GPS_SetSystemTimeFromGPS()
+{
+	gps_systime = true;
+}
 
 static void uart_gps_event_mgr(void *pvParameters)
 {
@@ -268,9 +269,15 @@ esp_err_t parse(char *nmea) {
 		esp_gps.alt 	= altitude;
 		esp_gps.lat 	= latitudeDegrees;
 		esp_gps.lon 	= longitudeDegrees;
-		esp_gps.hour 	= hour;
-		esp_gps.min 	= minute;
-		esp_gps.sec 	= seconds;
+//		esp_gps.hour 	= hour;
+//		esp_gps.min 	= minute;
+//		esp_gps.sec 	= seconds;
+		esp_gps.timeinfo.tm_year = year + 100;
+		esp_gps.timeinfo.tm_mon = month - 1;
+		esp_gps.timeinfo.tm_mday = day;
+		esp_gps.timeinfo.tm_hour = hour;
+		esp_gps.timeinfo.tm_min = minute;
+		esp_gps.timeinfo.tm_sec = seconds;
 
 		return ESP_OK;
 	}
@@ -362,15 +369,26 @@ esp_err_t parse(char *nmea) {
 		  year = (fulldate % 100);
 		}
 
-		esp_gps.day   = day;
-		esp_gps.month = month;
-		esp_gps.year  = year;
-		esp_gps.hour  = hour;
-		esp_gps.min   = minute;
-		esp_gps.sec   = seconds;
+//		esp_gps.day   = day;
+//		esp_gps.month = month;
+//		esp_gps.year  = year;
+//		esp_gps.hour  = hour;
+//		esp_gps.min   = minute;
+//		esp_gps.sec   = seconds;
+		esp_gps.timeinfo.tm_year = year + 100;
+		esp_gps.timeinfo.tm_mon = month - 1;
+		esp_gps.timeinfo.tm_mday = day;
+		esp_gps.timeinfo.tm_hour = hour;
+		esp_gps.timeinfo.tm_min = minute;
+		esp_gps.timeinfo.tm_sec = seconds;
 
 		if (year < 80) {
 			LED_SetEventBit(LED_EVENT_GPS_RTC_SET_BIT);
+		}
+
+		if (gps_systime) {
+			time_t now = mktime(&esp_gps.timeinfo);
+			settimeofday(&now, "UTC");
 		}
 
 		return ESP_OK;
@@ -392,16 +410,22 @@ uint8_t parseHex(char c) {
 	return 0;
 }
 
+void GPS_Tx(const char* pmtk)
+{
+	uart_write_bytes(GPS_UART_NUM, pmtk, strlen(pmtk));
+	ESP_LOGI(TAG, "Wrote packet to GPS");
+}
 
 void GPS_Poll(esp_gps_t* gps)
 {
 	gps->alt   = esp_gps.alt;
 	gps->lat   = esp_gps.lat;
 	gps->lon   = esp_gps.lon;
-	gps->year  = esp_gps.year;
-	gps->month = esp_gps.month;
-	gps->day   = esp_gps.day;
-	gps->hour  = esp_gps.hour;
-	gps->min   = esp_gps.min;
-	gps->sec   = esp_gps.sec;
+	gps->timeinfo = esp_gps.timeinfo;
+//	gps->year  = esp_gps.year;
+//	gps->month = esp_gps.month;
+//	gps->day   = esp_gps.day;
+//	gps->hour  = esp_gps.hour;
+//	gps->min   = esp_gps.min;
+//	gps->sec   = esp_gps.sec;
 }

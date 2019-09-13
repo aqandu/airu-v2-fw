@@ -142,6 +142,9 @@ esp_err_t GPS_Initialize()
 	ESP_LOGE(TAG, "Setting GPS NOT SET Bit...");
 	LED_SetEventBit(LED_EVENT_GPS_RTC_NOT_SET_BIT);
 
+	GPS_Tx(PMTK_SET_NMEA_OUTPUT_ALLDATA);
+	GPS_Tx(PMTK_SET_NMEA_UPDATE_1HZ);
+
 	return err;
 }
 
@@ -392,6 +395,11 @@ uint8_t parseHex(char c) {
 	return 0;
 }
 
+void GPS_Tx(pmtk)
+{
+	uart_write_bytes(GPS_UART_NUM, pmtk, strlen(pmtk));
+	ESP_LOGI(TAG, "Wrote packet to GPS");
+}
 
 void GPS_Poll(esp_gps_t* gps)
 {

@@ -170,6 +170,9 @@ esp_err_t parse(char *nmea) {
 	char lat, lon, mag;
 	bool fix;
 	uint8_t fixquality, satellites;
+	int32_t degree;
+	long minutes;
+	char degreebuff[10];
 
 	// first look if we even have one
 	if (nmea[strlen(nmea)-4] == '*') {
@@ -185,9 +188,8 @@ esp_err_t parse(char *nmea) {
 		  return false;
 		}
 	}
-	int32_t degree;
-	long minutes;
-	char degreebuff[10];
+
+	printf("\n%s\n\n\r", nmea);
 
 	if (strstr(nmea, "$GPGGA")) {
 		char *p = nmea;

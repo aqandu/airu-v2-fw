@@ -57,9 +57,7 @@ Notes:
 #include "app_utils.h"
 #include "pm_if.h"
 #include "led_if.h"
-#ifdef CONFIG_USE_SD
 #include "sd_if.h"
-#endif
 #include "hdc1080_if.h"
 #include "mics4514_if.h"
 #include "gps_if.h"
@@ -94,6 +92,8 @@ void data_task()
 
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
+
+	GPS_SetSystemTimeFromGPS();
 
 	while (1) {
 

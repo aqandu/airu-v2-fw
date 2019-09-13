@@ -17,6 +17,10 @@ config MQTT_PASSWORD
 	help
 		MQTT password for the desired broker.
 
+config INFLUX_MEASUREMENT_NAME
+	string "InfluxDB measurement name where MQTT data is stored"
+	default "airQuality"
+
 config MQTT_ROOT_TOPIC
 	string "Root topic (airu, tetrad, etc)"
 	default "airu"

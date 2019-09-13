@@ -56,7 +56,7 @@ void MQTT_wifi_disconnected(void);
 *
 * @return
 */
-void MQTT_Publish_General(const char* topic, const char* msg, int qos);
+int MQTT_Publish_General(const char* topic, const char* msg, int qos);
 
 /*
 * @brief
@@ -65,7 +65,7 @@ void MQTT_Publish_General(const char* topic, const char* msg, int qos);
 *
 * @return
 */
-void MQTT_Publish_Data(const char* msg);
+int MQTT_Publish_Data(const char* msg);
 
 /*
 * @brief: Prepare data in MQTT format

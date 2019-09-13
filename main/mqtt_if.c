@@ -241,19 +241,15 @@ void MQTT_Connect()
 *
 * @return
 */
-void MQTT_Publish_General(const char* topic, const char* msg, int qos)
+int MQTT_Publish_General(const char* topic, const char* msg, int qos)
 {
 	int msg_id;
 	ESP_LOGI(TAG, "%s ENTERRED client_connected %d", __func__, client_connected);
-	if(client_connected) {
 
-		msg_id = esp_mqtt_client_publish(client, topic, msg, 0, qos, 0);
-		ESP_LOGI(TAG, "Topic: %s, Msg: %s", topic, msg);
-		ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
-	}
-	else {
-		ESP_LOGW(TAG, "Client has not connected yet");
-	}
+	msg_id = esp_mqtt_client_publish(client, topic, msg, 0, qos, 0);
+	ESP_LOGI(TAG, "Topic: %s, Msg: %s", topic, msg);
+	ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+	return msg_id;
 }
 
 /*
@@ -263,8 +259,8 @@ void MQTT_Publish_General(const char* topic, const char* msg, int qos)
 *
 * @return
 */
-void MQTT_Publish_Data(const char* msg)
+int MQTT_Publish_Data(const char* msg)
 {
-	MQTT_Publish_General(MQTT_DATA_PUB_TOPIC, msg, 2);
+	return MQTT_Publish_General(MQTT_DATA_PUB_TOPIC, msg, 2);
 }
 

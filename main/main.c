@@ -106,6 +106,7 @@ static const char *TAG_UPLOAD = "UPLOAD";
 const char file_upload_nvs_namespace[] = "fileupload";
 const char* earliest_missed_data_ts = "offline";
 const char* last_upload_ts = "lastup";
+time_t last_publish = 0;
 
 ///**
 // * @brief RTOS task that periodically prints the heap memory available.
@@ -119,11 +120,29 @@ const char* last_upload_ts = "lastup";
 //	}
 //}
 
+void panic_task(void *pvParameters)
+{
+	uint64_t free_stack;
+	time_t now = 0;
+	while(1) {
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
+		now = esp_timer_get_time() / 1000000;
+		ESP_LOGI(TAG, "now: %li, last: %li, diff: %li", now, last_publish, (now - last_publish));
+		if(last_publish != 0 && now - last_publish > 3600){
+			ESP_LOGE(TAG, "No pub in 1 hr. Rebooting.");
+			abort();
+		}
+		free_stack = uxTaskGetStackHighWaterMark(NULL);
+		ESP_LOGI(TAG, "%s free stack: %llu", __func__, free_stack);
+	}
+}
+
 /*
  * Data gather task
  */
 void data_task()
 {
+	esp_err_t err;
 	pm_data_t pm_dat;
 	double temp, hum;
 	int co, nox;
@@ -140,6 +159,8 @@ void data_task()
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
 	while (1) {
+
+		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
@@ -168,7 +189,11 @@ void data_task()
 							   nox);				/* NOx 			*/
 
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
-		MQTT_Publish_Data(pkt);
+		err = MQTT_Publish_Data(pkt);
+		if(err >= ESP_OK){
+			ESP_LOGI(TAG, "MQTT publish success");
+			last_publish = uptime;
+		}
 
 #ifdef CONFIG_SD_DATA_STORE
 		/************************************
@@ -215,11 +240,10 @@ void data_task()
 		free(pkt);
 
 		/* this is a good place to do a ping test */
-		wifi_manager_check_connection();
-
-		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
+		wifi_manager_check_connection_async();
 	}
 }
+
 
 void app_main()
 {
@@ -260,6 +284,9 @@ void app_main()
 
 	/* start the ota task */
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
+
+	/* Panic task */
+	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
 
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get

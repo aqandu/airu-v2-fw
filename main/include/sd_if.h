@@ -12,7 +12,7 @@
 #include "esp_log.h"
 
 #define SD_FILENAME_LENGTH 25
-#define SD_HDR "time,ID,topic,SecActive,Altitude,Latitude,Longitude,PM1,PM2.5,PM10,Temperature,Humidity,CO,NO\n"
+#define SD_HDR "time (UTC),MAC Address,Uptime,Altitude (m),Latitude (D.d),Longitude (D.d),PM1 (ug/m3),PM2.5 (ug/m3),PM10 (ug/m3),Temperature (*C),Humidity,Carbon Monoxide ([5*(x/4096)]V),NOx ([5*(x/4096)]V)\n"
 #define SD_PKT "%s,%s,%llu,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d\n"
 #define SD_PKT_LEN 512
 

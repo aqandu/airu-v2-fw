@@ -125,15 +125,17 @@ void panic_task(void *pvParameters)
 	uint64_t free_stack;
 	time_t now = 0;
 	while(1) {
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
-		now = esp_timer_get_time() / 1000000;
-		ESP_LOGI(TAG, "now: %li, last: %li, diff: %li", now, last_publish, (now - last_publish));
-		if(last_publish != 0 && now - last_publish > 3600){
-			ESP_LOGE(TAG, "No pub in 1 hr. Rebooting.");
-			abort();
-		}
-		free_stack = uxTaskGetStackHighWaterMark(NULL);
-		ESP_LOGI(TAG, "%s free stack: %llu", __func__, free_stack);
+		vTaskDelay(60 * 60 * 1000 / portTICK_PERIOD_MS);
+		ESP_LOGI(TAG, "Rebooting...");
+		abort();
+//		now = esp_timer_get_time() / 1000000;
+//		ESP_LOGI(TAG, "now: %li, last: %li, diff: %li", now, last_publish, (now - last_publish));
+//		if(last_publish != 0 && now - last_publish > 3600){
+//			ESP_LOGE(TAG, "No pub in 1 hr. Rebooting.");
+//			abort();
+//		}
+//		free_stack = uxTaskGetStackHighWaterMark(NULL);
+//		ESP_LOGI(TAG, "%s free stack: %llu", __func__, free_stack);
 	}
 }
 

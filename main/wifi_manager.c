@@ -939,6 +939,7 @@ void wifi_manager( void * pvParameters ){
 
 					ESP_LOGI(TAG, "Got IP address, ping Google DNS 8.8.8.8 to test internet access");
 					if(wifi_manager_check_connection()){
+						vTaskDelay( 3000 / portTICK_PERIOD_MS );
 						ESP_LOGI(TAG, "Ping success! Got internet access.");
 						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 					}
@@ -1130,6 +1131,10 @@ bool wifi_manager_check_connection()
 				ESP_LOGI(TAG, "Starting timer");
 				xTimerStart(wifi_reconnect_timer, 0);
 			}
+		}
+		else{
+			ESP_LOGI(TAG, "%s, WE HAVE INTERNET! Stop the reconnect timer.", __func__);
+			xTimerStop(wifi_reconnect_timer, 0);
 		}
 		return ret;
 	}

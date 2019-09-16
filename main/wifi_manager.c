@@ -1082,7 +1082,7 @@ void wifi_manager( void * pvParameters ){
 esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
 	ESP_LOGI("PING", "\n\r\tAvgTime:\t%.1fmS \n\r\tSent:\t\t%d \n\r\tRec:\t\t%d \n\r\tErr Cnt:\t%d  \n\r\tErr:\t\t%d \n\r\tmin(mS):\t%d \n\r\tmax(mS):\t%d \n\r\tResp(mS):\t%d \n\r\tTimeouts:\t%d \n\r\tTotal Time:\t%d\n", (float)pf->total_time/pf->recv_count, pf->send_count, pf->recv_count, pf->err_count, pf->ping_err, pf->min_time, pf->max_time,pf->resp_time, pf->timeout_count, pf->total_time );
 	if (pf->recv_count > 0){
-		ESP_LOGI("PING", "Received a response. ");
+		ESP_LOGI("PING", "PING TEST SUCCESS");
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
 	}
 	else{

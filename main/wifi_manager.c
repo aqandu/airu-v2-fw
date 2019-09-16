@@ -1084,6 +1084,7 @@ esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
 	if (pf->recv_count > 0){
 		ESP_LOGI("PING", "PING TEST SUCCESS");
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+		xTimerStop(wifi_reconnect_timer, 0);
 	}
 	else{
 		ESP_LOGE("PING", "Couldn't ping 8.8.8.8. Internet is down!");
@@ -1121,9 +1122,15 @@ bool wifi_manager_check_connection()
 {
 	EventBits_t uxBits;
 	if(wifi_manager_connected_to_access_point()){
+
+		// Issue ping test
 		wifi_manager_ping_test();
+
+		// Wait up to PING_TEST_TIMEOUT_MS for ping test callback to set WIFI_MANAGER_HAVE_INTERNET_BIT
 		bool ret = (WIFI_MANAGER_HAVE_INTERNET_BIT & \
 				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT, pdFALSE, pdTRUE, MS2TICK(PING_TEST_TIMEOUT_MS)));
+
+		// Ping test failed. Start the reconnect timer
 		if (!ret){
 			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 			// There's an SSID in storage. Keep looking for it.
@@ -1132,9 +1139,11 @@ bool wifi_manager_check_connection()
 				xTimerStart(wifi_reconnect_timer, 0);
 			}
 		}
+
+		// ping test was successful.
 		else{
 			ESP_LOGI(TAG, "%s, WE HAVE INTERNET! Stop the reconnect timer.", __func__);
-			xTimerStop(wifi_reconnect_timer, 0);
+
 		}
 		return ret;
 	}

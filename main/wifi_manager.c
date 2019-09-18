@@ -59,8 +59,6 @@ Contains the freeRTOS task and all necessary support
 #include "wifi_manager.h"
 #include "http_server_if.h"
 #include "led_if.h"
-//#include "time_if.h"
-//#include "mqtt_if.h"
 
 #define str(x) #x
 #define xstr(x) str(x)
@@ -178,10 +176,9 @@ bool wifi_manager_connected_to_access_point(){
 static void vTimerCallback(TimerHandle_t xTimer)
 {
 	ESP_LOGI(TAG, "TIMER: Reconnect timer done. Setting WIFI_MANAGER_REQUEST_RECONNECT Bit.");
-	ESP_LOGI(TAG, "TIMER: Before stopping: %d", xTimerIsTimerActive(wifi_reconnect_timer));
 	xTimerStop(xTimer, 0);
-	ESP_LOGI(TAG, "TIMER: After stopping: %d", xTimerIsTimerActive(wifi_reconnect_timer));
-	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+//	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
 }
 
 void wifi_manager_json_status_update(update_reason_code_t statusCode) {
@@ -939,7 +936,6 @@ void wifi_manager( void * pvParameters ){
 
 					ESP_LOGI(TAG, "Got IP address, ping Google DNS 8.8.8.8 to test internet access");
 					if(wifi_manager_check_connection()){
-						vTaskDelay( 3000 / portTICK_PERIOD_MS );
 						ESP_LOGI(TAG, "Ping success! Got internet access.");
 						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 					}
@@ -954,11 +950,6 @@ void wifi_manager( void * pvParameters ){
 						else{
 							ESP_LOGI(TAG, "Timer already started.");
 						}
-						unsigned int tmp = xTimerGetExpiryTime(wifi_reconnect_timer) * portTICK_PERIOD_MS;
-						ESP_LOGI(TAG, "Timer expiry time (ms): %d", tmp);
-
-//						xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-//						ESP_LOGE(TAG, "Ping test failed! No internet access! Setting request reconnect timer");
 					}
 				}
 				else{
@@ -1018,61 +1009,59 @@ void wifi_manager( void * pvParameters ){
 			/* finally: release the scan request bit */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 		}
-		else if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
-		{
-			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-			ESP_LOGI(TAG, "WIFI Reconnect requested. Checking for saved SSID");
-			wifi_manager_fetch_wifi_sta_config();
-			ESP_LOGI(TAG, "WIFI STA SSID: %s", wifi_manager_config_sta->sta.ssid);
 
-			// If there's an SSID saved in FLASH
-			if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0)
-			{
-				ESP_LOGI(TAG, "Save SSID. Attempting reconnect.");
-				if(esp_wifi_scan_start(&scan_config, true) == ESP_OK){
-					ESP_LOGI(TAG, "WIFI Scan good");
-					if(esp_wifi_scan_get_ap_records(&ap_num, accessp_records) == ESP_OK){
-						ESP_LOGI(TAG, "Got records");
-						for(int i=0; i<ap_num;i++){
-							wifi_ap_record_t ap = accessp_records[i];
-							ESP_LOGI(TAG, "Scanned SSID: %s", (char*)ap.ssid);
-							if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
-								ESP_LOGI(TAG, "Found 1 matched SSID in vicinity: [%s]. Will restart reconnect attempt timer.", wifi_manager_config_sta->sta.ssid);
-								xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
-								break;
-							}
-						}
-					}
-				}
-
-				// There's an SSID in storage. Keep looking for it.
-				if(!xTimerIsTimerActive(wifi_reconnect_timer)) {
-					ESP_LOGI(TAG, "Starting timer");
-					xTimerStart(wifi_reconnect_timer, 0);
-				}
-				else{
-					ESP_LOGI(TAG, "Timer already started. When it expires we'll set WIFI_MANAGER_REQUEST_RECONNECT");
-				}
-			}
-
-			// No SSID saved in FLASH - Don't try reconnecting anymore
-			else {
-				ESP_LOGI(TAG, "No SSID saved in FLASH. Clear WIFI_MANAGER_REQUEST_RECONNECT");
-				xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
-				ESP_LOGI(TAG, "timer before stop: %d", xTimerIsTimerActive(wifi_reconnect_timer));
-				xTimerStop(wifi_reconnect_timer, 0);
-				ESP_LOGI(TAG, "timer after stop: %d", xTimerIsTimerActive(wifi_reconnect_timer));
-			}
-		}
-		else {
-			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
-		}
-
-		if ((uxBits & WIFI_MANAGER_REQUEST_PING_TEST))
-		{
+		else if ((uxBits & WIFI_MANAGER_REQUEST_PING_TEST)){
 			ESP_LOGI(TAG, "WIFI_MANAGER_REQUEST_PING_TEST");
 			wifi_manager_check_connection();
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
+		}
+
+//		else if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
+//		{
+//			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+//			ESP_LOGI(TAG, "WIFI Reconnect requested. Checking for saved SSID");
+//			wifi_manager_fetch_wifi_sta_config();
+//			ESP_LOGI(TAG, "WIFI STA SSID: %s", wifi_manager_config_sta->sta.ssid);
+//
+//			// If there's an SSID saved in FLASH
+//			if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0)
+//			{
+//				ESP_LOGI(TAG, "Save SSID. Attempting reconnect.");
+//				if(esp_wifi_scan_start(&scan_config, true) == ESP_OK){
+//					ESP_LOGI(TAG, "WIFI Scan good");
+//					if(esp_wifi_scan_get_ap_records(&ap_num, accessp_records) == ESP_OK){
+//						ESP_LOGI(TAG, "Got records");
+//						for(int i=0; i<ap_num;i++){
+//							wifi_ap_record_t ap = accessp_records[i];
+//							ESP_LOGI(TAG, "Scanned SSID: %s", (char*)ap.ssid);
+//							if (strcasecmp((char*)ap.ssid,(char*) wifi_manager_config_sta->sta.ssid) == 0) {
+//								ESP_LOGI(TAG, "Found 1 matched SSID in vicinity: [%s]. Will restart reconnect attempt timer.", wifi_manager_config_sta->sta.ssid);
+//								xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
+//								break;
+//							}
+//						}
+//					}
+//				}
+//
+//				// There's an SSID in storage. Keep looking for it.
+//				if(!xTimerIsTimerActive(wifi_reconnect_timer)) {
+//					ESP_LOGI(TAG, "Starting timer");
+//					xTimerStart(wifi_reconnect_timer, 0);
+//				}
+//				else{
+//					ESP_LOGI(TAG, "Timer already started. When it expires we'll set WIFI_MANAGER_REQUEST_RECONNECT");
+//				}
+//			}
+//
+//			// No SSID saved in FLASH - Don't try reconnecting anymore
+//			else {
+//				ESP_LOGI(TAG, "No SSID saved in FLASH. Clear WIFI_MANAGER_REQUEST_RECONNECT");
+//				xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+//				xTimerStop(wifi_reconnect_timer, 0);
+//			}
+//		}
+		else {
+			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
 		}
 	} /* for(;;) */
 	vTaskDelay( (TickType_t)10);
@@ -1080,7 +1069,7 @@ void wifi_manager( void * pvParameters ){
 
 
 esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
-	ESP_LOGI("PING", "\n\r\tAvgTime:\t%.1fmS \n\r\tSent:\t\t%d \n\r\tRec:\t\t%d \n\r\tErr Cnt:\t%d  \n\r\tErr:\t\t%d \n\r\tmin(mS):\t%d \n\r\tmax(mS):\t%d \n\r\tResp(mS):\t%d \n\r\tTimeouts:\t%d \n\r\tTotal Time:\t%d\n", (float)pf->total_time/pf->recv_count, pf->send_count, pf->recv_count, pf->err_count, pf->ping_err, pf->min_time, pf->max_time,pf->resp_time, pf->timeout_count, pf->total_time );
+//	ESP_LOGI("PING", "\n\r\tAvgTime:\t%.1fmS \n\r\tSent:\t\t%d \n\r\tRec:\t\t%d \n\r\tErr Cnt:\t%d  \n\r\tErr:\t\t%d \n\r\tmin(mS):\t%d \n\r\tmax(mS):\t%d \n\r\tResp(mS):\t%d \n\r\tTimeouts:\t%d \n\r\tTotal Time:\t%d\n", (float)pf->total_time/pf->recv_count, pf->send_count, pf->recv_count, pf->err_count, pf->ping_err, pf->min_time, pf->max_time,pf->resp_time, pf->timeout_count, pf->total_time );
 	if (pf->recv_count > 0){
 		ESP_LOGI("PING", "PING TEST SUCCESS");
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
@@ -1088,6 +1077,7 @@ esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
 	}
 	else{
 		ESP_LOGE("PING", "Couldn't ping 8.8.8.8. Internet is down!");
+		wifi_manager_connect_async();
 	}
 
 	return ESP_OK;
@@ -1109,7 +1099,6 @@ static void wifi_manager_ping_test(){
 	esp_ping_set_target(PING_TARGET_RES_FN, &pingResults, sizeof(pingResults));
 	ping_init();
 
-	ESP_LOGI("PING", "Ping test results sent to \"pingResults()\"");
 }
 
 void wifi_manager_check_connection_async()
@@ -1133,7 +1122,8 @@ bool wifi_manager_check_connection()
 		// Ping test failed. Start the reconnect timer
 		if (!ret){
 			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
-			// There's an SSID in storage. Keep looking for it.
+
+			// Ping test failed. Start the reconnect timer
 			if(!xTimerIsTimerActive(wifi_reconnect_timer)) {
 				ESP_LOGI(TAG, "Starting timer");
 				xTimerStart(wifi_reconnect_timer, 0);

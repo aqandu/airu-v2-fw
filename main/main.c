@@ -242,7 +242,7 @@ void data_task()
 		free(pkt);
 
 		/* this is a good place to do a ping test */
-		wifi_manager_check_connection_async();
+//		wifi_manager_check_connection_async();
 	}
 }
 

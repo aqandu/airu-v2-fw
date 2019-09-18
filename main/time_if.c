@@ -65,6 +65,10 @@ static time_t _sntp_obtain_time(int wait_seconds)
 
     if(now > SEC_JAN1_2018){
     	xEventGroupSetBits(ntp_event_group, GOT_TS_BIT);
+    	ESP_LOGI(TAG, "SNTP time set. UTC time is: %lu", now);
+    }
+    else{
+    	ESP_LOGE(TAG, "SNTP Time could not be set in time...");
     }
 
     return now;

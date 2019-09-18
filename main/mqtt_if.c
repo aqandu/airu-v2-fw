@@ -174,7 +174,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_ERROR:
 		   ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
-		   abort();
+//		   abort();
+		   wifi_manager_check_connection_async();
 		   break;
 
 	   default:

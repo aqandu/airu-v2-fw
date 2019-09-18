@@ -99,56 +99,45 @@ void data_task()
 
 	while (1) {
 
-		vTaskDelay(ONE_SECOND_DELAY * /*CONFIG_DATA_WRITE_PERIOD*/ 5);
+		vTaskDelay(ONE_SECOND_DELAY * 10/* CONFIG_DATA_WRITE_PERIOD */);
 
-		PMS_Poll(&pm_dat);
-		HDC1080_Poll(&temp, &hum);
-		MICS4514_Poll(&nox, &co);
-		GPS_Poll(&gps);
+		PMS_WaitForData(&pm_dat);
+		printf("PM1: %.2f\n\n\r", pm_dat.pm1);
 
-		uptime = esp_timer_get_time() / 1000000;
-
-		pkt = malloc(SD_PKT_LEN);
+//		PMS_Poll(&pm_dat);
+//		HDC1080_Poll(&temp, &hum);
+//		MICS4514_Poll(&nox, &co);
+//		GPS_Poll(&gps);
+//
+//		uptime = esp_timer_get_time() / 1000000;
 
 		/************************************
 		 * Save to SD Card
 		 *************************************/
-		time(&now);
-		localtime_r(&now, &tm);
-		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-
-//		if (gps.timeinfo.tm_year < 18 || gps.timeinfo.tm_year>= 80){
-//			hr = uptime / 3600;
-//			rm = uptime % 3600;
-//			min = rm / 60;
-//			sec = rm % 60;
+//		pkt = malloc(SD_PKT_LEN);
+//		time(&now);
+//		localtime_r(&now, &tm);
+//		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+//		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
+//		strftime(strftime_buf, sizeof(strftime_buf), "%H:%M:%S", &tm);
 //
-//			sprintf(strftime_buf, "%llu:%02d:%02d", hr, min, sec);
-//			system_time = 1;	// Using system time
-//		}
-//		else {
-//		sprintf(strftime_buf, "%02d:%02d:%02d", gps.timeinfo.tm_hour, gps.timeinfo.tm_min, gps.timeinfo.tm_sec);
-		strftime(strftime_buf, sizeof(strftime_buf), "%H:%M:%S", &tm);
-//		}
-
-		sprintf(pkt, SD_PKT, strftime_buf,
-							 DEVICE_MAC,
-							 uptime,
-							 gps.alt,
-							 gps.lat,
-							 gps.lon,
-							 pm_dat.pm1,
-							 pm_dat.pm2_5,
-							 pm_dat.pm10,
-							 temp,
-							 hum,
-							 co,
-							 nox);
-
-		sd_write_data(pkt);
-
-		free(pkt);
+//		sprintf(pkt, SD_PKT, strftime_buf,
+//							 DEVICE_MAC,
+//							 uptime,
+//							 gps.alt,
+//							 gps.lat,
+//							 gps.lon,
+//							 pm_dat.pm1,
+//							 pm_dat.pm2_5,
+//							 pm_dat.pm10,
+//							 temp,
+//							 hum,
+//							 co,
+//							 nox);
+//
+//		sd_write_data(pkt);
+//
+//		free(pkt);
 	}
 }
 

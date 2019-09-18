@@ -53,39 +53,15 @@ typedef struct
   float pm10;            // Most recent PM10 samples
 } pm_data_t;
 
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*
-*/
 esp_err_t PMS_Initialize();
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*
-*/
-//esp_err_t PM_get_data();
-
+void PMS_RESET(uint32_t level);
+void PMS_SET(uint32_t level);
+uint8_t PMS_Active( void );
+void PMS_Disable( void );
+void PMS_Enable( void );
 esp_err_t PMS_Poll(pm_data_t *dat);
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*
-*/
-esp_err_t PMS_reset();
-
+esp_err_t PMS_WaitForData(pm_data_t *dat);
+esp_err_t PMS_Sleep( void );
 
 
 #endif /*_PM_IF_H*/

@@ -101,8 +101,13 @@ void data_task()
 
 		vTaskDelay(ONE_SECOND_DELAY * 10/* CONFIG_DATA_WRITE_PERIOD */);
 
+		ESP_LOGI(TAG, "PMS Wakeup...");
+		PMS_Enable();
 		PMS_WaitForData(&pm_dat);
 		printf("PM1: %.2f\n\n\r", pm_dat.pm1);
+
+		PMS_Sleep();
+		ESP_LOGI(TAG, "PMS Sleeping...");
 
 //		PMS_Poll(&pm_dat);
 //		HDC1080_Poll(&temp, &hum);

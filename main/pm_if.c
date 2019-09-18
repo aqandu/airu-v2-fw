@@ -261,7 +261,9 @@ esp_err_t PMS_Sleep()
 		ESP_LOGI(TAG, "Sleeping PM Sensor with SET=1, RST=0");
 	}
 
-	ESP_LOGI(TAG, "Locking PM SET/RESET States...");
+	valid_sample_count = 0;
+
+//	ESP_LOGI(TAG, "Locking PM SET/RESET States...");
 //	rtc_gpio_hold_en(GPIO_PM_SET);
 //	rtc_gpio_hold_en(GPIO_PM_RESET);
 

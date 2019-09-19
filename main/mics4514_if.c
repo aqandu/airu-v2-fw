@@ -5,15 +5,18 @@
  *      Author: tombo
  */
 
-
+#include "driver/gpio.h"
 #include "driver/adc.h"
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_adc_cal.h"
 #include "mics4514_if.h"
 
-#define NO_OF_SAMPLES	64
-#define DEFAULT_VREF	1100 	// Use adc2_vref_to_gpio() to obtain a better estimate
+#define GPIO_MICS_ENABLE	33
+#define GPIO_MICS_HEATER	32
+#define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_MICS_ENABLE) | (1ULL << GPIO_MICS_HEATER))
+#define NO_OF_SAMPLES		64
+#define DEFAULT_VREF		1100 	// Use adc2_vref_to_gpio() to obtain a better estimate
 
 static const char* TAG = "MICS4514";
 static esp_adc_cal_characteristics_t *adc_chars;
@@ -55,6 +58,18 @@ static void print_char_val_type(esp_adc_cal_value_t val_type)
     }
 }
 
+void MICS4514_GPIOEnable()
+{
+	// SET and RESET GPIOs
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 0;
+	gpio_config(&io_conf);
+}
+
 /*
  *
  */
@@ -77,6 +92,11 @@ void MICS4514_Initialize(void)
 										DEFAULT_VREF,
 										adc_chars);
 	print_char_val_type(val_type);
+
+	MICS4514_GPIOEnable();
+
+	MICS4514_Disable();
+
 	return;
 }
 
@@ -101,4 +121,26 @@ void MICS4514_Poll(int *ox_val, int *red_val)
 //	*ox_val  = esp_adc_cal_raw_to_voltage(ch6, adc_chars);
 //	*red_val = esp_adc_cal_raw_to_voltage(ch7, adc_chars);
 	return;
+}
+
+//#define GPIO_MICS_ENABLE	33
+//#define GPIO_MICS_HEATER	32
+void MICS4514_Enable()
+{
+	gpio_set_level(GPIO_MICS_ENABLE, 0);
+}
+
+void MICS4514_Disable()
+{
+	gpio_set_level(GPIO_MICS_ENABLE, 1);
+}
+
+void MICS4514_HeaterEnable()
+{
+	gpio_set_level(GPIO_MICS_HEATER, 1);
+}
+
+void MICS4514_HeaterDisable()
+{
+	gpio_set_level(GPIO_MICS_HEATER, 0);
 }

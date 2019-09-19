@@ -160,9 +160,10 @@ void data_task()
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
-	while (1) {
+	GPS_Tx(PMTK_SET_NMEA_OUTPUT_ALLDATA);
+	vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_UPLOAD_PERIOD);
+	while (1) {
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
@@ -242,7 +243,7 @@ void data_task()
 		free(pkt);
 
 		/* this is a good place to do a ping test */
-//		wifi_manager_check_connection_async();
+		wifi_manager_check_connection_async();
 	}
 }
 
@@ -267,7 +268,10 @@ void app_main()
 	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
+//	MICS4514_Initialize();
+	MICS4514_GPIOEnable();
+	MICS4514_Disable();
+	MICS4514_HeaterDisable();
 
 	/* Initialize the SD Card Driver */
 	SD_Initialize();

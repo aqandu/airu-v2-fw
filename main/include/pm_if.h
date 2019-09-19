@@ -76,15 +76,9 @@ esp_err_t PMS_Initialize();
 
 esp_err_t PMS_Poll(pm_data_t *dat);
 
-/*
-* @brief
-*
-* @param
-*
-* @return
-*
-*/
-esp_err_t PMS_reset();
+void PMS_RESET(uint32_t level);
+void PMS_GPIOEnable();
+void PMS_SET(uint32_t level);
 
 
 

@@ -93,21 +93,29 @@ void data_task()
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
+	// PMTK_STANDBY
+	// PMTK_PERIODIC
 	GPS_Tx(PMTK_SET_NMEA_UPDATE_1HZ);
 
 	GPS_SetSystemTimeFromGPS();
 
 	while (1) {
 
-		vTaskDelay(ONE_SECOND_DELAY * 10/* CONFIG_DATA_WRITE_PERIOD */);
+		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_WRITE_PERIOD); // TODO: Subtract necessary time from total
 
-		ESP_LOGI(TAG, "PMS Wakeup...");
+		// Wake everyone up
 		PMS_Enable();
-		PMS_WaitForData(&pm_dat);
-		printf("PM1: %.2f\n\n\r", pm_dat.pm1);
+		GPS_Tx(PMTK_PERIODIC);	// TODO: Test sleep and wake
+		MICS4514_Enable();
 
-		PMS_Sleep();
-		ESP_LOGI(TAG, "PMS Sleeping...");
+//
+//		ESP_LOGI(TAG, "PMS Wakeup...");
+//		PMS_Enable();
+//		PMS_WaitForData(&pm_dat);
+//		printf("PM1: %.2f\n\n\r", pm_dat.pm1);
+//
+//		PMS_Sleep();
+//		ESP_LOGI(TAG, "PMS Sleeping...");
 
 //		PMS_Poll(&pm_dat);
 //		HDC1080_Poll(&temp, &hum);

@@ -160,11 +160,9 @@ void data_task()
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
-	GPS_Tx(PMTK_SET_NMEA_OUTPUT_ALLDATA);
-	vTaskDelay(1000 / portTICK_PERIOD_MS);
-
 	while (1) {
 
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
 		MICS4514_Poll(&nox, &co);
@@ -194,8 +192,12 @@ void data_task()
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
 		err = MQTT_Publish_Data(pkt);
 		if(err >= ESP_OK){
-			ESP_LOGI(TAG, "MQTT publish success");
+			ESP_LOGI(TAG, "MQTT publish success %d", err);
 			last_publish = uptime;
+		}
+		else{
+			ESP_LOGI(TAG, "MQTT publish fail %d", err);
+			wifi_manager_check_connection_async();
 		}
 
 #ifdef CONFIG_SD_DATA_STORE
@@ -205,7 +207,7 @@ void data_task()
 		time(&now);
 		localtime_r(&now, &tm);
 		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
+		ESP_LOGI(TAG, "SD card datetime: %s", strftime_buf);
 
 		if (gps.year <= 18 || gps.year >= 80){
 			hr = uptime / 3600;
@@ -243,7 +245,7 @@ void data_task()
 		free(pkt);
 
 		/* this is a good place to do a ping test */
-		wifi_manager_check_connection_async();
+//		wifi_manager_check_connection_async();
 	}
 }
 
@@ -268,10 +270,7 @@ void app_main()
 	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-//	MICS4514_Initialize();
-	MICS4514_GPIOEnable();
-	MICS4514_Disable();
-	MICS4514_HeaterDisable();
+	MICS4514_Initialize();
 
 	/* Initialize the SD Card Driver */
 	SD_Initialize();
@@ -293,6 +292,8 @@ void app_main()
 
 	/* Panic task */
 	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
+
+	vTaskDelay(1000/portTICK_PERIOD_MS);
 
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get

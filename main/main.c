@@ -125,7 +125,7 @@ void data_task()
 #ifdef CONFIG_ENABLE_PMS
 			PMS_Enable();
 #endif
-			GPS_Tx(PMTK_PERIODIC);	// TODO: Test sleep and wake
+			GPS_Tx(PMTK_PERIODIC);
 #ifdef CONFIG_ENABLE_MICS
 			MICS4514_Enable();
 #endif

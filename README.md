@@ -21,6 +21,32 @@ meaning just replace `portMAX_DELAY` with `1000 / portTICK_PERIOD_MS`. There's c
 - Partition Table -> Partition Table (Factory app, two OTA definitions)
 - Component Config -> FAT Filesystem support -> Long filename support (Long filename buffer in heap)
 
+- Application Make menuconfig setup
+
+Make menuconfig > AirU Configuration
+
+CONFIG_MQTT_HOST="air.eng.utah.edu"
+
+CONFIG_MQTT_USERNAME="sensor"
+
+CONFIG_MQTT_PASSWORD="PaG06pSo43oM4Cx"
+
+CONFIG_INFLUX_MEASUREMENT_NAME="airQuality"
+
+CONFIG_MQTT_ROOT_TOPIC="airu"
+
+CONFIG_MQTT_DATA_PUB_TOPIC="influx"
+
+CONFIG_MQTT_SUB_ALL_TOPIC="all/v2"
+
+CONFIG_DATA_UPLOAD_PERIOD=60
+
+CONFIG_USE_SD=y
+
+CONFIG_SD_DATA_STORE=y
+
+CONFIG_SD_CARD_DEBUG=y
+
 
 
 

@@ -456,5 +456,9 @@ void bluetooth_initialize() {
     		esp_err_to_name(esp_blufi_register_callbacks(&example_callbacks)));
 
     ESP_LOGI(TAG, "%s: esp_blufi_profile_init [%s]", __func__, esp_err_to_name(esp_blufi_profile_init()));
+    ESP_LOGI(TAG, "QQQ: service UUID ");
+    for(uint8_t i = 0; i < sizeof(ble_gatt_service_uuid128); i++) {
+    	printf("%X ", ble_gatt_service_uuid128[i]);
+    }
 }
 

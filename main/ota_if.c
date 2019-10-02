@@ -202,6 +202,7 @@ static esp_err_t _ota_commence()
     if (esp_ota_end(update_handle) != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_end failed!");
         _http_cleanup(client);
+        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }

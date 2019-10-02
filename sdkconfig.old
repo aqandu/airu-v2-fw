@@ -79,7 +79,7 @@ CONFIG_WIFI_MODE_AP="1"
 CONFIG_MQTT_HOST="mqtt.googleapis.com"
 CONFIG_MQTT_USERNAME="unused"
 CONFIG_MQTT_PASSWORD="PaG06pSo43oM4Cx"
-CONFIG_FIRMWARE_UPG_URL="air.eng.utah.edu:80/files/updates/hello-world.bin"
+CONFIG_FIRMWARE_UPG_URL="http://storage.googleapis.com/ota_firmware_updates/mqtt_ssl.bin"
 # CONFIG_PARTITION_TABLE_SINGLE_APP is not set
 CONFIG_PARTITION_TABLE_TWO_OTA=y
 # CONFIG_PARTITION_TABLE_CUSTOM is not set

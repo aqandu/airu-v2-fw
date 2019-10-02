@@ -60,7 +60,7 @@ uint8_t PMS_Active( void );
 void PMS_Disable( void );
 void PMS_Enable( void );
 esp_err_t PMS_Poll(pm_data_t *dat);
-esp_err_t PMS_WaitForData(pm_data_t *dat);
+esp_err_t PMS_WaitForData(int max_wait_sec, pm_data_t *dat);
 esp_err_t PMS_Sleep( void );
 
 

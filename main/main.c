@@ -90,6 +90,22 @@ void data_task()
 	char strftime_buf[64];
 	uint8_t min, sec, system_time;
 
+	// More power efficient to turn everything off if we're sleeping
+	//		for longer than 120 seconds. But this means we need to wait
+	//		longer for the PM sensor to recalibrate. Intersection point
+	// 		is 120 seconds
+	int waketime;
+	if(CONFIG_DATA_WRITE_PERIOD <= 3){
+		waketime = 0;
+	}
+	else if(CONFIG_DATA_WRITE_PERIOD <= 120){
+		waketime = 3;
+	}
+	else {
+		waketime = 15;
+	}
+
+
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
@@ -99,58 +115,92 @@ void data_task()
 
 	GPS_SetSystemTimeFromGPS();
 
+
 	while (1) {
 
-		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_WRITE_PERIOD); // TODO: Subtract necessary time from total
+		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_WRITE_PERIOD - waketime); // TODO: Subtract necessary time from total
 
 		// Wake everyone up
-		PMS_Enable();
-		GPS_Tx(PMTK_PERIODIC);	// TODO: Test sleep and wake
-		MICS4514_Enable();
+		if(waketime){
+#ifdef CONFIG_ENABLE_PMS
+			PMS_Enable();
+#endif
+			GPS_Tx(PMTK_PERIODIC);	// TODO: Test sleep and wake
+#ifdef CONFIG_ENABLE_MICS
+			MICS4514_Enable();
+#endif
+		}
 
-//
-//		ESP_LOGI(TAG, "PMS Wakeup...");
-//		PMS_Enable();
-//		PMS_WaitForData(&pm_dat);
-//		printf("PM1: %.2f\n\n\r", pm_dat.pm1);
-//
-//		PMS_Sleep();
-//		ESP_LOGI(TAG, "PMS Sleeping...");
+#ifdef CONFIG_ENABLE_PMS
+		// Can't wait any longer than the full interval for data
+		PMS_WaitForData(CONFIG_DATA_WRITE_PERIOD - waketime - 1, &pm_dat);
+#else
+		// Keep the data structs, just make them bad data on the SD card
+		pm_dat.pm1   = -1;
+		pm_dat.pm10  = -1;
+		pm_dat.pm2_5 = -1;
+#endif
 
-//		PMS_Poll(&pm_dat);
-//		HDC1080_Poll(&temp, &hum);
-//		MICS4514_Poll(&nox, &co);
-//		GPS_Poll(&gps);
+		HDC1080_Poll(&temp, &hum);
+
+#ifdef CONFIG_ENABLE_MICS
+		MICS4514_Poll(&nox, &co);
+#else
+		nox = -1;
+		co = -1;
+#endif
+
+		GPS_Poll(&gps);
 //
-//		uptime = esp_timer_get_time() / 1000000;
+		uptime = esp_timer_get_time() / 1000000;
 
 		/************************************
 		 * Save to SD Card
 		 *************************************/
-//		pkt = malloc(SD_PKT_LEN);
-//		time(&now);
-//		localtime_r(&now, &tm);
-//		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
-//		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
-//		strftime(strftime_buf, sizeof(strftime_buf), "%H:%M:%S", &tm);
-//
-//		sprintf(pkt, SD_PKT, strftime_buf,
-//							 DEVICE_MAC,
-//							 uptime,
-//							 gps.alt,
-//							 gps.lat,
-//							 gps.lon,
-//							 pm_dat.pm1,
-//							 pm_dat.pm2_5,
-//							 pm_dat.pm10,
-//							 temp,
-//							 hum,
-//							 co,
-//							 nox);
-//
-//		sd_write_data(pkt);
-//
-//		free(pkt);
+		pkt = malloc(SD_PKT_LEN);
+		time(&now);
+		localtime_r(&now, &tm);
+		strftime(strftime_buf, sizeof(strftime_buf), "%c", &tm);
+		ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
+		strftime(strftime_buf, sizeof(strftime_buf), "%H:%M:%S", &tm);
+
+		sprintf(pkt, SD_PKT, strftime_buf,
+							 DEVICE_MAC,
+							 uptime,
+							 gps.alt,
+							 gps.lat,
+							 gps.lon,
+							 pm_dat.pm1,
+							 pm_dat.pm2_5,
+							 pm_dat.pm10,
+							 temp,
+							 hum,
+							 co,
+							 nox);
+
+		sd_write_data(pkt);
+
+		free(pkt);
+
+		if(waketime){
+			// Put everyone back to sleep
+
+			GPS_Tx(PMTK_STANDBY);
+
+#ifdef CONFIG_ENABLE_PMS
+			if(waketime == 15){
+				PMS_Disable();
+			} else {
+				PMS_SET(0);
+			}
+#endif
+#ifdef CONFIG_ENABLE_MICS
+			MICS4514_Disable();
+#endif
+		}
+
+		// Sleep for the remainder of the period time
+		vTaskDelay(ONE_SECOND_DELAY * waketime);
 	}
 }
 
@@ -168,13 +218,17 @@ void app_main()
 	GPS_Initialize();
 
 	/* Initialize the PM Driver */
+#ifdef CONFIG_ENABLE_PMS
 	PMS_Initialize();
+#endif
 
 	/* Initialize the HDC1080 Driver */
 	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
+#ifdef CONFIG_ENABLE_MICS
 	MICS4514_Initialize();
+#endif
 
 	/* Initialize the SD Card Driver */
 	SD_Initialize();

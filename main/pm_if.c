@@ -75,6 +75,7 @@ static void _pm_accum_rst()
 	pm_accum.pm2_5 = 0;
 	pm_accum.pm10  = 0;
 	pm_accum.sample_count = 0;
+	valid_sample_count = 0;
 }
 
 /*
@@ -135,8 +136,8 @@ esp_err_t PMS_Initialize()
   io_conf.pull_up_en = 0;
   gpio_config(&io_conf);
 
-  PMS_SET(1);
-  PMS_RESET(1);
+  PMS_SET(0);
+  PMS_RESET(0);
 
   // start the first timer
   xTimerStart(pm_timer, 0);
@@ -155,6 +156,7 @@ esp_err_t PMS_Initialize()
 void PMS_RESET(uint32_t level)
 {
   gpio_set_level(GPIO_PM_RESET, level);
+  valid_sample_count = 0;
 }
 
 
@@ -169,6 +171,7 @@ void PMS_RESET(uint32_t level)
 void PMS_SET(uint32_t level)
 {
   gpio_set_level(GPIO_PM_SET, level);
+  valid_sample_count = 0;
 }
 
 
@@ -181,9 +184,9 @@ void PMS_Disable()
 {
 	PMS_SET(0);
 	PMS_RESET(0);
-	for (int i=0;i<50;i++){
-		ESP_LOGI(TAG, "%d:\t%d", i, RTC_GPIO_IS_VALID_GPIO(i));
-	}
+//	for (int i=0;i<50;i++){
+//		ESP_LOGI(TAG, "%d:\t%d", i, RTC_GPIO_IS_VALID_GPIO(i));
+//	}
 //	rtc_gpio_hold_en(GPIO_PM_SET);
 //	rtc_gpio_hold_en(GPIO_PM_RESET);
 }
@@ -224,15 +227,17 @@ esp_err_t PMS_Poll(pm_data_t *dat)
  * @return
  *
  */
-esp_err_t PMS_WaitForData(pm_data_t *dat)
+esp_err_t PMS_WaitForData(int max_wait_sec, pm_data_t *dat)
 {
 	// Start the mutex used to handle waiting for valid data
 	ESP_LOGI(TAG, "PMS_WaitForData Called...");
 	pm_event_group = xEventGroupCreate();
 	ESP_LOGI(TAG, "PMS_WaitForData waiting for valid PM data...");
-	xEventGroupWaitBits(pm_event_group, PM_WAIT_FOR_VALID_DATA, pdFALSE, pdTRUE, portMAX_DELAY);
+	xEventGroupWaitBits(pm_event_group, PM_WAIT_FOR_VALID_DATA, pdFALSE, pdTRUE, ((1000 * max_wait_sec) / portTICK_PERIOD_MS));
 	ESP_LOGI(TAG, "PMS_WaitForData retreived valid data flag...");
 	vEventGroupDelete(pm_event_group);
+
+	// If we timed out, -1's will be put in dat
 	PMS_Poll(dat);
 	return ESP_OK;
 }

@@ -1,9 +1,22 @@
 menu "AirU Configuration"
 
 config DATA_WRITE_PERIOD
-	int "Period (s)"
+	int "Data sample and SD write period (s)"
+	range 3 86400
 	default 60
 	help
 		Data upload rate via MQTT and SD data write rate. 
+
+config ENABLE_PMS
+	bool "Enable PMS"
+	default y
+
+config ENABLE_MICS
+	bool "Enable MiCS power"
+	default y
+
+config ENABLE_MICS_HEATER
+	bool "Enable MiCS heater while MiCS is enabled"
+	default n
 
 endmenu

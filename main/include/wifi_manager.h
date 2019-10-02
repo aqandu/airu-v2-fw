@@ -146,6 +146,8 @@ extern "C" {
 #define JSON_MAC_ADR_SIZE		29
 #define JSON_REG_INFO_SIZE 		(JSON_REG_NAME_SIZE + JSON_REG_EMAIL_SIZE + JSON_MAP_VIS_SIZE + JSON_MAC_ADR_SIZE)
 
+/* Integer ERROR code definition */
+#define ERR_WIFI_DISCONECTED -2
 
 
 typedef enum update_reason_code_t {
@@ -326,7 +328,7 @@ bool wifi_manager_connected_to_access_point();
 /**
  * @brief Ping www.google.com. If successful, we have Internet.
  */
-bool wifi_manager_check_connection();
+int wifi_manager_check_connection();
 
 /**
  * @brief set bit to check internet connection with ping test

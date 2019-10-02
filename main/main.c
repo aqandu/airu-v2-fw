@@ -164,6 +164,7 @@ void data_task()
 	vTaskDelay(1000 / portTICK_PERIOD_MS);
 
 	while (1) {
+		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
 
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);

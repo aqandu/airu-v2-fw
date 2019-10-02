@@ -935,7 +935,7 @@ void wifi_manager( void * pvParameters ){
 					wifi_manager_save_sta_config();
 
 					ESP_LOGI(TAG, "Got IP address, ping Google DNS 8.8.8.8 to test internet access");
-					if(wifi_manager_check_connection()){
+					if(wifi_manager_check_connection() == 1){
 						ESP_LOGI(TAG, "Ping success! Got internet access.");
 						xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
 					}
@@ -1012,10 +1012,18 @@ void wifi_manager( void * pvParameters ){
 
 		else if ((uxBits & WIFI_MANAGER_REQUEST_PING_TEST)){
 			ESP_LOGI(TAG, "WIFI_MANAGER_REQUEST_PING_TEST");
-			wifi_manager_check_connection();
+			if (wifi_manager_check_connection() == ERR_WIFI_DISCONECTED) {
+				wifi_manager_fetch_wifi_sta_config();
+				if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0) {
+					wifi_manager_connect_async();
+				} else {
+					ESP_LOGW("%s:[%d] - Not going to automatically connect to wifi");
+					// Not going retry since... esp would stop working until the next reboot
+					// Do something else but retry connecting
+				}
+			}
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
 		}
-
 //		else if ((uxBits & WIFI_MANAGER_REQUEST_RECONNECT))
 //		{
 //			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
@@ -1107,7 +1115,7 @@ void wifi_manager_check_connection_async()
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_PING_TEST);
 }
 
-bool wifi_manager_check_connection()
+int wifi_manager_check_connection()
 {
 	EventBits_t uxBits;
 	if(wifi_manager_connected_to_access_point()){
@@ -1116,7 +1124,7 @@ bool wifi_manager_check_connection()
 		wifi_manager_ping_test();
 
 		// Wait up to PING_TEST_TIMEOUT_MS for ping test callback to set WIFI_MANAGER_HAVE_INTERNET_BIT
-		bool ret = (WIFI_MANAGER_HAVE_INTERNET_BIT & \
+		int ret = (WIFI_MANAGER_HAVE_INTERNET_BIT & \
 				xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT, pdFALSE, pdTRUE, MS2TICK(PING_TEST_TIMEOUT_MS)));
 
 		// Ping test failed. Start the reconnect timer
@@ -1138,6 +1146,6 @@ bool wifi_manager_check_connection()
 		return ret;
 	}
 	else{
-		return false;
+		return ERR_WIFI_DISCONECTED;
 	}
 }

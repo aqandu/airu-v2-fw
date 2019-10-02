@@ -86,24 +86,30 @@ void data_task()
 	uint64_t uptime = 0;
 	uint64_t hr, rm;
 	time_t now;
+	int64_t t1, t2;
+	int t3;
 	struct tm tm;
 	char strftime_buf[64];
 	uint8_t min, sec, system_time;
+
+	uint8_t firsttime = 1;
 
 	// More power efficient to turn everything off if we're sleeping
 	//		for longer than 120 seconds. But this means we need to wait
 	//		longer for the PM sensor to recalibrate. Intersection point
 	// 		is 120 seconds
 	int waketime;
-	if(CONFIG_DATA_WRITE_PERIOD <= 3){
+	if(CONFIG_DATA_WRITE_PERIOD <= 7){	// 7 seconds is about the upper limit for PMS to get 5 valid samples. Don't put PMS back to sleep if we're sampling more often than this
 		waketime = 0;
 	}
 	else if(CONFIG_DATA_WRITE_PERIOD <= 120){
-		waketime = 3;
+		waketime = 5;
 	}
 	else {
 		waketime = 15;
 	}
+
+	ESP_LOGI(TAG, "waketime: %d", waketime);
 
 
 	// only need to get it once
@@ -118,10 +124,9 @@ void data_task()
 
 	while (1) {
 
-		vTaskDelay(ONE_SECOND_DELAY * CONFIG_DATA_WRITE_PERIOD - waketime); // TODO: Subtract necessary time from total
-
+		t1 = esp_timer_get_time();
 		// Wake everyone up
-		if(waketime){
+//		if(waketime){
 #ifdef CONFIG_ENABLE_PMS
 			PMS_Enable();
 #endif
@@ -129,11 +134,17 @@ void data_task()
 #ifdef CONFIG_ENABLE_MICS
 			MICS4514_Enable();
 #endif
-		}
+//		}
 
 #ifdef CONFIG_ENABLE_PMS
 		// Can't wait any longer than the full interval for data
-		PMS_WaitForData(CONFIG_DATA_WRITE_PERIOD - waketime - 1, &pm_dat);
+		if(waketime){
+			PMS_WaitForData(CONFIG_DATA_WRITE_PERIOD - waketime - 1, &pm_dat);
+		}
+		else{
+			ESP_LOGI(TAG, "Simple PMS poll");
+			PMS_Poll(&pm_dat);
+		}
 #else
 		// Keep the data structs, just make them bad data on the SD card
 		pm_dat.pm1   = -1;
@@ -151,7 +162,25 @@ void data_task()
 #endif
 
 		GPS_Poll(&gps);
-//
+
+// Put everyone back to sleep
+		if(waketime){
+
+			GPS_Tx(PMTK_STANDBY);
+
+#ifdef CONFIG_ENABLE_PMS
+			if(waketime == 15){
+				PMS_Disable();
+			}
+			else{
+				PMS_SET(0);
+			}
+#endif
+#ifdef CONFIG_ENABLE_MICS
+			MICS4514_Disable();
+#endif
+		}
+
 		uptime = esp_timer_get_time() / 1000000;
 
 		/************************************
@@ -182,25 +211,17 @@ void data_task()
 
 		free(pkt);
 
-		if(waketime){
-			// Put everyone back to sleep
+		t2 = esp_timer_get_time();
+		t3 = (int)((t2 - t1) / 1000000);	// time in seconds
 
-			GPS_Tx(PMTK_STANDBY);
-
-#ifdef CONFIG_ENABLE_PMS
-			if(waketime == 15){
-				PMS_Disable();
-			} else {
-				PMS_SET(0);
-			}
-#endif
-#ifdef CONFIG_ENABLE_MICS
-			MICS4514_Disable();
-#endif
-		}
-
+		firsttime = 0;
 		// Sleep for the remainder of the period time
-		vTaskDelay(ONE_SECOND_DELAY * waketime);
+		ESP_LOGI(TAG, "Time delay: %li", (signed long)t3);
+		ESP_LOGI(TAG, "Delay for [ %li ] seconds", (signed long)CONFIG_DATA_WRITE_PERIOD - t3);
+
+		if(CONFIG_DATA_WRITE_PERIOD >= t3){ /* Don't delay if we take too long to get data */
+			vTaskDelay(ONE_SECOND_DELAY * (CONFIG_DATA_WRITE_PERIOD - t3)); // TODO: Subtract necessary time from total
+		}
 	}
 }
 

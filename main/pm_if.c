@@ -156,7 +156,9 @@ esp_err_t PMS_Initialize()
 void PMS_RESET(uint32_t level)
 {
   gpio_set_level(GPIO_PM_RESET, level);
-  valid_sample_count = 0;
+  if(!level){
+	  valid_sample_count = 0;
+  }
 }
 
 
@@ -171,7 +173,9 @@ void PMS_RESET(uint32_t level)
 void PMS_SET(uint32_t level)
 {
   gpio_set_level(GPIO_PM_SET, level);
-  valid_sample_count = 0;
+  if(!level){
+	  valid_sample_count = 0;
+  }
 }
 
 

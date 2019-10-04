@@ -295,6 +295,7 @@ void app_main()
 	/* Panic task */
 	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
 
+	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get
 	 * created above and used below. Better ways to do this but this is simplest.

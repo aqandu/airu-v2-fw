@@ -846,7 +846,7 @@ void wifi_manager( void * pvParameters ){
 				WIFI_MANAGER_REQUEST_STA_CONNECT_BIT |
 				WIFI_MANAGER_REQUEST_WIFI_SCAN |
 				WIFI_MANAGER_REQUEST_WIFI_DISCONNECT |
-				WIFI_MANAGER_REQUEST_RECONNECT |
+				/*WIFI_MANAGER_REQUEST_RECONNECT |*/
 				WIFI_MANAGER_REQUEST_PING_TEST,
 				pdFALSE, pdFALSE, portMAX_DELAY );
 		ESP_LOGI(TAG, "uxBits: 0x%x", uxBits);
@@ -1017,7 +1017,7 @@ void wifi_manager( void * pvParameters ){
 				if(strlen((char*)wifi_manager_config_sta->sta.ssid) > 0) {
 					wifi_manager_connect_async();
 				} else {
-					ESP_LOGW("%s:[%d] - Not going to automatically connect to wifi");
+					ESP_LOGW(TAG, "%s: [%d] - Not going to automatically connect to wifi", __func__, __LINE__);
 					// Not going retry since... esp would stop working until the next reboot
 					// Do something else but retry connecting
 				}

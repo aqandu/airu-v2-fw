@@ -577,8 +577,10 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
 //				& (event->event_info.disconnected.reason != WIFI_REASON_NO_AP_FOUND) 			/* No AP found */
 				)
     	{
-    		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+//    		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_RECONNECT);
+			xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
     	}
+//    	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_STA_CONNECT_BIT);
     	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_WIFI_CONNECTED_BIT);
 		xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
@@ -690,6 +692,7 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 	}
 	/* update the length of the list */
 	*aps = total_unique;
+	esp_wifi_deinit();
 }
 
 void wifi_manager( void * pvParameters ){
@@ -857,6 +860,7 @@ void wifi_manager( void * pvParameters ){
 
 			/* if disconnected, there is no internet */
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 			/*disconnect only if it was connected to begin with! */
 			if( uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT ){
@@ -871,7 +875,6 @@ void wifi_manager( void * pvParameters ){
 				ESP_LOGI(TAG, "WiFi was not connected to begin with!");
 			}
 
-			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 
 			xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT);
 
@@ -1071,6 +1074,9 @@ void wifi_manager( void * pvParameters ){
 		else {
 			ESP_LOGI(TAG, "xEventGroupWaitBits[%d] Timeout with Event Handler Event ID: %d", __LINE__, uxBits);
 		}
+		if((xEventGroupGetBits(wifi_manager_event_group) & WIFI_MANAGER_HAVE_INTERNET_BIT) == 0){
+			LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
+		}
 	} /* for(;;) */
 	vTaskDelay( (TickType_t)10);
 } /*void wifi_manager*/
@@ -1081,6 +1087,7 @@ esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
 	if (pf->recv_count > 0){
 		ESP_LOGI("PING", "PING TEST SUCCESS");
 		xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
+		LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
 		xTimerStop(wifi_reconnect_timer, 0);
 	}
 	else{
@@ -1100,7 +1107,7 @@ static void wifi_manager_ping_test(){
 	ESP_LOGI("PING", "Issuing Ping test. IP binary: 0x%08x", ip.s_addr);
 
 	xEventGroupClearBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT);
-
+	LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
 	esp_ping_set_target(PING_TARGET_IP_ADDRESS_COUNT, &ping_count, sizeof(uint32_t));
 	esp_ping_set_target(PING_TARGET_RCV_TIMEO, &ping_timeout, sizeof(uint32_t));
 	esp_ping_set_target(PING_TARGET_IP_ADDRESS, &ip.s_addr, sizeof(uint32_t));

@@ -121,6 +121,8 @@ esp_err_t PMS_Initialize()
   _pm_accum_rst();
 
   PMS_GPIOEnable();
+  PMS_SET(1);
+  PMS_RESET(1);
 
   // start the first timer
   xTimerStart(pm_timer, 0);

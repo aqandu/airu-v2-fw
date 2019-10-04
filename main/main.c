@@ -161,6 +161,7 @@ void data_task()
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
 	while (1) {
+		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
 
 		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		PMS_Poll(&pm_dat);
@@ -293,7 +294,7 @@ void app_main()
 	/* Panic task */
 	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
 
-	vTaskDelay(1000/portTICK_PERIOD_MS);
+	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
 
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get

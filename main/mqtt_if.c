@@ -113,8 +113,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-		   esp_mqtt_client_destroy(client);
 		   client_connected = false;
+		   esp_mqtt_client_destroy(client);
 
 		   // Set the WIFI_MANAGER_HAVE_INTERNET_BIT: is it MQTT or internet problem?
 		   wifi_manager_check_connection_async();

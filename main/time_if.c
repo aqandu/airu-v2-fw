@@ -129,7 +129,7 @@ int SNTP_Initialize(void)
 
     // Wait for internet access
     ESP_LOGI(TAG, "Waiting for internet access...");
-    wifi_manager_wait_internet_access();
+//    wifi_manager_wait_internet_access();
     ESP_LOGI(TAG, "Got internet access...");
 	ESP_LOGI(TAG, "Initializing SNTP");
 

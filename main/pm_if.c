@@ -22,8 +22,8 @@
 #include "esp_log.h"
 #include "pm_if.h"
 
-#define GPIO_PM_RESET	17
-#define GPIO_PM_SET		5
+#define GPIO_PM_RESET	33
+#define GPIO_PM_SET		4
 #define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_PM_RESET) | (1ULL << GPIO_PM_SET))
 #define PM_TIMER_TIMEOUT_MS 5000
 
@@ -140,6 +140,7 @@ void PMS_GPIOEnable()
   io_conf.pull_down_en = 0;
   io_conf.pull_up_en = 0;
   gpio_config(&io_conf);
+//  rtc_gpio_init();
 }
 
 esp_err_t PMS_Poll(pm_data_t *dat)

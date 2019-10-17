@@ -52,6 +52,7 @@ Notes:
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "esp_sleep.h"
 
 #include "app_utils.h"
 #include "pm_if.h"
@@ -80,10 +81,10 @@ Notes:
 
 
 /* GPIO */
-#define STAT1_LED 21
+#define GP_LED 21
 #define STAT2_LED 19
 #define STAT3_LED 18
-#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GP_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
 #define ONE_MIN 					60
 #define ONE_HR						ONE_MIN * 60
@@ -161,9 +162,7 @@ void data_task()
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
 	while (1) {
-		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
-
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
+		vTaskDelay(30*1000 / portTICK_PERIOD_MS);
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
 		MICS4514_Poll(&nox, &co);
@@ -191,15 +190,15 @@ void data_task()
 							   nox);				/* NOx 			*/
 
 		ESP_LOGI(TAG, "MQTT PACKET:\n\r%s", pkt);
-		err = MQTT_Publish_Data(pkt);
-		if(err >= ESP_OK){
-			ESP_LOGI(TAG, "MQTT publish success %d", err);
-			last_publish = uptime;
-		}
-		else{
-			ESP_LOGI(TAG, "MQTT publish fail %d", err);
-			wifi_manager_check_connection_async();
-		}
+//		err = MQTT_Publish_Data(pkt);
+//		if(err >= ESP_OK){
+//			ESP_LOGI(TAG, "MQTT publish success %d", err);
+//			last_publish = uptime;
+//		}
+//		else{
+//			ESP_LOGI(TAG, "MQTT publish fail %d", err);
+//			wifi_manager_check_connection_async();
+//		}
 
 #ifdef CONFIG_SD_DATA_STORE
 		/************************************
@@ -245,8 +244,12 @@ void data_task()
 
 		free(pkt);
 
+		ESP_LOGW(TAG, "Go to deep sleep for 15s");
+		esp_sleep_enable_timer_wakeup(15 * 1000000);
+		esp_deep_sleep_start();
+		// Configure deep sleep timer
+
 		/* this is a good place to do a ping test */
-//		wifi_manager_check_connection_async();
 	}
 }
 
@@ -256,13 +259,28 @@ void app_main()
 	/* initialize flash memory */
 
 	APP_Initialize();
-	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+	gpio_hold_dis(GPIO_NUM_4);
+	gpio_hold_dis(GPIO_NUM_21);
 
+	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
+	ESP_LOGW(TAG, "Waking up");
+	switch (esp_sleep_get_wakeup_cause()) {
+		case ESP_SLEEP_WAKEUP_EXT1: {
+			printf("ESP_SLEEP_WAKEUP_EXT1\n");
+			break;
+		}
+		case ESP_SLEEP_WAKEUP_TIMER: {
+			printf("Wake up from timer. Time spent in deep sleep\n");
+			break;
+		}
+		default:
+			printf("Undefined waking reason: [%d]\n", esp_sleep_get_wakeup_cause());
+	}
 	/* Initialize the LED Driver */
 	LED_Initialize();
 
 	/* Initialize the GPS Driver */
-	GPS_Initialize();
+//	GPS_Initialize();
 
 	/* Initialize the PM Driver */
 	PMS_Initialize();
@@ -271,10 +289,10 @@ void app_main()
 	HDC1080_Initialize();
 
 	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
+//	MICS4514_Initialize();
 
 	/* Initialize the SD Card Driver */
-	SD_Initialize();
+//	SD_Initialize();
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
@@ -283,28 +301,27 @@ void app_main()
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+//	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+//	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
 
 	/* Panic task */
 	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
 
-	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
 
 	/*
 	 * These initializations need to be after the tasks, because necessary mutexs get
 	 * created above and used below. Better ways to do this but this is simplest.
 	 */
 	/* Initialize SNTP */
-	SNTP_Initialize();
+//	SNTP_Initialize();
 
 	/* Initialize MQTT */
-	MQTT_Initialize();
+//	MQTT_Initialize();
 
 //	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 //#if WIFI_MANAGER_DEBUG

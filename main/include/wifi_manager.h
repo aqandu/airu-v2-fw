@@ -1,16 +1,13 @@
 /*
 Copyright (c) 2017 Tony Pottier
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,13 +15,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 @file wifi_manager.h
 @author Tony Pottier
 @brief Defines all functions necessary for esp32 to connect to a wifi/scan wifis
-
 Contains the freeRTOS task and all necessary support
-
 @see https://idyl.io
 @see https://github.com/tonyp7/esp32-wifi-manager
 */
@@ -40,11 +34,10 @@ extern "C" {
 #include "esp_wifi_types.h"
 #include "tcpip_adapter.h"
 #include "esp_event_legacy.h"
-
 /**
  * @brief If WIFI_MANAGER_DEBUG is defined, additional debug information will be sent to the standard output.
  */
-#define WIFI_MANAGER_DEBUG	1
+#define WIFI_MANAGER_DEBUG	0
 
 /**
  * @brief Defines the maximum size of a SSID name. 32 is IEEE standard.
@@ -146,6 +139,10 @@ extern "C" {
 #define JSON_MAP_VIS_SIZE		22
 #define JSON_MAC_ADR_SIZE		29
 #define JSON_REG_INFO_SIZE 		(JSON_REG_NAME_SIZE + JSON_REG_EMAIL_SIZE + JSON_MAP_VIS_SIZE + JSON_MAC_ADR_SIZE)
+
+/* Integer ERROR code definition */
+#define ERR_WIFI_DISCONECTED -2
+
 
 typedef enum update_reason_code_t {
 	UPDATE_CONNECTION_OK = 0,
@@ -322,6 +319,20 @@ esp_err_t wifi_manager_save_wifi_settings();
  */
 bool wifi_manager_connected_to_access_point();
 
+/**
+ * @brief Ping www.google.com. If successful, we have Internet.
+ */
+int wifi_manager_check_connection();
+
+/**
+ * @brief set bit to check internet connection with ping test
+ */
+void wifi_manager_check_connection_async();
+
+EventBits_t wifi_manager_wait_connect();
+EventBits_t wifi_manager_wait_disconnect();
+EventBits_t wifi_manager_wait_internet_access();
+//void wifi_manager_ping_test(void);
 #ifdef __cplusplus
 }
 #endif

@@ -43,7 +43,6 @@ static char DEVICE_MAC[13];
 // extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern const uint8_t roots_pem_start[] asm("_binary_roots_pem_start");
 extern uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
-extern int wifiConnectedFlag;
 int otaInProgressFlag = 0;
 static bool client_connected;
 static esp_mqtt_client_handle_t client;
@@ -69,7 +68,7 @@ static char mqtt_state_topic[MQTT_TOPIC_LEN] = {0};
 uint32_t reconnect_time;	// Used in the event handler and while() loop to denote when the JWT expires.
 
 /*
-* @brief Aquires a JSON WEB TOKEN (JWT) that is used as the password in the client configuration.
+* @brief Acquires a JSON WEB TOKEN (JWT) that is used as the password in the client configuration.
 * Initializes the client configuration for connection with IoT.
 *
 * @param N/A
@@ -205,10 +204,10 @@ void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
 	// Constants that define data change thresholds for publishing a packet
-	float pm_delta = 0.25;
-	float minor_delta = 1.0;
-	float co_delta = 30.0;
-	float gps_delta = 0.05;
+	float pm_delta = 0.25;			// All PM data
+	float minor_delta = 1.0;		// Temp, Humidity, NOX
+	float co_delta = 30.0;			// CO
+	float gps_delta = 0.05;			// GPS
 
 	// Variables that hold sensor data (variables that begin with pub_ store previously published data)
 	static pm_data_t pub_pm_dat, pm_dat;
@@ -252,17 +251,17 @@ void mqtt_task(void* pvParameters){
 	int loop_counter = 12;							// Initialize to 12 to trigger publication on 1st iteration
 	vTaskDelay(60000 / portTICK_PERIOD_MS);			// Delay allows time to connect / sensors to start reading / ota firmware updates
 
-	while(wifiConnectedFlag){
+	while(wifi_manager_connected_to_access_point()){
 		current_time = time(NULL);					// Get the current time for the packet
 
-		printf("\nclient_connected: %d, wifi_connected: %d, otaInProgressFlag: %d, reset_counter: %d\n", client_connected, wifiConnectedFlag, otaInProgressFlag, reset_counter);
+		printf("client_connected: %d, otaInProgressFlag: %d, reset_counter: %d", client_connected, otaInProgressFlag, reset_counter);
 		printf("\ncurrent_time: %d, ", (uint32_t)current_time);
 		printf("reconnect_time: %d, ", reconnect_time);
 		printf("loop_counter: %d\n", loop_counter);
 
 		if (current_time > reconnect_time || !client_connected){	// Check to see if it's time to reconnect
 			esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
-			vTaskDelay(100000 / portTICK_PERIOD_MS);				// Allow time for disconnect to propagate through system (MQTT)
+			vTaskDelay(20000 / portTICK_PERIOD_MS);				// Allow time for disconnect to propagate through system (MQTT)
 			MQTT_Connect();
 		}
 		else{														// Get and send data packet
@@ -317,9 +316,13 @@ void mqtt_task(void* pvParameters){
 		vTaskDelay(300000 / portTICK_PERIOD_MS);	// Time in milliseconds. 300000 = 5 minutes
 	} // End while(1)
 
-	printf("\nDeleting mqtt_task\n");
+	printf("\nDeleting mqtt_task\n");				// We exit the loop anytime the wifi disconnects
 	esp_mqtt_client_destroy(client);				// Stops the mqtt client and frees all the memory
-	vTaskDelete(NULL);
+	vTaskDelete(NULL);								// Destroy the mqtt_task
+
+	vTaskDelay(10000 / portTICK_PERIOD_MS);			// 10 second pause before calling Initialize
+
+	MQTT_Initialize();								// MQTT_Initialize will wait for wifi to reconnect
 }
 
 /*
@@ -362,6 +365,8 @@ void MQTT_Initialize(void)
 {
    mqtt_event_group = xEventGroupCreate();
    xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
+   // Function (wifi_manager.c) waits for the wifi to connect
+   wifi_manager_wait_internet_access();
    xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
 }
 
@@ -411,7 +416,6 @@ void MQTT_wifi_connected()
 void MQTT_wifi_disconnected()
 {
 	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
-	esp_mqtt_client_stop(client);	//I THINK THIS IS MY PROBLEM!!!
 }
 
 

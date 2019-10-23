@@ -141,6 +141,18 @@ void app_main()
 	/* start the OTA task */
 	xTaskCreate(&ota_task, "ota_task", 10000, NULL, 6, &task_ota);							// Changed stack from 2048 to 4096 to 10000
 
+	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
+
+	/*
+	* These initializations need to be after the tasks, because necessary mutexs get
+	* created above and used below. Better ways to do this but this is simplest.
+	*/
+	/* Initialize SNTP */
+	SNTP_Initialize();
+
+	/* Initialize MQTT */
+	MQTT_Initialize();
+
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 #if WIFI_MANAGER_DEBUG

@@ -26,10 +26,6 @@
 #define LEDC_NUM_LEDS     	(3)
 #define LEDC_DUTY         	(0x1 << (LEDC_RESOLUTION - 2))		/* 1/4 Max Duty */
 
-#define WIFI_CONNECTED_BIT		BIT0
-#define WIFI_DISCONNECTED_BIT 	BIT1
-#define ALL_BITS				WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT
-
 static const char* TAG = "LED";
 
 static EventGroupHandle_t led_event_group;
@@ -77,18 +73,13 @@ void LED_Initialize()
     }
 
 	led_event_group = xEventGroupCreate();
-	xEventGroupClearBits(led_event_group, ALL_BITS);
+	xEventGroupClearBits(led_event_group, LED_EVENT_ALL_BITS);
 }
 
 
-void LED_SetWifiConn(led_wifi_conn_t bit)
+void LED_SetEventBit(led_events_t bit)
 {
-	if(bit) {
-		xEventGroupSetBits(led_event_group, WIFI_CONNECTED_BIT);
-	}
-	else{
-		xEventGroupSetBits(led_event_group, WIFI_DISCONNECTED_BIT);
-	}
+	xEventGroupSetBits(led_event_group, bit);
 }
 
 
@@ -97,21 +88,30 @@ void led_task(void *pvParameters)
 	int ch;
 	esp_err_t err;
 	EventBits_t uxBits;
+	ESP_LOGI(TAG, "led_task Enterred");
 
 	for(;;) {
-		ESP_LOGI(TAG, "Waiting for something to happen...");
-		uxBits = xEventGroupWaitBits(led_event_group, ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
+		uxBits = xEventGroupWaitBits(led_event_group, LED_EVENT_ALL_BITS, pdTRUE, pdFALSE, portMAX_DELAY);
 
-		if (uxBits & WIFI_CONNECTED_BIT) {
-			ch = STAT1_CH;
-			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
-			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
-		}
-		if (uxBits & WIFI_DISCONNECTED_BIT) {
+		if (uxBits & LED_EVENT_WIFI_DISCONNECTED_BIT) {
 			ch = STAT1_CH;
 			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
 			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
 		}
-
+		if (uxBits & LED_EVENT_WIFI_CONNECTED_BIT) {
+			ch = STAT1_CH;
+			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
+			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+		}
+		if (uxBits & LED_EVENT_GPS_RTC_NOT_SET_BIT) {
+			ch = STAT3_CH;
+			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, LEDC_DUTY);
+			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+		}
+		if (uxBits & LED_EVENT_GPS_RTC_SET_BIT) {
+			ch = STAT3_CH;
+			ledc_set_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel, 0);
+			ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
+		}
 	}
 }

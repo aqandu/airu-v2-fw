@@ -58,7 +58,7 @@ char* createGCPJWT(const char* projectId, uint8_t* privateKey, size_t privateKey
     time_t now;
     time(&now);
     uint32_t iat = now;              // Set the time now.
-    uint32_t exp = iat + 60*60*24;   		 // Set the expiration time (max is 24 hours, currently set at 24 hours)
+    uint32_t exp = iat + 60*60*24;   // Set the expiration time (max is 24 hours, currently set at 24 hours)
 
     char payload[100];
     sprintf(payload, "{\"iat\":%d,\"exp\":%d,\"aud\":\"%s\"}", iat, exp, projectId);

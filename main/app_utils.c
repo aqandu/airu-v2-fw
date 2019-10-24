@@ -60,6 +60,7 @@ void APP_Initialize(void)
 	esp_partition_t partition;
 
 	APP_Setmac();
+	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
 
 	ESP_LOGI(TAG, "Startup..");
     ESP_LOGI(TAG, "Free memory: %d bytes", esp_get_free_heap_size());

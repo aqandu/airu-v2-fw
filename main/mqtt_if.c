@@ -14,7 +14,7 @@
 #include "mqtt_if.h"
 
 #include "app_utils.h"
-#include "http_server_if.h"
+//#include "http_server_if.h"
 #include "http_client_if.h"
 #include "wifi_manager.h"
 #include "pm_if.h"
@@ -106,7 +106,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 		   json_buf = malloc(512);
 		   json_buf[0] = '\0';
-		   esp_err_t err = http_get_isp_info(json_buf, 512);
+//		   esp_err_t err = http_get_isp_info(json_buf, 512);
+		   sprintf(json_buf, "foo");
 		   MQTT_Publish_General((const char*) tpc, json_buf, 2);
 		   free(json_buf);
 		   break;
@@ -115,9 +116,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   client_connected = false;
 		   esp_mqtt_client_destroy(client);
-
-		   // Set the WIFI_MANAGER_HAVE_INTERNET_BIT: is it MQTT or internet problem?
-		   wifi_manager_check_connection_async();
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -175,7 +173,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	   case MQTT_EVENT_ERROR:
 		   ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
 //		   abort();
-		   wifi_manager_check_connection_async();
+//		   wifi_manager_check_connection_async();
 		   break;
 
 	   default:
@@ -197,14 +195,16 @@ void mqtt_task(void* pvParameters){
 
 	while(1) {
 
+		ESP_LOGI(TAG, "sleep forever...");
+		vTaskDelay(3600000 / portTICK_PERIOD_MS);
 		// Wait for a disconnect event
-		wifi_manager_wait_disconnect();
-		ESP_LOGI(TAG, "WIFI disconnected");
-
-		// Wait for a reconnect event and internet access
-		wifi_manager_wait_internet_access();
-		ESP_LOGI(TAG, "WIFI reconnected");
-		MQTT_Connect();
+//		wifi_manager_wait_disconnect();
+//		ESP_LOGI(TAG, "WIFI disconnected");
+//
+//		// Wait for a reconnect event and internet access
+//		wifi_manager_wait_internet_access();
+//		ESP_LOGI(TAG, "WIFI reconnected");
+//		MQTT_Connect();
 	}
 }
 
@@ -217,12 +217,19 @@ void mqtt_task(void* pvParameters){
 */
 void MQTT_Initialize(void)
 {
-	ESP_LOGI(TAG, "%s Initializing client...", __func__);
+	// Wait for internet
+	ESP_LOGI(TAG, "Waiting for internet access..");
+	wifi_manager_wait_internet_access();
+
+	ESP_LOGI(TAG, "Got internet access. Connecting...");
+	MQTT_Connect();
+
+//	ESP_LOGI(TAG, "%s Initializing client...", __func__);
 //	app_getmac(DEVICE_MAC);
-	if (task_mqtt != NULL){
-		vTaskDelete(task_mqtt);
-	}
-	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
+//	if (task_mqtt != NULL){
+//		vTaskDelete(task_mqtt);
+//	}
+//	xTaskCreate(&mqtt_task, "task_mqtt", 4096, NULL, 1, task_mqtt);
 }
 
 void MQTT_Connect()

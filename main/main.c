@@ -72,7 +72,7 @@ Notes:
 #include "esp_ota_ops.h"
 
 #include "http_file_upload.h"
-#include "http_server_if.h"
+//#include "http_server_if.h"
 #include "wifi_manager.h"
 #include "mqtt_if.h"
 #include "time_if.h"
@@ -161,9 +161,8 @@ void data_task()
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
 	while (1) {
-		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
+		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD * 1000 / portTICK_PERIOD_MS);
 
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
 		MICS4514_Poll(&nox, &co);
@@ -198,7 +197,6 @@ void data_task()
 		}
 		else{
 			ESP_LOGI(TAG, "MQTT publish fail %d", err);
-			wifi_manager_check_connection_async();
 		}
 
 #ifdef CONFIG_SD_DATA_STORE
@@ -245,69 +243,27 @@ void data_task()
 
 		free(pkt);
 
-		/* this is a good place to do a ping test */
-//		wifi_manager_check_connection_async();
 	}
 }
 
 
 void app_main()
 {
-	/* initialize flash memory */
-
 	APP_Initialize();
-	printf("\nMAC Address: %s\n\n", DEVICE_MAC);
-
-	/* Initialize the LED Driver */
 	LED_Initialize();
-
-	/* Initialize the GPS Driver */
-	GPS_Initialize();
-
-	/* Initialize the PM Driver */
-	PMS_Initialize();
-
-	/* Initialize the HDC1080 Driver */
-	HDC1080_Initialize();
-
-	/* Initialize the MICS Driver */
-	MICS4514_Initialize();
-
-	/* Initialize the SD Card Driver */
-	SD_Initialize();
-
-	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
-
-	/* start the data gather task */
-	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
-
-	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
-
-	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
-
-	/* start the ota task */
-	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
-
-	/* Panic task */
-	xTaskCreate(&panic_task, "panic", 2096, NULL, 10, NULL);
-
-	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
-
-	/*
-	 * These initializations need to be after the tasks, because necessary mutexs get
-	 * created above and used below. Better ways to do this but this is simplest.
-	 */
-	/* Initialize SNTP */
+//	GPS_Initialize();
+//	PMS_Initialize();
+//	HDC1080_Initialize();
+//	MICS4514_Initialize();
+//	SD_Initialize();
+//	ESP_LOGI(TAG, "Initialize WIFI");
+	initialise_wifi();
+	ESP_LOGI(TAG, "Initialize SNTP");
 	SNTP_Initialize();
-
-	/* Initialize MQTT */
+	ESP_LOGI(TAG, "Initialize MQTT");
 	MQTT_Initialize();
 
-//	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
-//#if WIFI_MANAGER_DEBUG
-//	xTaskCreatePinnedToCore(&monitoring_task, "monitoring_task", 2048, NULL, 1, NULL, 1);
-//#endif
+	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+//	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
+//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
 }

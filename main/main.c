@@ -161,9 +161,9 @@ void data_task()
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
 	while (1) {
-		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
+//      vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD*1000 / portTICK_PERIOD_MS);
 
-		vTaskDelay(60000 / portTICK_PERIOD_MS);
+        vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD * 1000 / portTICK_PERIOD_MS);
 		PMS_Poll(&pm_dat);
 		HDC1080_Poll(&temp, &hum);
 		MICS4514_Poll(&nox, &co);

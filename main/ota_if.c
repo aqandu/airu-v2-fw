@@ -139,8 +139,9 @@ static esp_err_t _ota_commence()
 
     ESP_LOGI(TAG, "URL: %s", fn_path);
 
-    esp_http_client_config_t config = {		// Deleted .cert_pem = (char *)server_cert_pem_start from config
+    esp_http_client_config_t config = {
         .url = fn_path
+		//.cert_pem = (char *)server_cert_pem_start // Deleted from original example
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -153,6 +154,7 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
         esp_http_client_cleanup(client);
+        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -167,6 +169,7 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
         _http_cleanup(client);
+        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }

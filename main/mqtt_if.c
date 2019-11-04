@@ -35,7 +35,7 @@
 
 #define WIFI_CONNECTED_BIT 	BIT0
 #define RECONNECT_SECONDS 82800		// Frequency to reconnect to Google IoT (82800 = 23 hours) JWT expires at 24 hours
-#define KEEPALIVE_TIME 600			// Frequency pingreq is sent to IoT (240 will send a ping every 120 seconds)
+#define KEEPALIVE_TIME 270			// Frequency pingreq is sent to IoT (240 will send a ping every 120 seconds)
 
 static const char *TAG = "MQTT_DATA";
 static TaskHandle_t task_mqtt = NULL;
@@ -50,6 +50,7 @@ static EventGroupHandle_t mqtt_event_group;
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 char firmware_version[OTA_FILE_BN_LEN];
 static int reset_counter;
+char current_state[128];
 
 ////Google IoT constants / connection parameters-------------------------------------------
 static const char* HOST = "mqtt.googleapis.com";					// This string can also be set in menuconfig (ssl://mqtt.googleapis.com)
@@ -139,7 +140,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   client_connected = false;
 		   reset_counter++;				// Fail safe counter - when it reaches a certain value it will reset the board. Currently triggered at 10.
-		   if (reset_counter >=10)
+		   if (reset_counter >=2)
 			   esp_restart();			// Something has gone wrong - reset the board.
 		   break;
 
@@ -184,6 +185,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   break;
 	   case MQTT_EVENT_ERROR:
 		   ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
+		   esp_restart();
 		   break;
 
 	   default:
@@ -259,10 +261,16 @@ void mqtt_task(void* pvParameters){
 		printf("reconnect_time: %d, ", reconnect_time);
 		printf("loop_counter: %d\n", loop_counter);
 
+		//printf("wifi manager wait(): %d", (int)wifi_manager_wait_internet_access());
+
 		if (current_time > reconnect_time || !client_connected){	// Check to see if it's time to reconnect
-			esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
-			vTaskDelay(20000 / portTICK_PERIOD_MS);				// Allow time for disconnect to propagate through system (MQTT)
-			MQTT_Connect();
+			esp_restart();											// Trial run to see if connectivity improves by reseting the
+																	// processor every time we disconnect from Google - this will
+																	// always generate a new JWT and connection
+
+			// esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
+			// vTaskDelay(20000 / portTICK_PERIOD_MS);				// Allow time for disconnect to propagate through system (MQTT)
+			// MQTT_Connect();
 		}
 		else{														// Get and send data packet
 			PMS_Poll(&pm_dat);
@@ -274,26 +282,28 @@ void mqtt_task(void* pvParameters){
 			if(fabs(pm_dat.pm1-pub_pm_dat.pm1) >= pm_delta)
 				publish_flag = 1;
 			else if (fabs(pm_dat.pm2_5-pub_pm_dat.pm2_5) >= pm_delta)
-				publish_flag = 1;
+				publish_flag = 2;
 			else if (fabs(pm_dat.pm10-pub_pm_dat.pm10) >= pm_delta)
-				publish_flag = 1;
+				publish_flag = 3;
 			else if (fabs(temp-pub_temp) >= minor_delta)
-				publish_flag = 1;
+				publish_flag = 4;
 			else if (fabs(hum-pub_hum) >= minor_delta)
-				publish_flag = 1;
+				publish_flag = 5;
 			else if (fabs(nox-pub_nox) >= minor_delta)
-				publish_flag = 1;
+				publish_flag = 6;
 			else if (fabs(co-pub_co >= co_delta))
-				publish_flag = 1;
+				publish_flag = 7;
 			else if (fabs(gps.lat-pub_gps.lat) >= gps_delta)
-				publish_flag = 1;
+				publish_flag = 8;
 			else if (fabs(gps.lon-pub_gps.lon) >= gps_delta)
-				publish_flag = 1;
+				publish_flag = 9;
 			else if (loop_counter >= 12){
-				publish_flag = 1;
+				publish_flag = 10;
 			}
 
-			if (publish_flag == 1 && !otaInProgressFlag){	// Don't publish if OTA is in progress
+			printf("publish_flag: %d\n", publish_flag);
+
+			if (publish_flag >= 1 && !otaInProgressFlag){	// Don't publish if OTA is in progress
 				publish_flag = 0;							// Reset publish_flag
 				loop_counter = 0;							// Reset loop_counter
 				memset(mqtt_pkt, 0, MQTT_PKT_LEN);			// Clear contents of packet
@@ -308,21 +318,16 @@ void mqtt_task(void* pvParameters){
 				pub_gps = gps;
 			}
 			// Publish state consists of current firmware version saved in NVS
-			// It is important that state gets published every 5 minutes.
+			// It is important that state gets published every 5 minutes as a backup to keep the connection with Google alive.
 			get_firmware_version();
-			MQTT_Publish(mqtt_state_topic, firmware_version);
+			snprintf(current_state, sizeof(current_state), "%s, Loop:%d, Time:%d, Reconnect:%d, WiFi:%d, OTA:%d", firmware_version, loop_counter, (uint32_t)current_time, reconnect_time, (int)wifi_manager_wait_internet_access(), otaInProgressFlag);
+			MQTT_Publish(mqtt_state_topic, current_state);
 			loop_counter++;
 		}
 		vTaskDelay(300000 / portTICK_PERIOD_MS);	// Time in milliseconds. 300000 = 5 minutes
 	} // End while(1)
 
-	printf("\nDeleting mqtt_task\n");				// We exit the loop anytime the wifi disconnects
-	esp_mqtt_client_destroy(client);				// Stops the mqtt client and frees all the memory
-	vTaskDelete(NULL);								// Destroy the mqtt_task
-
-	vTaskDelay(10000 / portTICK_PERIOD_MS);			// 10 second pause before calling Initialize
-
-	MQTT_Initialize();								// MQTT_Initialize will wait for wifi to reconnect
+	esp_restart();
 }
 
 /*
@@ -363,11 +368,11 @@ void get_firmware_version(void)
 
 void MQTT_Initialize(void)
 {
-   mqtt_event_group = xEventGroupCreate();
-   xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
    // Function (wifi_manager.c) waits for the wifi to connect
-   wifi_manager_wait_internet_access();
-   xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
+	printf("wifi_manager_wait_internet_access()");
+	wifi_manager_wait_internet_access();
+	printf("passed wifi_manager_wait_internet_access()");
+	xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
 }
 
 
@@ -399,23 +404,4 @@ void MQTT_Publish(const char* topic, const char* msg)
 		client_connected = false;
 	}
 }
-
-
-/*
-* @brief Signals MQTT to initialize.
-*
-* @param
-*
-* @return
-*/
-void MQTT_wifi_connected()
-{
-	xEventGroupSetBits(mqtt_event_group, WIFI_CONNECTED_BIT);
-}
-
-void MQTT_wifi_disconnected()
-{
-	xEventGroupClearBits(mqtt_event_group, WIFI_CONNECTED_BIT);
-}
-
 

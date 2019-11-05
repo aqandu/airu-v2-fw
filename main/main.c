@@ -258,12 +258,10 @@ void app_main()
 //	SD_Initialize();
 //	ESP_LOGI(TAG, "Initialize WIFI");
 	initialise_wifi();
-	ESP_LOGI(TAG, "Initialize SNTP");
 	SNTP_Initialize();
-	ESP_LOGI(TAG, "Initialize MQTT");
 	MQTT_Initialize();
 
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
-//	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
+	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
 //	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
 }

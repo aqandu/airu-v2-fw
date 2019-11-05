@@ -80,10 +80,6 @@ void MICS4514_Initialize(void)
 	//Check if Two Point or Vref are burned into eFuse
 	check_efuse();
 
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC_CHANNEL_6, ADC_ATTEN_DB_11); 	// WROOM Pin 6 - GPIO 34 - OX - NOx
-	adc1_config_channel_atten(ADC_CHANNEL_7, ADC_ATTEN_DB_11);	// WROOM Pin 7 - GPIO 35 - RE - CO
-
 	//Characterize ADC
 	adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
 	val_type = esp_adc_cal_characterize(ADC_UNIT_1,
@@ -91,6 +87,11 @@ void MICS4514_Initialize(void)
 										ADC_WIDTH_BIT_12,
 										DEFAULT_VREF,
 										adc_chars);
+
+	adc1_config_width(ADC_WIDTH_BIT_12);
+	adc1_config_channel_atten(ADC_CHANNEL_6, ADC_ATTEN_DB_11); 	// WROOM Pin 6 - GPIO 34 - OX - NOx
+	adc1_config_channel_atten(ADC_CHANNEL_7, ADC_ATTEN_DB_11);	// WROOM Pin 7 - GPIO 35 - RE - CO
+
 	print_char_val_type(val_type);
 
 	MICS4514_GPIOEnable();

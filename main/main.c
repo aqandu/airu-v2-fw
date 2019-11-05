@@ -159,6 +159,7 @@ void data_task()
 
 	// only need to get it once
 	esp_app_desc_t *app_desc = esp_ota_get_app_description();
+	MICS4514_Enable();
 
 	while (1) {
 		vTaskDelay(CONFIG_DATA_UPLOAD_PERIOD * 1000 / portTICK_PERIOD_MS);
@@ -251,11 +252,11 @@ void app_main()
 {
 	APP_Initialize();
 	LED_Initialize();
-//	GPS_Initialize();
-//	PMS_Initialize();
-//	HDC1080_Initialize();
-//	MICS4514_Initialize();
-//	SD_Initialize();
+	GPS_Initialize();
+	PMS_Initialize();
+	HDC1080_Initialize();
+	MICS4514_Initialize();
+	SD_Initialize();
 //	ESP_LOGI(TAG, "Initialize WIFI");
 	initialise_wifi();
 	ESP_LOGI(TAG, "Initialize SNTP");
@@ -264,6 +265,6 @@ void app_main()
 	MQTT_Initialize();
 
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
-//	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
-//	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
+	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
+	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
 }

@@ -267,4 +267,5 @@ void app_main()
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 	xTaskCreate(&data_task, "data_task", 4096, NULL, 1, &data_task_handle);
 	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 10, &task_ota);
+	xTaskCreate(&panic_task, "panic", 2048, NULL, 5, NULL);
 }

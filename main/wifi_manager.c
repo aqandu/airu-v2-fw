@@ -14,6 +14,8 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 
+#include "led_if.h"
+
 static char* TAG = "WIFI";
 static EventGroupHandle_t wifi_event_group = NULL;
 const int CONNECTED_BIT = BIT0;
@@ -28,6 +30,7 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
     case SYSTEM_EVENT_STA_GOT_IP:
     	ESP_LOGI(TAG, "SYSTEM_EVENT_STA_GOT_IP");
         xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+        LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
     	ESP_LOGI(TAG, "SYSTEM_EVENT_STA_DISCONNECTED");
@@ -35,6 +38,7 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
            auto-reassociate. */
         esp_wifi_connect();
         xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+        LED_SetEventBit(LED_EVENT_WIFI_DISCONNECTED_BIT);
         break;
     default:
         break;

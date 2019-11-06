@@ -257,11 +257,8 @@ void app_main()
 	HDC1080_Initialize();
 	MICS4514_Initialize();
 	SD_Initialize();
-//	ESP_LOGI(TAG, "Initialize WIFI");
 	initialise_wifi();
-	ESP_LOGI(TAG, "Initialize SNTP");
 	SNTP_Initialize();
-	ESP_LOGI(TAG, "Initialize MQTT");
 	MQTT_Initialize();
 
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);

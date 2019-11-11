@@ -95,7 +95,7 @@ void monitoring_task(void *pvParameter)
 {
 	while(1){
 		printf("free heap: %d\n",esp_get_free_heap_size());
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -144,7 +144,7 @@ void app_main()
 //	xTaskCreate(&ota_task, "ota_task", 4096, NULL, 1, &task_ota);
 //
 //	/* start the data gather task */
-	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+//	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
 
 	/* start the bluetooth */
 	xTaskCreate(&bluetooth_manager, "Bluetooth_task", 6000, NULL, 2, &bluetooth_task_handle);

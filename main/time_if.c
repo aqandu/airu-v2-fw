@@ -21,7 +21,6 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
-#include "esp_sntp.h"
 
 #define WIFI_CONNECTED_BIT 	BIT0
 

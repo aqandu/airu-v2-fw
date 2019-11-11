@@ -222,6 +222,7 @@ void esp_ble_wifi_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_
 {
     /* actually, should post to blufi_task handle the procedure,
      * now, as a example, we do it more simply */
+	ESP_LOGW(TAG, "Recevied some data [%d]: ", event);
     switch (event) {
     case ESP_BLUFI_EVENT_INIT_FINISH:
         ESP_LOGI(TAG,"BLUFI init finish\n");
@@ -425,7 +426,7 @@ void bluetooth_manager()
     bluetooth_initialize();
 
 	while(1) {
-		vTaskDelay(5000 / portTICK_PERIOD_MS);
+		vTaskDelay(60000 / portTICK_PERIOD_MS);
 		printf("free heap: %d\n",esp_get_free_heap_size());
 	}
 //    wifi_loop();

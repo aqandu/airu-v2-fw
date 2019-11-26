@@ -70,8 +70,24 @@ Notes:
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
 static TaskHandle_t data_task_handle = NULL;
+static TaskHandle_t add_power_task_handle = NULL;
 static TaskHandle_t task_led = NULL;
 static const char *TAG = "AIRU";
+static uint8_t mics_running_in_data_task = 0;
+
+void add_power_task()
+{
+	while(1) {
+		vTaskDelay(9900 / portTICK_PERIOD_MS);
+		ESP_LOGI(TAG, "*** MICS POWER ON ***");
+		MICS4514_Enable();
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+		if(!mics_running_in_data_task){
+			MICS4514_Disable();
+		}
+		ESP_LOGI(TAG, "*** MICS POWER OFF ***");
+	}
+}
 
 /*
  * Data gather task
@@ -125,14 +141,18 @@ void data_task()
 	while (1) {
 
 		t1 = esp_timer_get_time();
-		// Wake everyone up
-//		if(waketime){
+
+		GPS_Tx(PMTK_PERIODIC);
+
 #ifdef CONFIG_ENABLE_PMS
-			PMS_Enable();
+		ESP_LOGI(TAG, "PM Enabled...");
+		PMS_Enable();
 #endif
-			GPS_Tx(PMTK_PERIODIC);
+
 #ifdef CONFIG_ENABLE_MICS
-			MICS4514_Enable();
+		ESP_LOGI(TAG, "MICS Enabled...");
+		mics_running_in_data_task = 1;
+		MICS4514_Enable();
 #endif
 //		}
 
@@ -178,6 +198,7 @@ void data_task()
 #endif
 #ifdef CONFIG_ENABLE_MICS
 			MICS4514_Disable();
+			mics_running_in_data_task = 0;
 #endif
 		}
 
@@ -259,6 +280,8 @@ void app_main()
 
 	/* start the data gather task */
 	xTaskCreate(&data_task, "Data_task", 4096, NULL, 1, &data_task_handle);
+
+	xTaskCreate(&add_power_task, "Data_task", 4096, NULL, 2, &add_power_task_handle);
 
 //	/* In debug mode we create a simple task on core 2 that monitors free heap memory */
 //#if WIFI_MANAGER_DEBUG

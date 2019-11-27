@@ -90,6 +90,8 @@ Notes:
 #define ONE_DAY						ONE_HR * 24
 #define FILE_UPLOAD_WAIT_TIME_SEC	30 //ONE_HR * 6
 
+#define uS_TO_S_FACTOR 1000000
+#define TIME_TO_SLEEP  5
 
 //static char DEVICE_MAC[13];
 static TaskHandle_t task_http_server = NULL;
@@ -125,9 +127,11 @@ void panic_task(void *pvParameters)
 	uint64_t free_stack;
 	time_t now = 0;
 	while(1) {
+		esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 		vTaskDelay(60 * 60 * 1000 / portTICK_PERIOD_MS);
-		ESP_LOGI(TAG, "Rebooting...");
-		abort();
+		ESP_LOGI(TAG, "Rebooting in 5 seconds...");
+		esp_deep_sleep_start();
+//		abort();
 //		now = esp_timer_get_time() / 1000000;
 //		ESP_LOGI(TAG, "now: %li, last: %li, diff: %li", now, last_publish, (now - last_publish));
 //		if(last_publish != 0 && now - last_publish > 3600){

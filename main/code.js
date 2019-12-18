@@ -204,14 +204,14 @@ function performConnect(conntype){
 	// pwd = "nitroT14";
 	// selectedSSID = "SuckMyGig";
 	// pwd = "yRrMZ4nkhYBo";
-	var hdrs = JSON.stringify({'X-Custom-ssid': selectedSSID, 'X-Custom-pwd': pwd})
+	var hdrs = JSON.stringify({'x-custom-ssid': selectedSSID, 'x-custom-pwd': pwd})
 	console.log("HEADERS: " + hdrs);
 	$.ajax({
 		url: '/connect.json',
 		dataType: 'json',
 		method: 'POST',
 		cache: false,
-		headers: {'X-Custom-ssid': selectedSSID, 'X-Custom-pwd': pwd},
+		headers: {'x-custom-ssid': selectedSSID, 'x-custom-pwd': pwd},
 		// data: JSON.stringify({'timestamp': Date.now()}),
 		success: function(msg){
 			console.log( "Data Saved: " + msg );

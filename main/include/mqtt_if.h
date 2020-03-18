@@ -16,44 +16,13 @@
 #define MQTT_DBG_TPC "v2/dbg"
 #define MQTT_DAT_TPC "airu/offline"
 
-/*
-* @brief
-*
-* @param
-*
-* @return
-*/
+
+
 void MQTT_Initialize(void);
-void MQTT_Reinit(void);
+time_t mqtt_last_publish_time();
 void MQTT_Connect(void);
 void get_firmware_version(void);
-
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*/
-void MQTT_wifi_connected(void);
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*/
-void MQTT_wifi_disconnected(void);
-
-/*
-* @brief
-*
-* @param
-*
-* @return
-*/
+void mqtt_task(void* pvParameters);
 void MQTT_Publish(const char* topic, const char* msg);
 
 #endif /* MAIN_INCLUDE_MQTT_IF_H_ */

@@ -70,6 +70,7 @@ Notes:
 #include "gps_if.h"
 #include "ota_if.h"
 #include "led_if.h"
+#include "watchdog_if.h"
 
 
 /* GPIO */
@@ -83,6 +84,7 @@ static TaskHandle_t task_http_server = NULL;
 static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
+static TaskHandle_t task_watchdog = NULL;
 
 
 /**
@@ -136,8 +138,6 @@ void app_main()
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
 
-	//vTaskDelay(5000 / portTICK_PERIOD_MS);
-
 	/* start the OTA task */
 	xTaskCreate(&ota_task, "ota_task", 10000, NULL, 6, &task_ota);							// Changed stack from 2048 to 4096 to 10000
 
@@ -152,6 +152,11 @@ void app_main()
 
 	/* Initialize MQTT */
 	MQTT_Initialize();
+
+	vTaskDelay(60000 / portTICK_PERIOD_MS);		// Delay 60 seconds to give MQTT time to connect to GCP
+
+	/* start the watchdog task */
+		xTaskCreate(&watchdog_task, "watchdog_task", 3000, NULL, 3, &task_watchdog);
 
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */

@@ -37,7 +37,7 @@ static const char *TAG = "OTA";
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
-extern int otaInProgressFlag;
+extern bool ota_in_progress;
 
 static void _http_cleanup(esp_http_client_handle_t client);
 static esp_err_t _ota_commence( void );
@@ -154,7 +154,7 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
         esp_http_client_cleanup(client);
-        otaInProgressFlag = 0;
+        ota_in_progress = false;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -169,7 +169,7 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
         _http_cleanup(client);
-        otaInProgressFlag = 0;
+        ota_in_progress = false;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -205,7 +205,7 @@ static esp_err_t _ota_commence()
     if (esp_ota_end(update_handle) != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_end failed!");
         _http_cleanup(client);
-        otaInProgressFlag = 0;
+        ota_in_progress = false;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -214,7 +214,7 @@ static esp_err_t _ota_commence()
 
     if (esp_partition_check_identity(esp_ota_get_running_partition(), update_partition) == true) {
         ESP_LOGI(TAG, "The current running firmware is same as the update firmware");
-        otaInProgressFlag = 0;
+        ota_in_progress = false;
         return ESP_OK;
     }
 
@@ -222,7 +222,7 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         _http_cleanup(client);
-        otaInProgressFlag = 0;
+        ota_in_progress = false;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }

@@ -23,7 +23,7 @@
 #include "mqtt_client.h"
 #include "ota_if.h"
 #include "mqtt_if.h"
-#include "wifi_manager.h"
+//#include "wifi_manager.h"
 #include "hdc1080_if.h"
 #include "mics4514_if.h"
 #include "time_if.h"
@@ -32,6 +32,9 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "jwt_if.h"
+
+#include "Ethernet_manager.h"
+#include "enc28j60.h"
 
 
 // #define WIFI_CONNECTED_BIT 	BIT0
@@ -56,8 +59,8 @@ static const char* USER_NAME = "unused"; 							// Unused by Google IoT but supp
 char* JWT_PASSWORD;
 
 //*******ENSURE THIS IS CORRECT********************************************************************
-//static const char* PROJECT_ID = "scottgale";
-static const char* PROJECT_ID = "aqandu-184820";
+static const char* PROJECT_ID = "scottgale";
+//static const char* PROJECT_ID = "aqandu-184820";
 //*************************************************************************************************
 
 static char client_ID[MQTT_CLIENTID_LEN] = {0};
@@ -80,9 +83,9 @@ bool client_connected;
 void MQTT_Initialize(void)
 {
    // Function (wifi_manager.c) waits for the wifi to connect
-	printf("wifi_manager_wait_internet_access()\n");
-	wifi_manager_wait_internet_access();
-	printf("PASSED wifi_manager_wait_internet_access()\n");
+	printf("Ethernet_manager_wait_internet_access()\n");
+	Ethernet_manager_wait_internet_access();
+	printf("PASSED Ethernet_manager_wait_internet_access()\n");
 	xTaskCreate(&mqtt_task, "mqtt_task", 16000, NULL, 1, task_mqtt);
 }
 
@@ -281,7 +284,7 @@ void mqtt_task(void* pvParameters){
 	int loop_counter = 12;							// Initialize to 12 to trigger publication on 1st iteration
 	vTaskDelay(60000 / portTICK_PERIOD_MS);			// Delay allows time to connect / sensors to start reading / ota firmware updates
 
-	while(wifi_manager_connected_to_access_point() && client_connected){
+	while(eth_manager_connected_to_access_point() && client_connected){
 		current_time = time(NULL);					// Get the current time for the packet
 
 		printf("current_time: %d, ", (uint32_t)current_time);
@@ -344,8 +347,8 @@ void mqtt_task(void* pvParameters){
 			// Publish state consists of current firmware version saved in NVS
 			// It is important that state gets published every 5 minutes as a backup to keep the connection with Google alive.
 			get_firmware_version();
-			snprintf(current_state, sizeof(current_state), "%s, Loop:%d, Time:%d, Reconnect:%d, Last Publish:%d, WiFi:%d, OTA:%d", \
-					firmware_version, loop_counter, (uint32_t)current_time, reconnect_time, (uint32_t)last_publish_time, (int)wifi_manager_wait_internet_access(), ota_in_progress);
+			snprintf(current_state, sizeof(current_state), "%s, Loop:%d, Time:%d, Reconnect:%d, Last Publish:%d, ETH:%d,", \
+					firmware_version, loop_counter, (uint32_t)current_time, reconnect_time, (uint32_t)last_publish_time, (int)eth_manager_wait_internet_access());
 			MQTT_Publish(mqtt_state_topic, current_state);
 			loop_counter++;
 		}

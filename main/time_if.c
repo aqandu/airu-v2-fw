@@ -20,11 +20,12 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
-#include "wifi_manager.h"
+//#include "wifi_manager.h"
+#include "Ethernet_manager.h"
 #include "time_if.h"
 
-#define WIFI_CONNECTED_BIT 	BIT0
-#define GOT_TS_BIT			BIT1
+#define CONNECTED_BIT 	BIT0
+#define GOT_TS_BIT		BIT1
 
 static const unsigned long MS_BETWEEN_NTP_UPDATE = 600000;
 static const unsigned long SEC_JAN1_2018 = 1514764800;
@@ -108,7 +109,7 @@ time_t time_gmtime(void){
 
 void sntp_wifi_connected()
 {
-	xEventGroupSetBits(ntp_event_group, WIFI_CONNECTED_BIT);
+	xEventGroupSetBits(ntp_event_group, CONNECTED_BIT);
 }
 
 /*
@@ -125,11 +126,11 @@ int SNTP_Initialize(void)
     char strftime_buf[64];
 
     ntp_event_group = xEventGroupCreate();
-    xEventGroupClearBits(ntp_event_group, WIFI_CONNECTED_BIT|GOT_TS_BIT);
+    xEventGroupClearBits(ntp_event_group, CONNECTED_BIT|GOT_TS_BIT);
 
     // Wait for internet access
     ESP_LOGI(TAG, "Waiting for internet access...");
-    wifi_manager_wait_internet_access();
+    eth_manager_wait_internet_access();
     ESP_LOGI(TAG, "Got internet access...");
 	ESP_LOGI(TAG, "Initializing SNTP");
 

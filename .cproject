@@ -91,60 +91,6 @@
         	
     </storageModule>
     	
-    <storageModule moduleId="scannerConfiguration">
-        		
-        <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1994642895;cdt.managedbuild.toolchain.gnu.cross.base.1994642895.649669795;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1007350673;cdt.managedbuild.tool.gnu.cpp.compiler.input.1502706413">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1142148444;cdt.managedbuild.toolchain.gnu.cross.base.1142148444.889703706;cdt.managedbuild.tool.gnu.cross.c.compiler.1668114161;cdt.managedbuild.tool.gnu.c.compiler.input.2105061403">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.603691084;cdt.managedbuild.toolchain.gnu.cross.base.603691084.661073043;cdt.managedbuild.tool.gnu.cross.cpp.compiler.2074934025;cdt.managedbuild.tool.gnu.cpp.compiler.input.680941817">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.41961730;cdt.managedbuild.toolchain.gnu.cross.base.41961730.1557369370;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1171729807;cdt.managedbuild.tool.gnu.cpp.compiler.input.1228984515">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.41961730;cdt.managedbuild.toolchain.gnu.cross.base.41961730.1557369370;cdt.managedbuild.tool.gnu.cross.c.compiler.956980115;cdt.managedbuild.tool.gnu.c.compiler.input.1388678124">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1142148444;cdt.managedbuild.toolchain.gnu.cross.base.1142148444.889703706;cdt.managedbuild.tool.gnu.cross.cpp.compiler.719662339;cdt.managedbuild.tool.gnu.cpp.compiler.input.440397799">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1994642895;cdt.managedbuild.toolchain.gnu.cross.base.1994642895.649669795;cdt.managedbuild.tool.gnu.cross.c.compiler.663220517;cdt.managedbuild.tool.gnu.c.compiler.input.435063497">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.603691084;cdt.managedbuild.toolchain.gnu.cross.base.603691084.661073043;cdt.managedbuild.tool.gnu.cross.c.compiler.529413603;cdt.managedbuild.tool.gnu.c.compiler.input.340242027">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        	
-    </storageModule>
-    	
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
         		
         <project id="airu-v2-fw.null.2076705272" name="airu-v2-fw"/>
@@ -218,6 +164,18 @@
             </target>
             		
         </buildTargets>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="scannerConfiguration">
+        		
+        <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+        		
+        <scannerConfigBuildInfo instanceId="0.37958533">
+            			
+            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+            		
+        </scannerConfigBuildInfo>
         	
     </storageModule>
     

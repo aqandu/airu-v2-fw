@@ -61,7 +61,7 @@ Notes:
 #include "lwip/netdb.h"
 
 #include "http_server_if.h"
-#include "wifi_manager.h"
+//#include "wifi_manager.h"
 #include "pm_if.h"
 #include "mqtt_if.h"
 #include "hdc1080_if.h"
@@ -72,6 +72,9 @@ Notes:
 #include "led_if.h"
 #include "watchdog_if.h"
 
+#include "Ethernet_manager.h"
+#include "enc28j60.h"
+
 
 /* GPIO */
 #define STAT1_LED 21
@@ -80,8 +83,8 @@ Notes:
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<STAT1_LED) | (1ULL<<STAT2_LED) | (1ULL<<STAT3_LED))
 
 static char DEVICE_MAC[13];
-static TaskHandle_t task_http_server = NULL;
-static TaskHandle_t task_wifi_manager = NULL;
+//static TaskHandle_t task_http_server = NULL;
+//static TaskHandle_t task_wifi_manager = NULL;
 static TaskHandle_t task_ota = NULL;
 static TaskHandle_t task_led = NULL;
 static TaskHandle_t task_watchdog = NULL;
@@ -129,11 +132,14 @@ void app_main()
 	/* Initialize the MICS Driver */
 	MICS4514_Initialize();
 
-	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+	/* Initialize the Ethernet Driver */
+	Initialize_eth();
+
+	/* start the HTTP Server task */ //no need for HTTP server!
+	//xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+	//xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
 
 	/* start the led task */
 	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);

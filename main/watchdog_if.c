@@ -9,10 +9,12 @@
 
 #include "watchdog_if.h"
 #include "mqtt_if.h"
-#include "wifi_manager.h"
+//#include "wifi_manager.h"
+#include "Ethernet_manager.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_task_wdt.h"
+
 
 static const char *TAG = "WATCHDOG_TASK";
 
@@ -35,7 +37,7 @@ void watchdog_task(void *pvParameters)
 		vTaskDelay(180000 / portTICK_PERIOD_MS);				// Run the task every 30 minutes
 		// esp_task_wdt_reset();
 
-		if (!wifi_manager_connected_to_access_point()){
+		if (!eth_manager_connected_to_access_point()){
 			printf("WATCHDOG: wifi not connected. RESET CONDITION \n\n\n");
 			esp_restart();
 		}

@@ -1,10 +1,8 @@
-/* ENC28J60 Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
+/* Ethernet Manager
+ * Written by Henry Gilbert
+ * Last updated 26 April 2020
+ *
+ * This library uses the ENC28J60 library for Ethernet connection.
 */
 #include <stdio.h>
 #include <string.h>
@@ -44,7 +42,7 @@
 
 
 static const char *TAG = "Ethernet";
-static TimerHandle_t wifi_reconnect_timer;
+static TimerHandle_t ;
 static EventGroupHandle_t eth_event_group = NULL;
 const int CONNECTED_BIT = BIT0;
 const int REQUEST_PING_TEST = BIT1;
@@ -67,7 +65,7 @@ static void vTimerCallback(TimerHandle_t xTimer);
  */
 static void vTimerCallback(TimerHandle_t xTimer)
 {
-	ESP_LOGI(TAG, "TIMER: Reconnect timer done. Setting WIFI_MANAGER_REQUEST_RECONNECT Bit.");
+	ESP_LOGI(TAG, "TIMER: Reconnect timer done. Setting REQUEST_PING_TEST Bit.");
 	xTimerStop(xTimer, 0);
 	xEventGroupSetBits(eth_event_group, REQUEST_PING_TEST);
 }
@@ -196,7 +194,7 @@ void Initialize_eth()
 EventBits_t Ethernet_manager_wait_internet_access()
 {
 	while(eth_event_group == NULL){
-		ESP_LOGI(TAG, "waiting for WIFI event group creation");
+		ESP_LOGI(TAG, "waiting for ETH event group creation");
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 
@@ -219,7 +217,7 @@ int eth_manager_check_connection()
 		// Issue ping test
 		eth_manager_ping_test();
 
-		// Wait up to PING_TEST_TIMEOUT_MS for ping test callback to set WIFI_MANAGER_HAVE_INTERNET_BIT
+		// Wait up to PING_TEST_TIMEOUT_MS for ping test callback to set CONNECTED_BIT
 		int ret = (CONNECTED_BIT & \
 				xEventGroupWaitBits(eth_event_group, CONNECTED_BIT, pdFALSE, pdTRUE, MS2TICK(PING_TEST_TIMEOUT_MS)));
 
@@ -271,11 +269,10 @@ esp_err_t pingResults(ping_target_id_t msgType, esp_ping_found * pf){
 		ESP_LOGI("PING", "PING TEST SUCCESS");
 		xEventGroupSetBits(eth_event_group, CONNECTED_BIT);
 		LED_SetEventBit(LED_EVENT_WIFI_CONNECTED_BIT);
-		xTimerStop(wifi_reconnect_timer, 0);
+		xTimerStop(eth_reconnect_timer, 0);
 	}
 	else{
 		ESP_LOGE("PING", "Couldn't ping 8.8.8.8. Internet is down!");
-		//wifi_manager_connect_async();
 	}
 
 	return ESP_OK;

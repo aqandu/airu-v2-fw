@@ -5,7 +5,7 @@ The AirU PoE board connects GPIO12 to a pull-up resistor, which automatically se
 ```
 espefuse.py set_flash_voltage 3.3V
 ```
-Read more here: https://github.com/espressif/esptool/wiki/espefuse
+Read more about efuses here: https://github.com/espressif/esptool/wiki/espefuse
 
 
 # Workspace Setup

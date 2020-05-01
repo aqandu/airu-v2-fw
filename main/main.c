@@ -99,8 +99,6 @@ void monitoring_task(void *pvParameter)
 	}
 }
 
-
-
 void app_main()
 {
 //	esp_log_level_set("*", ESP_LOG_INFO);
@@ -129,19 +127,22 @@ void app_main()
 	/* Initialize the MICS Driver */
 	MICS4514_Initialize();
 
+	/* start the watchdog task */
+	xTaskCreate(&watchdog_task, "watchdog_task", 4000, NULL, 2, &task_watchdog);
+
 	/* start the HTTP Server task */
-	xTaskCreate(&http_server, "http_server", 4096, NULL, 5, &task_http_server);
+	xTaskCreate(&http_server, "http_server", 4096, NULL, 2, &task_http_server);
 
 	/* start the wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 4, &task_wifi_manager);
+	xTaskCreate(&wifi_manager, "wifi_manager", 6000, NULL, 3, &task_wifi_manager);
 
 	/* start the led task */
-	xTaskCreate(&led_task, "led_task", 2048, NULL, 3, &task_led);
+	xTaskCreate(&led_task, "led_task", 2048, NULL, 1, &task_led);
 
 	/* start the OTA task */
-	xTaskCreate(&ota_task, "ota_task", 10000, NULL, 6, &task_ota);							// Changed stack from 2048 to 4096 to 10000
+	xTaskCreate(&ota_task, "ota_task", 9000, NULL, 5, &task_ota);							// Changed stack from 2048 to 4096 to 10000
 
-	vTaskDelay(1000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
+	vTaskDelay(10000 / portTICK_PERIOD_MS); /* the initialization functions below need to wait until the event groups are created in the above tasks */
 
 	/*
 	* These initializations need to be after the tasks, because necessary mutexs get
@@ -152,11 +153,6 @@ void app_main()
 
 	/* Initialize MQTT */
 	MQTT_Initialize();
-
-	vTaskDelay(60000 / portTICK_PERIOD_MS);		// Delay 60 seconds to give MQTT time to connect to GCP
-
-	/* start the watchdog task */
-		xTaskCreate(&watchdog_task, "watchdog_task", 3000, NULL, 3, &task_watchdog);
 
 
 	/* In debug mode we create a simple task on core 2 that monitors free heap memory */

@@ -231,7 +231,7 @@ function performRegistration(){
 			dataType: 'json',
 			method: 'POST',
 			cache: false,
-			headers: {'x-custom-name': name, 'x-custom-email': email, 'x-custom-hidden': hidden },
+			headers: {'X-Custom-name': name, 'X-Custom-email': email, 'X-Custom-hidden': hidden },
 			data: {'timestamp': Date.now()}
 		});
 		console.log("Calling 'lastRegistered' inside 'performRegistration'");

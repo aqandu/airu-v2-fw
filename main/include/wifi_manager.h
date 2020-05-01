@@ -334,6 +334,7 @@ void wifi_manager_check_connection_async();
 EventBits_t wifi_manager_wait_connect();
 EventBits_t wifi_manager_wait_disconnect();
 EventBits_t wifi_manager_wait_internet_access();
+EventBits_t wifi_manager_wait_internet_access_and_AP();
 
 //void wifi_manager_ping_test(void);
 #ifdef __cplusplus

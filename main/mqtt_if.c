@@ -57,8 +57,8 @@ static const char* USER_NAME = "unused"; 							// Unused by Google IoT but supp
 char* JWT_PASSWORD;
 
 //*******ENSURE THIS IS CORRECT********************************************************************
-//static const char* PROJECT_ID = "scottgale";
-static const char* PROJECT_ID = "aqandu-184820";
+static const char* PROJECT_ID = "scottgale";
+//static const char* PROJECT_ID = "aqandu-184820";
 //static const char* PROJECT_ID = "airquality-272118";
 
 //*************************************************************************************************

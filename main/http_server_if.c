@@ -242,8 +242,8 @@ void http_server_netconn_serve(struct netconn *conn) {
 				bool found = false;
 				int lenS = 0, lenP = 0;
 				char *ssid = NULL, *password = NULL;
-				ssid = http_server_get_header(save_ptr, "X-Custom-ssid: ", &lenS);
-				password = http_server_get_header(save_ptr, "X-Custom-pwd: ", &lenP);
+				ssid = http_server_get_header(save_ptr, "x-custom-ssid: ", &lenS);
+				password = http_server_get_header(save_ptr, "x-custom-pwd: ", &lenP);
 
 				if(ssid && lenS <= MAX_SSID_SIZE && password && lenP <= MAX_PASSWORD_SIZE){
 					wifi_config_t* config = wifi_manager_get_wifi_sta_config();

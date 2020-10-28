@@ -154,6 +154,9 @@ EventBits_t wifi_manager_wait_internet_access() {
 EventBits_t wifi_manager_wait_disconnect() {
 	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_STA_DISCONNECT_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
 }
+EventBits_t wifi_manager_wait_internet_access_and_AP() {
+	return xEventGroupWaitBits(wifi_manager_event_group, WIFI_MANAGER_HAVE_INTERNET_BIT | WIFI_MANAGER_WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY );
+}
 void wifi_manager_scan_async(){
 	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_REQUEST_WIFI_SCAN);
 }

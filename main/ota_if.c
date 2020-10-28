@@ -13,6 +13,7 @@
 
 #include <string.h>
 #include "ota_if.h"
+#include "mqtt_if.h"
 #include "app_utils.h"
 
 #include "esp_system.h"
@@ -35,9 +36,8 @@ static char ota_file_basename[OTA_FILE_BN_LEN] = {0};
 
 static const char *TAG = "OTA";
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
-extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
-extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
-extern int otaInProgressFlag;
+//extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
+//extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
 static void _http_cleanup(esp_http_client_handle_t client);
 static esp_err_t _ota_commence( void );
@@ -97,10 +97,18 @@ void ota_task(void *pvParameters)
 	ESP_LOGI(TAG, "Waiting for MQTT to trigger OTA...");
 
 	for(;;) {
-
+		bool ota_status;		// true indicates successful ota / false indicates errors
 		xEventGroupWaitBits(ota_event_group, OTA_TRIGGER_OTA_BIT, pdTRUE, pdTRUE, portMAX_DELAY );
-		ESP_LOGI(TAG, "MQTT triggered OTA...");
+		ESP_LOGI(TAG, "MQTT triggered OTA update");
 		err = _ota_commence();
+		if (err == ESP_FAIL){
+			ESP_LOGI(TAG, "OTA update failed");
+			ota_status = false;
+		}
+		else {
+			ota_status = true;
+		}
+		ota_complete(ota_status);
 	}
 }
 
@@ -135,7 +143,13 @@ static esp_err_t _ota_commence()
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
              running->type, running->subtype, running->address);
 
-    sprintf(fn_path, "http://storage.googleapis.com/ota_firmware_updates/%s", ota_file_basename); //sprintf(fn_path, "http://air.eng.utah.edu:80/files/updates/%s", ota_file_basename);
+    // UPDATE GCP STORAGE BUCKET PARAMETER ********************************************************************************
+    //sprintf(fn_path, "http://air.eng.utah.edu:80/files/updates/%s", ota_file_basename);
+    //sprintf(fn_path, "http://storage.googleapis.com/ota_firmware_updates/%s", ota_file_basename);
+    //sprintf(fn_path, "http://storage.googleapis.com/aq_firmware/%s", ota_file_basename);		 //FOR airquality
+    sprintf(fn_path, "http://storage.googleapis.com/airquality_firmware/%s", ota_file_basename); //FOR aqandu
+    // UPDATE GCP STORAGE BUCKET PARAMETER ********************************************************************************
+
 
     ESP_LOGI(TAG, "URL: %s", fn_path);
 
@@ -154,7 +168,6 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
         esp_http_client_cleanup(client);
-        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -169,7 +182,6 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
         _http_cleanup(client);
-        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -205,7 +217,6 @@ static esp_err_t _ota_commence()
     if (esp_ota_end(update_handle) != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_end failed!");
         _http_cleanup(client);
-        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }
@@ -214,7 +225,7 @@ static esp_err_t _ota_commence()
 
     if (esp_partition_check_identity(esp_ota_get_running_partition(), update_partition) == true) {
         ESP_LOGI(TAG, "The current running firmware is same as the update firmware");
-        otaInProgressFlag = 0;
+        //ota complete
         return ESP_OK;
     }
 
@@ -222,7 +233,6 @@ static esp_err_t _ota_commence()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         _http_cleanup(client);
-        otaInProgressFlag = 0;
         return ESP_FAIL;
 //        task_fatal_error(TAG);
     }

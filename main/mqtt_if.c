@@ -10,6 +10,13 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/error.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
+#include <base64url.h>
+
 #include "esp_err.h"
 #include "esp_system.h"
 #include "esp_log.h"
@@ -24,32 +31,22 @@
 #include "pm_if.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-
-#include <time.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/error.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
-#include <base64url.h>
 #include "jwt_if.h"
 
-#define WIFI_CONNECTED_BIT 	BIT0
+
+// #define WIFI_CONNECTED_BIT 	BIT0
 #define RECONNECT_SECONDS 82800		// Frequency to reconnect to Google IoT (82800 = 23 hours) JWT expires at 24 hours
-#define KEEPALIVE_TIME 270			// Frequency pingreq is sent to IoT (240 will send a ping every 120 seconds)
+#define KEEPALIVE_TIME 300			// Frequency pingreq is sent to IoT (300 will send a ping every 150 seconds)
 
 static const char *TAG = "MQTT_DATA";
 static TaskHandle_t task_mqtt = NULL;
+static EventGroupHandle_t mqtt_event_group;
 static char DEVICE_MAC[13];
-// extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern const uint8_t roots_pem_start[] asm("_binary_roots_pem_start");
 extern uint8_t rsaprivate_pem_start[] asm("_binary_rsaprivate_pem_start");
-int otaInProgressFlag = 0;
-static bool client_connected;
 static esp_mqtt_client_handle_t client;
-static EventGroupHandle_t mqtt_event_group;
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 char firmware_version[OTA_FILE_BN_LEN];
-static int reset_counter;
 char current_state[128];
 
 ////Google IoT constants / connection parameters-------------------------------------------
@@ -60,13 +57,51 @@ static const char* USER_NAME = "unused"; 							// Unused by Google IoT but supp
 char* JWT_PASSWORD;
 
 //*******ENSURE THIS IS CORRECT********************************************************************
-static const char* PROJECT_ID = "scottgale";
+//static const char* PROJECT_ID = "scottgale";
+static const char* PROJECT_ID = "aqandu-184820";
+//static const char* PROJECT_ID = "airquality-272118";
+
 //*************************************************************************************************
 
 static char client_ID[MQTT_CLIENTID_LEN] = {0};
 static char mqtt_topic[MQTT_TOPIC_LEN] = {0};
 static char mqtt_state_topic[MQTT_TOPIC_LEN] = {0};
-uint32_t reconnect_time;	// Used in the event handler and while() loop to denote when the JWT expires.
+uint32_t reconnect_time;							// Used in the event handler and while() loop to denote when the JWT expires.
+time_t last_publish_time; 						 	// Ensure MQTT is publishing once per hour
+bool service_ota = false;							// flag to set when an ota update is requested - set in event handler / handled in MQTT loop
+bool client_connected;								// indicates that the MQTT connection is active
+bool ota_successful;								// indicates if the last ota update was successful or not
+
+
+/*
+* @brief Waits for wifi to connect to the Internet then creates the MQTT task. Calls a blocking function
+* from within wifi_manager.c (wifi_manager_wait_internet_access())
+*
+* @param N/A
+*
+* @return N/A
+*/
+void MQTT_Initialize(void)
+{
+   // Function (wifi_manager.c) waits for the wifi to connect
+	printf("MQTT Blocked: wifi_manager_wait_internet_access_and_AP()\n");
+	//wifi_manager_wait_internet_access();
+	wifi_manager_wait_internet_access_and_AP();
+	printf("PASSED wifi_manager_wait_internet_access_and_AP()\n");
+	xTaskCreate(&mqtt_task, "mqtt_task", 16000, NULL, 2, task_mqtt);
+}
+
+/*
+* @brief Used by the watchdog_if.c to get the last mqtt publish time
+*
+* @param N/A
+*
+* @return type time_t; the last time a successful mqtt packet was published
+*/
+time_t mqtt_last_publish_time(){
+	return last_publish_time;
+}
+
 
 /*
 * @brief Acquires a JSON WEB TOKEN (JWT) that is used as the password in the client configuration.
@@ -133,15 +168,12 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		   msg_id = esp_mqtt_client_subscribe(this_client, mqtt_subscribe_topic, 0);	// QOS 0 - No guarantee (best effort only)
 		   ESP_LOGI(TAG, "Subscribing to %s, msg_id=%d", mqtt_subscribe_topic, msg_id);
 
-		   reset_counter=0;				// Fail safe counter - when it reaches a certain value it will reset the board.
 		   break;
 
 	   case MQTT_EVENT_DISCONNECTED:
 		   ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
 		   client_connected = false;
-		   reset_counter++;				// Fail safe counter - when it reaches a certain value it will reset the board. Currently triggered at 10.
-		   if (reset_counter >=2)
-			   esp_restart();			// Something has gone wrong - reset the board.
+		   esp_restart();
 		   break;
 
 	   case MQTT_EVENT_SUBSCRIBED:
@@ -169,16 +201,17 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 			   tok = strtok(payload, space);			// Get the first token
 
-			   if(tok != NULL && strcmp(tok, "ota") == 0 && otaInProgressFlag == 0){
+			   if(tok != NULL && strcmp(tok, "ota") == 0) {
 				   tok = strtok(NULL, space);
 				   if(tok != NULL && strstr(tok, ".bin")){
-					   otaInProgressFlag = 1;			// Set flag to prevent multiple OTA updates occurring simultaneously
+					   // Handle the ota update in the MQTT loop to avoid conflicts with publishing
+					   ESP_LOGI(TAG,"OTA update needs to be performed");
 					   ota_set_filename(tok);
-					   ota_trigger();					// Comment out to avoid doing OTA updates during development
+					   service_ota = true;
+					   //ota_trigger();					// Comment out to avoid doing OTA updates during development
 				   }
 				   else{
 					   ESP_LOGI(TAG,"No binary file");
-					   otaInProgressFlag = 0;
 				   }
 			   }
 		   }
@@ -205,6 +238,9 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 void mqtt_task(void* pvParameters){
 	ESP_LOGI(TAG, "Starting mqtt_task ...");
 
+	mqtt_event_group = xEventGroupCreate();
+	xEventGroupClearBits(mqtt_event_group, OTA_COMPLETE);
+
 	// Constants that define data change thresholds for publishing a packet
 	float pm_delta = 0.25;			// All PM data
 	float minor_delta = 1.0;		// Temp, Humidity, NOX
@@ -216,6 +252,7 @@ void mqtt_task(void* pvParameters){
 	static double pub_temp, temp, pub_hum, hum;
 	static uint16_t pub_co, co, pub_nox, nox;
 	static esp_gps_t pub_gps, gps;
+	static float version_number = 2.3;				// First digit = PCB hardware, second digit = pm sensor
 
 	static char mqtt_pkt[MQTT_PKT_LEN] = {0};		// Clear packet char[]
 
@@ -225,13 +262,19 @@ void mqtt_task(void* pvParameters){
 
 	// Generate client_ID . . . includes MAC Address as "IoT Device ID"
 	const char mqtt_client_helper1[] = "projects/";
+	// ***************************************************ADJUST FOR AIRQUALITY PROJECT*******************************************
 	const char mqtt_client_helper2[] = "/locations/us-central1/registries/airu-sensor-registry/devices/M";
+	//const char mqtt_client_helper2[] = "/locations/us-central1/registries/airquality/devices/M";
+	// ***************************************************ADJUST FOR AIRQUALITY PROJECT*******************************************
 	snprintf(client_ID, sizeof(client_ID), "%s%s%s%s", mqtt_client_helper1, PROJECT_ID, mqtt_client_helper2, DEVICE_MAC);
 	ESP_LOGI(TAG, "Generated client_ID: %s", client_ID);
 
 	// Generate mqtt_topic
 	const char mqtt_topic_helper1[] = "/devices/M";
+	// ***************************************************ADJUST FOR AIRQUALITY PROJECT*******************************************
 	const char mqtt_topic_helper2[] = "/events/airU";
+	//const char mqtt_topic_helper2[] = "/events/data";
+	// ***************************************************ADJUST FOR AIRQUALITY PROJECT*******************************************
 	const char mqtt_topic_helper3[] = "/state";
 	snprintf(mqtt_topic, sizeof(mqtt_topic), "%s%s%s", mqtt_topic_helper1, DEVICE_MAC, mqtt_topic_helper2);
 	ESP_LOGI(TAG, "Generated mqtt_topic: %s", mqtt_topic);
@@ -243,6 +286,7 @@ void mqtt_task(void* pvParameters){
 
 	time_t current_time = time(NULL);
 	reconnect_time = (uint32_t)current_time + RECONNECT_SECONDS;	// Must be less than expiration set when creating the JWT in getMQTT_Config (jwt_if.c)
+	last_publish_time = time(NULL);
 
 	// Initial pull from sensors to populate the PUBLISH data variables
 	PMS_Poll(&pub_pm_dat);
@@ -251,28 +295,27 @@ void mqtt_task(void* pvParameters){
 	GPS_Poll(&pub_gps);
 	int publish_flag = 1; 							// set to 1 by time (PUBLISH_SECONDS) OR change in data defined by delta variable above
 	int loop_counter = 12;							// Initialize to 12 to trigger publication on 1st iteration
-	vTaskDelay(60000 / portTICK_PERIOD_MS);			// Delay allows time to connect / sensors to start reading / ota firmware updates
+	vTaskDelay(30000 / portTICK_PERIOD_MS);			// wifi configuration time
 
-	while(wifi_manager_connected_to_access_point()){
+	while(wifi_manager_connected_to_access_point() && client_connected) {
+		if (service_ota) {												// perform ota update if required
+			ota_trigger();
+			xEventGroupWaitBits(mqtt_event_group, OTA_COMPLETE, pdTRUE, pdTRUE, portMAX_DELAY);	// block until OTA update is complete
+			service_ota = false;
+
+		}
 		current_time = time(NULL);					// Get the current time for the packet
 
-		printf("client_connected: %d, otaInProgressFlag: %d, reset_counter: %d", client_connected, otaInProgressFlag, reset_counter);
-		printf("\ncurrent_time: %d, ", (uint32_t)current_time);
+		printf("current_time: %d, ", (uint32_t)current_time);
 		printf("reconnect_time: %d, ", reconnect_time);
-		printf("loop_counter: %d\n", loop_counter);
+		printf("last_publish_time: %d\n", (uint32_t)last_publish_time);
 
-		//printf("wifi manager wait(): %d", (int)wifi_manager_wait_internet_access());
-
-		if (current_time > reconnect_time || !client_connected){	// Check to see if it's time to reconnect
-			esp_restart();											// Trial run to see if connectivity improves by reseting the
-																	// processor every time we disconnect from Google - this will
-																	// always generate a new JWT and connection
-
-			// esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
-			// vTaskDelay(20000 / portTICK_PERIOD_MS);				// Allow time for disconnect to propagate through system (MQTT)
-			// MQTT_Connect();
+		if (current_time > reconnect_time){							// Check to see if it's time to reconnect
+			esp_mqtt_client_destroy(client);						// Stop the mqtt client and free all the memory
+			vTaskDelay(20000 / portTICK_PERIOD_MS);					// Allow time for disconnect to propagate through system (MQTT)
+			MQTT_Connect();
 		}
-		else{														// Get and send data packet
+		else {														// Get and send data packet
 			PMS_Poll(&pm_dat);
 			HDC1080_Poll(&temp, &hum);
 			MICS4514_Poll(&co, &nox);
@@ -301,14 +344,16 @@ void mqtt_task(void* pvParameters){
 				publish_flag = 10;
 			}
 
-			printf("publish_flag: %d\n", publish_flag);
+			printf("publish_flag: %d, ", publish_flag);
+			printf("loop_counter: %d\n", loop_counter);
 
-			if (publish_flag >= 1 && !otaInProgressFlag){	// Don't publish if OTA is in progress
+			if (publish_flag > 0) {
 				publish_flag = 0;							// Reset publish_flag
 				loop_counter = 0;							// Reset loop_counter
 				memset(mqtt_pkt, 0, MQTT_PKT_LEN);			// Clear contents of packet
-				sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, \"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f}", \
-					DEVICE_MAC, current_time, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon);
+				sprintf(mqtt_pkt, "{\"DEVICE_ID\": \"M%s\", \"TIMESTAMP\": %ld, \"PM1\": %.2f, \"PM25\": %.2f, \"PM10\": %.2f, " \
+				"\"TEMP\": %.2f, \"HUM\": %.2f, \"CO\": %d, \"NOX\": %d, \"LAT\": %.4f, \"LON\": %.4f, \"ALT\": %.1f, \"VER\": %.1f}", \
+				DEVICE_MAC, current_time, pm_dat.pm1, pm_dat.pm2_5, pm_dat.pm10, temp, hum, co, nox, gps.lat, gps.lon, gps.alt, version_number);
 
 				MQTT_Publish(mqtt_topic, mqtt_pkt);
 				pub_pm_dat = pm_dat;
@@ -320,14 +365,14 @@ void mqtt_task(void* pvParameters){
 			// Publish state consists of current firmware version saved in NVS
 			// It is important that state gets published every 5 minutes as a backup to keep the connection with Google alive.
 			get_firmware_version();
-			snprintf(current_state, sizeof(current_state), "%s, Loop:%d, Time:%d, Reconnect:%d, WiFi:%d, OTA:%d", firmware_version, loop_counter, (uint32_t)current_time, reconnect_time, (int)wifi_manager_wait_internet_access(), otaInProgressFlag);
+			snprintf(current_state, sizeof(current_state), "%s, Loop:%d, Time:%d, Reconnect:%d, Last Publish:%d, WiFi:%d, OTA:%d", \
+					firmware_version, loop_counter, (uint32_t)current_time, reconnect_time, (uint32_t)last_publish_time, (int)wifi_manager_wait_internet_access(), ota_successful);
 			MQTT_Publish(mqtt_state_topic, current_state);
 			loop_counter++;
 		}
 		vTaskDelay(300000 / portTICK_PERIOD_MS);	// Time in milliseconds. 300000 = 5 minutes
 	} // End while(1)
-
-	esp_restart();
+	esp_restart();									// Restart if exit the while loop
 }
 
 /*
@@ -365,17 +410,6 @@ void get_firmware_version(void)
 	nvs_close(nvs_handle);
 }
 
-
-void MQTT_Initialize(void)
-{
-   // Function (wifi_manager.c) waits for the wifi to connect
-	printf("wifi_manager_wait_internet_access()");
-	wifi_manager_wait_internet_access();
-	printf("passed wifi_manager_wait_internet_access()");
-	xTaskCreate(&mqtt_task, "task_mqtt", 16000, NULL, 1, task_mqtt);
-}
-
-
 void MQTT_Connect(void)
 {
 	// Connect to Google IoT
@@ -386,22 +420,44 @@ void MQTT_Connect(void)
 }
 
 /*
-* @brief
+* @brief Published an MQTT packets. If msg_id != 0 (error in publishing packet) then client_connected = false (something is wrong)
 *
-* @param
+* @param topic = MQTT topic and msg = MQTT msg to be published.
 *
-* @return
+* @return N/A
 */
 void MQTT_Publish(const char* topic, const char* msg)
 {
-	int msg_id = 0;
-	if(client_connected) {
-		msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
-		ESP_LOGI(TAG, "Sent packet: %s\nTopic: %s\tmsg_id=%d", msg, topic, msg_id);
+	int msg_id = esp_mqtt_client_publish(client, topic, msg, strlen(msg), 0, 0);
+	ESP_LOGI(TAG, "Sent packet: %s\nTopic: %s\tmsg_id=%d", msg, topic, msg_id);
+	if (msg_id == 0){
+		last_publish_time = time(NULL);
 	}
-	if (msg_id == -1 || !client_connected){
-		ESP_LOGI(TAG, "In MQTT_Publish - client not connected");
+	else{
+		ESP_LOGI(TAG, "MQTT_Publish: msg_id != 0, setting client_connected = false");
 		client_connected = false;
+		esp_restart();
 	}
 }
+
+/*
+* @brief Reset the OTA_COMPLETE bit and set the ota_successful flag to indicate if last ota was successful or not
+*
+* @param N/A
+*
+* @return N/A
+*/
+void ota_complete(bool otaStatus) {
+	ota_successful = otaStatus;
+	xEventGroupSetBits(mqtt_event_group, OTA_COMPLETE);
+}
+
+
+
+
+
+
+
+
+
 

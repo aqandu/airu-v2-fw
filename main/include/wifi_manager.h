@@ -34,6 +34,8 @@ extern "C" {
 #include "esp_wifi_types.h"
 #include "tcpip_adapter.h"
 #include "esp_event_legacy.h"
+#include "freertos/event_groups.h"
+
 /**
  * @brief If WIFI_MANAGER_DEBUG is defined, additional debug information will be sent to the standard output.
  */
@@ -332,6 +334,8 @@ void wifi_manager_check_connection_async();
 EventBits_t wifi_manager_wait_connect();
 EventBits_t wifi_manager_wait_disconnect();
 EventBits_t wifi_manager_wait_internet_access();
+EventBits_t wifi_manager_wait_internet_access_and_AP();
+
 //void wifi_manager_ping_test(void);
 #ifdef __cplusplus
 }
